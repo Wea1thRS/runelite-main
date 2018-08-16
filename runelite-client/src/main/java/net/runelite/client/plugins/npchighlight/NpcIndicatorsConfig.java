@@ -99,6 +99,17 @@ public interface NpcIndicatorsConfig extends Config
 	}
 
 	@ConfigItem(
+			position = 5,
+			keyName = "drawMinimapDots",
+			name = "Draw dots on minimap",
+			description = "Configures whether or not NPC dots should be drawn on the minimap"
+	)
+	default boolean drawMinimapDots()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		position = 6,
 		keyName = "showRespawnTimer",
 		name = "Show respawn timer",
