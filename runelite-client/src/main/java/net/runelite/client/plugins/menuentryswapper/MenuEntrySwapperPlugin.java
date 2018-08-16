@@ -27,10 +27,6 @@ package net.runelite.client.plugins.menuentryswapper;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Provides;
-import java.awt.Color;
-import java.util.Collection;
-import java.util.Collections;
-import javax.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.Client;
@@ -58,11 +54,16 @@ import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.Text;
 import org.apache.commons.lang3.ArrayUtils;
 
+import javax.inject.Inject;
+import java.awt.Color;
+import java.util.Collection;
+import java.util.Collections;
+
 @PluginDescriptor(
-	name = "Menu Entry Swapper",
-	description = "Change the default option that is displayed when hovering over objects",
-	tags = {"npcs", "inventory", "items", "objects"},
-	enabledByDefault = false
+		name = "Menu Entry Swapper",
+		description = "Change the default option that is displayed when hovering over objects",
+		tags = {"npcs", "inventory", "items", "objects"},
+		enabledByDefault = false
 )
 public class MenuEntrySwapperPlugin extends Plugin
 {
@@ -75,22 +76,22 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private static final String ITEM_KEY_PREFIX = "item_";
 
 	private static final WidgetMenuOption FIXED_INVENTORY_TAB_CONFIGURE = new WidgetMenuOption(CONFIGURE,
-		MENU_TARGET, WidgetInfo.FIXED_VIEWPORT_INVENTORY_TAB);
+			MENU_TARGET, WidgetInfo.FIXED_VIEWPORT_INVENTORY_TAB);
 
 	private static final WidgetMenuOption FIXED_INVENTORY_TAB_SAVE = new WidgetMenuOption(SAVE,
-		MENU_TARGET, WidgetInfo.FIXED_VIEWPORT_INVENTORY_TAB);
+			MENU_TARGET, WidgetInfo.FIXED_VIEWPORT_INVENTORY_TAB);
 
 	private static final WidgetMenuOption RESIZABLE_INVENTORY_TAB_CONFIGURE = new WidgetMenuOption(CONFIGURE,
-		MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_INVENTORY_TAB);
+			MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_INVENTORY_TAB);
 
 	private static final WidgetMenuOption RESIZABLE_INVENTORY_TAB_SAVE = new WidgetMenuOption(SAVE,
-		MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_INVENTORY_TAB);
+			MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_INVENTORY_TAB);
 
 	private static final WidgetMenuOption RESIZABLE_BOTTOM_LINE_INVENTORY_TAB_CONFIGURE = new WidgetMenuOption(CONFIGURE,
-		MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_BOTTOM_LINE_INVENTORY_TAB);
+			MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_BOTTOM_LINE_INVENTORY_TAB);
 
 	private static final WidgetMenuOption RESIZABLE_BOTTOM_LINE_INVENTORY_TAB_SAVE = new WidgetMenuOption(SAVE,
-		MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_BOTTOM_LINE_INVENTORY_TAB);
+			MENU_TARGET, WidgetInfo.RESIZABLE_VIEWPORT_BOTTOM_LINE_INVENTORY_TAB);
 
 	@Inject
 	private Client client;
@@ -194,8 +195,8 @@ public class MenuEntrySwapperPlugin extends Plugin
 	public void onWidgetMenuOptionClicked(WidgetMenuOptionClicked event)
 	{
 		if (event.getWidget() == WidgetInfo.FIXED_VIEWPORT_INVENTORY_TAB
-			|| event.getWidget() == WidgetInfo.RESIZABLE_VIEWPORT_INVENTORY_TAB
-			|| event.getWidget() == WidgetInfo.RESIZABLE_VIEWPORT_BOTTOM_LINE_INVENTORY_TAB)
+				|| event.getWidget() == WidgetInfo.RESIZABLE_VIEWPORT_INVENTORY_TAB
+				|| event.getWidget() == WidgetInfo.RESIZABLE_VIEWPORT_BOTTOM_LINE_INVENTORY_TAB)
 		{
 			configuringShiftClick = event.getMenuOption().equals(CONFIGURE);
 			refreshShiftClickCustomizationMenus();
@@ -253,7 +254,6 @@ public class MenuEntrySwapperPlugin extends Plugin
 				}
 			}
 		}
-
 		final MenuEntry resetShiftClickEntry = new MenuEntry();
 		resetShiftClickEntry.setOption(RESET);
 		resetShiftClickEntry.setTarget(MENU_TARGET);
@@ -266,7 +266,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		if (event.getMenuAction() != MenuAction.RUNELITE || event.getWidgetId() != WidgetInfo.INVENTORY.getId())
+		if (event.getWidgetId() != WidgetInfo.INVENTORY.getId())
 		{
 			return;
 		}
@@ -305,7 +305,9 @@ public class MenuEntrySwapperPlugin extends Plugin
 		{
 			String[] inventoryActions = itemComposition.getInventoryActions();
 
-			for (index = 0; index < inventoryActions.length; index++)
+			for (index = 0;
+					index < inventoryActions.length;
+					index++)
 			{
 				if (option.equals(inventoryActions[index]))
 				{
@@ -336,7 +338,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 
 		if (option.equals("talk-to"))
 		{
-			if (config.swapPickpocket() && target.contains("h.a.m."))
+			if (config.swapPickpocket())
 			{
 				swap("pickpocket", option, target, true);
 			}
@@ -432,7 +434,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 			}
 		}
 		else if (config.swapFairyRing() != FairyRingMode.OFF && config.swapFairyRing() != FairyRingMode.ZANARIS
-			&& (option.equals("zanaris") || option.equals("configure") || option.equals("tree")))
+				&& (option.equals("zanaris") || option.equals("configure") || option.equals("tree")))
 		{
 			if (config.swapFairyRing() == FairyRingMode.LAST_DESTINATION)
 			{
@@ -489,6 +491,34 @@ public class MenuEntrySwapperPlugin extends Plugin
 		{
 			swap("empty", option, target, true);
 		}
+		else if (config.swapWithdrawX() && option.equals("withdraw-1"))
+		{
+			swap("withdraw-" + Integer.toString(config.swapWithdrawXInt()), option, target, true);
+		}
+		else if (config.swapDepositX() && option.equals("deposit-1"))
+		{
+			swap("deposit-" + Integer.toString(config.swapWithdrawXInt()), option, target, true);
+		}
+		else if (config.swapPickpocket() && option.equals("attack"))
+		{
+			swap("pickpocket", option, target, true);
+		}
+		else if (config.swapSmithAll() && option.equals("smith 1 set"))
+		{
+			swap("smith all sets", option, target, true);
+		}
+		else if (config.swapBuild() && option.equals("examine"))
+		{
+			swap("build", option, target, true);
+		}
+		else if (config.swapRemove() && option.equals("search"))
+		{
+			swap("remove", option, target, true);
+		}
+		else if ( option.equals("eat"))
+		{
+			swap("guzzle", option, target, true);
+		}
 	}
 
 	@Subscribe
@@ -521,6 +551,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 		for (int i = entries.length - 1; i >= 0; i--)
 		{
 			MenuEntry entry = entries[i];
+
 			String entryOption = Text.removeTags(entry.getOption()).toLowerCase();
 			String entryTarget = Text.removeTags(entry.getTarget()).toLowerCase();
 
@@ -546,6 +577,23 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private void swap(String optionA, String optionB, String target, boolean strict)
 	{
 		MenuEntry[] entries = client.getMenuEntries();
+		/*
+		System.out.println("Start");
+		for (MenuEntry entry : entries)
+		{
+			System.out.println("Entry: " + entry.toString());
+		}
+		*/
+		if (config.removeWalkHere() && (optionA.equals("build") || optionA.equals("open")))
+		{
+			for (MenuEntry entry : entries)
+			{
+				if (entry.getOption().equals("Walk here"))
+				{
+					entries = ArrayUtils.removeElement(entries, entry);
+				}
+			}
+		}
 
 		int idxA = searchIndex(entries, optionA, target, strict);
 		int idxB = searchIndex(entries, optionB, target, strict);
@@ -555,11 +603,11 @@ public class MenuEntrySwapperPlugin extends Plugin
 			MenuEntry entry = entries[idxA];
 			entries[idxA] = entries[idxB];
 			entries[idxB] = entry;
-
 			client.setMenuEntries(entries);
 		}
 	}
 
+	@SuppressWarnings("Duplicates")
 	private void removeShiftClickCustomizationMenus()
 	{
 		menuManager.removeManagedCustomMenu(FIXED_INVENTORY_TAB_CONFIGURE);

@@ -239,4 +239,81 @@ public interface MenuEntrySwapperConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+			position = 19,
+			keyName = "swapWithdrawXInt",
+			name = "X:",
+			description = "Swap Withdraw-?."
+	)
+	default int swapWithdrawXInt()
+	{
+		return 14;
+	}
+
+	@ConfigItem(
+			position = 20,
+			keyName = "swapWithdrawX",
+			name = "Withdraw-X",
+			description = "Swap Withdraw-X."
+	)
+	default boolean swapWithdrawX()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			position = 21,
+			keyName = "swapDepositX",
+			name = "Deposit-X",
+			description = "Swap Deposit-X."
+	)
+	default boolean swapDepositX()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			position = 22,
+			keyName = "swapSmithAll",
+			name = "Smith-All",
+			description = "Swap Smith-All."
+	)
+	default boolean swapSmithAll()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			position = 23,
+			keyName = "swapBuild",
+			name = "Build.",
+			description = "Swap Build."
+	)
+	default boolean swapBuild()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			position = 24,
+			keyName = "removeWalkHere",
+			name = "Remove Walk here.",
+			description = "Removes walk here."
+	)
+	default boolean removeWalkHere()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			position = 25,
+			keyName = "swapRemove",
+			name = "Remove.",
+			description = "Swap remove."
+	)
+	default boolean swapRemove()
+	{
+		return false;
+	}
 }
