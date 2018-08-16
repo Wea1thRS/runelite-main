@@ -28,11 +28,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup(
-	keyName = "maxhitplugin",
-	name = "Max Hit Calculator",
-	description = "Configure boosts for Max Hit"
-)
+@ConfigGroup("maxhitplugin")
 
 public interface MaxHitConfig extends Config
 {
