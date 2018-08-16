@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
+
+import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -48,6 +50,7 @@ import net.runelite.api.SpriteID;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.events.NpcLootReceived;
 import net.runelite.client.events.PlayerLootReceived;
 import net.runelite.client.game.ItemManager;
@@ -55,10 +58,15 @@ import net.runelite.client.game.ItemStack;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.itemcharges.ItemChargeConfig;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
+import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
+import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
+import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
+import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
 
 @PluginDescriptor(
 	name = "Loot Tracker",
@@ -84,9 +92,20 @@ public class LootTrackerPlugin extends Plugin
 	@Inject
 	private Client client;
 
+	@Inject
+	private LootTrackerConfig config;
+
+	@Provides
+	LootTrackerConfig getConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(LootTrackerConfig.class);
+	}
+
 	private LootTrackerPanel panel;
 	private NavigationButton navButton;
 	private String eventType;
+
+	TemmieWebhook temmie = new TemmieWebhook("https://discordapp.com/api/webhooks/478488367093514280/CmaXv7dof2psRgV07lGPkYw9cYzwO2wVAM8s1easN9afwotbuA0cKLsAlDd3BBpQCREJ");
 
 	private static Collection<ItemStack> stack(Collection<ItemStack> items)
 	{
@@ -149,6 +168,7 @@ public class LootTrackerPlugin extends Plugin
 		final String name = npc.getName();
 		final int combat = npc.getCombatLevel();
 		final LootTrackerItemEntry[] entries = buildEntries(stack(items));
+		handleDrops(entries, name);
 		SwingUtilities.invokeLater(() -> panel.addLog(name, combat, entries));
 	}
 
@@ -259,5 +279,31 @@ public class LootTrackerPlugin extends Plugin
 				itemStack.getQuantity(),
 				price);
 		}).toArray(LootTrackerItemEntry[]::new);
+	}
+
+	private void handleDrops(LootTrackerItemEntry[] drops, String name)
+	{
+		for (LootTrackerItemEntry item : drops)
+		{
+			if (item.getPrice() >= config.lootPrice())
+			{
+				sendDiscordMessage(item.getName(), item.getId(), item.getQuantity(), name);
+			}
+		}
+	}
+
+	private void sendDiscordMessage(String a, int b, int c, String d)
+	{
+		String userName = client.getLocalPlayer().getName();
+		DiscordEmbed de = new DiscordEmbed("" + d,  userName + " has just received " + c + "x " + a + " as a drop!");
+		ThumbnailEmbed te = new ThumbnailEmbed();
+		te.setUrl("https://api.runelite.net/runelite-1.4.11/item/" + b + "/icon");
+		te.setHeight(96);
+		te.setWidth(96);
+		de.setThumbnail(te);
+		DiscordMessage dm = new DiscordMessage("OSRS", "", "https://img04.deviantart.net/360e/i/2015/300/9/d/temmie_by_ilovegir64-d9elpal.png");
+		dm.getEmbeds().add(de);
+		temmie.sendMessage(dm);
+
 	}
 }
