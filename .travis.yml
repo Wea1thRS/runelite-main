@@ -8,5 +8,3 @@ jdk:
 - oraclejdk8
 install: true
 script: ./travis/build.sh
-notifications:
-  irc: "irc.rizon.net#runelite"
