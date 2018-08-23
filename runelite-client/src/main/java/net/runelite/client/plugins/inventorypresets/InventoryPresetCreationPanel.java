@@ -37,7 +37,7 @@ public class InventoryPresetCreationPanel extends JPanel
 		EQUIPMENT_ICON = new ImageIcon(ImageUtil.getResourceStreamFromClass(InventoryPresetsPlugin.class, "confirm_icon.png"));
 		INVENTORY_ICON = new ImageIcon(ImageUtil.getResourceStreamFromClass(InventoryPresetsPlugin.class, "confirm_icon.png"));
 		EQUIPMENT_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(ImageUtil.bufferedImageFromImage(EQUIPMENT_ICON.getImage()), 0.6f));
-		INVENTORY_HOVER_ICON =new ImageIcon(ImageUtil.alphaOffset(ImageUtil.bufferedImageFromImage(INVENTORY_ICON.getImage()), 0.6f));
+		INVENTORY_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(ImageUtil.bufferedImageFromImage(INVENTORY_ICON.getImage()), 0.6f));
 		CONFIRM_ICON = new ImageIcon(ImageUtil.getResourceStreamFromClass(InventoryPresetsPlugin.class, "confirm_icon.png"));
 		CANCEL_ICON = new ImageIcon(ImageUtil.getResourceStreamFromClass(InventoryPresetsPlugin.class, "cancel_icon.png"));
 
