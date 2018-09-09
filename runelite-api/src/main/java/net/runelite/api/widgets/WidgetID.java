@@ -53,6 +53,7 @@ public class WidgetID
 	public static final int EMOTES_GROUP_ID = 216;
 	public static final int RUNE_POUCH_GROUP_ID = 190;
 	public static final int DIARY_GROUP_ID = 259;
+	public static final int PEST_CONTROL_BOAT_GROUP_ID = 407;
 	public static final int PEST_CONTROL_GROUP_ID = 408;
 	public static final int CLAN_CHAT_GROUP_ID = 7;
 	public static final int MINIMAP_GROUP_ID = 160;
@@ -108,11 +109,12 @@ public class WidgetID
 	public static final int DESTROY_ITEM_GROUP_ID = 584;
 	public static final int VARROCK_MUSEUM_QUIZ_GROUP_ID = 533;
 	public static final int KILL_LOGS_GROUP_ID = 549;
-	public static final int DIARY_QUEST_GROUP_ID = 275;
+	public static final int DIARY_QUEST_GROUP_ID = 119;
 	public static final int THEATRE_OF_BLOOD_GROUP_ID = 23;
 	public static final int WORLD_SWITCHER_GROUP_ID = 69;
 	public static final int DIALOG_OPTION_GROUP_ID = 219;
 	public static final int DIALOG_PLAYER_GROUP_ID = 217;
+	public static final int FOSSIL_ISLAND_OXYGENBAR_ID = 609;
 
 	static class WorldMap
 	{
@@ -140,8 +142,15 @@ public class WidgetID
 		static final int LOGOUT_BUTTON = 6;
 	}
 
+	static class PestControlBoat
+	{
+		static final int INFO = 3;
+	}
+
 	static class PestControl
 	{
+		static final int INFO = 3;
+
 		static final int ACTIVITY_BAR = 12;
 		static final int ACTIVITY_PROGRESS = 14;
 
@@ -622,7 +631,7 @@ public class WidgetID
 	static class Diary
 	{
 		static final int DIARY_TITLE = 2;
-		static final int DIARY_TEXT = 1;
+		static final int DIARY_TEXT = 3;
 	}
 
 	static class MTA
@@ -657,5 +666,10 @@ public class WidgetID
 	static class WorldSwitcher
 	{
 		static final int WORLD_LIST = 14;
+	}
+
+	static class FossilOxygen
+	{
+		static final int FOSSIL_ISLAND_OXYGEN_BAR = 4;
 	}
 }
