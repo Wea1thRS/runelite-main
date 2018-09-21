@@ -114,13 +114,17 @@ public class WidgetID
 	public static final int DIALOG_OPTION_GROUP_ID = 219;
 	public static final int DIALOG_PLAYER_GROUP_ID = 217;
 	public static final int FOSSIL_ISLAND_OXYGENBAR_ID = 609;
+	public static final int MINIGAME_TAB_ID = 76;
+	public static final int SPELLBOOK_GROUP_ID = 218;
 
 	static class WorldMap
 	{
+		static final int MAPVIEW = 4;
+		static final int OVERVIEW_MAP = 7;
+		static final int SEARCH = 22;
+		static final int SURFACE_SELECTOR = 30;
+		static final int TOOLTIP = 36;
 		static final int OPTION = 42;
-		static final int TOOLTIP = 35;
-		static final int MAPVIEW = 3;
-		static final int SEARCH = 21;
 	}
 
 	static class SlayerRewards
@@ -270,7 +274,7 @@ public class WidgetID
 
 	static class LoginClickToPlayScreen
 	{
-		static final int MESSAGE_OF_THE_DAY = 3;
+		static final int MESSAGE_OF_THE_DAY = 4;
 	}
 
 	static class Viewport
@@ -502,17 +506,21 @@ public class WidgetID
 	{
 		static class ATK
 		{
-			static final int CORRECT_STYLE2 = 4;
-			static final int TO_CALL = 6;
-			static final int ROLE = 8;
-			static final int ROLE_SPRITE = 7;
+			static final int CALL_TEXT = 8;
+			static final int TO_CALL_WIDGET = 9;
+			static final int TO_CALL = 10;
+			static final int ROLE_SPRITE = 11;
+			static final int ROLE = 12;
 		}
-
-		static final int CURRENT_WAVE = 1;
 		static final int CORRECT_STYLE = 3;
-		static final int TO_CALL = 5;
-		static final int ROLE_SPRITE = 6;
-		static final int ROLE = 7;
+		static final int CURRENT_WAVE_WIDGET = 4;
+		static final int CURRENT_WAVE = 5;
+		static final int CALL_WIDGET = 6;
+		static final int CALL_TEXT = 7;
+		static final int TO_CALL_WIDGET = 8;
+		static final int TO_CALL = 9;
+		static final int ROLE_SPRITE = 10;
+		static final int ROLE = 11;
 	}
 
 	static class LevelUp
@@ -612,12 +620,6 @@ public class WidgetID
 		static final int DIARY_TEXT = 3;
 	}
 
-	static class MTA
-	{
-		static final int BONUS_COMPONENT = 7;
-		static final int BONUS_TEXT_COMPONENT = 12;
-	}
-
 	static class DestroyItem
 	{
 		static final int DESTROY_ITEM_NAME = 6;
@@ -649,5 +651,30 @@ public class WidgetID
 	static class FossilOxygen
 	{
 		static final int FOSSIL_ISLAND_OXYGEN_BAR = 4;
+	}
+
+	static class Minigames
+	{
+		static final int TELEPORT_BUTTON = 29;
+	}
+
+	static class StandardSpellBook
+	{
+		static final int LUMBRIDGE_HOME_TELEPORT = 1;
+	}
+
+	static class AncientSpellBook
+	{
+		static final int EDGEVILLE_HOME_TELEPORT = 97;
+	}
+
+	static class LunarSpellBook
+	{
+		static final int LUNAR_HOME_TELEPORT = 99;
+	}
+
+	static class ArceuusSpellBook
+	{
+		static final int ARCEUUS_HOME_TELEPORT = 145;
 	}
 }
