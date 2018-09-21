@@ -287,9 +287,9 @@ public class LootTrackerPlugin extends Plugin
 		}).toArray(LootTrackerItem[]::new);
 	}
 
-	private void handleDrops(LootTrackerItemEntry[] drops, String name)
+	private void handleDrops(LootTrackerItem[] drops, String name)
 	{
-		for (LootTrackerItemEntry item : drops)
+		for (LootTrackerItem item : drops)
 		{
 			if (item.getPrice() >= config.lootPrice())
 			{
