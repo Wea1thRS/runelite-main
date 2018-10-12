@@ -47,6 +47,12 @@ public enum VarPlayer
 
 	NMZ_REWARD_POINTS(1060),
 
+	/**
+	 * -1 : Poison immune
+	 *  Normal poison damage is ceil( this / 5.0f )
+	 *  If this is greater than or equal to 1000000, the player is envenomed.
+	 *  Venom damage is (this - 999997) * 2
+	 */
 	POISON(102),
 
 	/**

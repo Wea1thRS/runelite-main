@@ -54,36 +54,82 @@ public class PoisonPlugin extends Plugin
 	@Inject
 	private SpriteManager spriteManager;
 
-	private int lastPoisonDamage = 0;
-	private PoisonInfobox box = null;
+	private boolean envenomed = false;
+
+	private int lastDamage = 0;
+	private PoisonInfobox poisonBox = null;
+	private PoisonInfobox venomBox = null;
 
 	private BufferedImage poisonSplat = null;
+	private BufferedImage venomSplat = null;
 
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged event)
 	{
 		int poisonValue = client.getVar(VarPlayer.POISON);
-		int poisonDamage = (int) Math.ceil(poisonValue / 5.0f);
-		if (poisonDamage != this.lastPoisonDamage)
+		if (poisonValue >= 1000000)
 		{
-			if (poisonDamage > 0)
+			//Venom Damage starts at 6, and increments in twos;
+			//The VarPlayer increments in values of 1, however.
+			poisonValue -= 1000000 - 3;
+			int venomDamage = poisonValue * 2;
+			//Venom Damage caps at 20, but the VarPlayer keeps increasing
+			if (venomDamage > 20)
 			{
-				if (this.box == null)
+				venomDamage = 20;
+			}
+			if (venomDamage != this.lastDamage || !this.envenomed)
+			{
+				this.envenomed = true;
+				if (this.poisonBox != null)
 				{
-					this.box = new PoisonInfobox(this.getPoisonSplat(), this, poisonDamage, false);
-					infoBoxManager.addInfoBox(this.box);
+					infoBoxManager.removeInfoBox(this.poisonBox);
+					this.poisonBox = null;
+				}
+				if (this.venomBox == null)
+				{
+					this.venomBox = new PoisonInfobox(this.getVenomSplat(), this, venomDamage, true);
+					infoBoxManager.addInfoBox(this.venomBox);
 				}
 				else
 				{
-					this.box.setCount(poisonDamage);
+					this.venomBox.setCount(venomDamage);
 				}
+
+				this.lastDamage = venomDamage;
 			}
-			else
+		}
+		else
+		{
+			int poisonDamage = (int) Math.ceil(poisonValue / 5.0f);
+			if (poisonDamage != this.lastDamage || this.envenomed)
 			{
-				infoBoxManager.removeInfoBox(this.box);
-				this.box = null;
+				this.envenomed = false;
+				if (poisonDamage > 0)
+				{
+					if (this.venomBox != null)
+					{
+						infoBoxManager.removeInfoBox(this.venomBox);
+						this.venomBox = null;
+					}
+					if (this.poisonBox == null)
+					{
+						this.poisonBox = new PoisonInfobox(this.getPoisonSplat(), this, poisonDamage, false);
+						infoBoxManager.addInfoBox(this.poisonBox);
+					}
+					else
+					{
+						this.poisonBox.setCount(poisonDamage);
+					}
+				}
+				else
+				{
+					infoBoxManager.removeInfoBox(this.venomBox);
+					infoBoxManager.removeInfoBox(this.poisonBox);
+					this.poisonBox = null;
+				}
+				this.lastDamage = poisonDamage;
 			}
-			this.lastPoisonDamage = poisonDamage;
 		}
 	}
 
@@ -94,5 +140,14 @@ public class PoisonPlugin extends Plugin
 			this.poisonSplat = spriteManager.getSprite(SpriteID.HITSPLAT_GREEN_POISON, 0);
 		}
 		return this.poisonSplat;
+	}
+
+	private BufferedImage getVenomSplat()
+	{
+		if (this.venomSplat == null)
+		{
+			this.venomSplat = spriteManager.getSprite(SpriteID.HITSPLAT_DARK_GREEN_VENOM, 0);
+		}
+		return this.venomSplat;
 	}
 }
