@@ -47,6 +47,8 @@ public enum VarPlayer
 
 	NMZ_REWARD_POINTS(1060),
 
+	POISON(102),
+
 	/**
 	 * 0 : not started
 	 * greater than 0 : in progress
