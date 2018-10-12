@@ -27,6 +27,7 @@ package net.runelite.client.plugins.poison;
 import com.google.common.eventbus.Subscribe;
 import java.awt.image.BufferedImage;
 import javax.inject.Inject;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.SpriteID;
@@ -35,6 +36,7 @@ import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 
 @PluginDescriptor(
@@ -49,19 +51,39 @@ public class PoisonPlugin extends Plugin
 	private Client client;
 
 	@Inject
+	private PoisonOverlay poisonOverlay;
+
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
 	private InfoBoxManager infoBoxManager;
 
 	@Inject
 	private SpriteManager spriteManager;
 
+	@Getter
 	private boolean envenomed = false;
 
+	@Getter
 	private int lastDamage = 0;
 	private PoisonInfobox poisonBox = null;
 	private PoisonInfobox venomBox = null;
 
 	private BufferedImage poisonSplat = null;
 	private BufferedImage venomSplat = null;
+
+	@Override
+	public void startUp() throws Exception
+	{
+		overlayManager.add(poisonOverlay);
+	}
+
+	@Override
+	public void shutDown() throws Exception
+	{
+		overlayManager.remove(poisonOverlay);
+	}
 
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged event)
