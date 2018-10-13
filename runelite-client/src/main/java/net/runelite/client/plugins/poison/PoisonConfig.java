@@ -14,6 +14,6 @@ public interface PoisonConfig extends Config
 	)
 	default boolean showInfoboxes()
 	{
-		return true;
+		return false;
 	}
 }

@@ -43,7 +43,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 
 @PluginDescriptor(
-	name = "Poison & Venom",
+	name = "Poison",
 	description = "Tracks current damage values for Poison and Venom",
 	tags = {"combat", "poison", "venom"}
 )

@@ -37,7 +37,6 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
-import org.apache.commons.lang3.StringUtils;
 
 class PoisonOverlay extends Overlay
 {
