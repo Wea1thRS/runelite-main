@@ -25,6 +25,7 @@
 package net.runelite.client.plugins.poison;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import javax.inject.Inject;
 import lombok.Getter;
@@ -32,7 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.SpriteID;
 import net.runelite.api.VarPlayer;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -61,6 +64,15 @@ public class PoisonPlugin extends Plugin
 
 	@Inject
 	private SpriteManager spriteManager;
+
+	@Inject
+	private PoisonConfig config;
+
+	@Provides
+	PoisonConfig getConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(PoisonConfig.class);
+	}
 
 	@Getter
 	private boolean envenomed = false;
@@ -103,21 +115,23 @@ public class PoisonPlugin extends Plugin
 			if (venomDamage != this.lastDamage || !this.envenomed)
 			{
 				this.envenomed = true;
-				if (this.poisonBox != null)
+				if (config.showInfoboxes())
 				{
-					infoBoxManager.removeInfoBox(this.poisonBox);
-					this.poisonBox = null;
+					if (this.poisonBox != null)
+					{
+						infoBoxManager.removeInfoBox(this.poisonBox);
+						this.poisonBox = null;
+					}
+					if (this.venomBox == null)
+					{
+						this.venomBox = new PoisonInfobox(this.getVenomSplat(), this, venomDamage, true);
+						infoBoxManager.addInfoBox(this.venomBox);
+					}
+					else
+					{
+						this.venomBox.setCount(venomDamage);
+					}
 				}
-				if (this.venomBox == null)
-				{
-					this.venomBox = new PoisonInfobox(this.getVenomSplat(), this, venomDamage, true);
-					infoBoxManager.addInfoBox(this.venomBox);
-				}
-				else
-				{
-					this.venomBox.setCount(venomDamage);
-				}
-
 				this.lastDamage = venomDamage;
 			}
 		}
@@ -127,31 +141,46 @@ public class PoisonPlugin extends Plugin
 			if (poisonDamage != this.lastDamage || this.envenomed)
 			{
 				this.envenomed = false;
-				if (poisonDamage > 0)
+				if (config.showInfoboxes())
 				{
-					if (this.venomBox != null)
+					if (poisonDamage > 0)
 					{
-						infoBoxManager.removeInfoBox(this.venomBox);
-						this.venomBox = null;
-					}
-					if (this.poisonBox == null)
-					{
-						this.poisonBox = new PoisonInfobox(this.getPoisonSplat(), this, poisonDamage, false);
-						infoBoxManager.addInfoBox(this.poisonBox);
+						if (this.venomBox != null)
+						{
+							infoBoxManager.removeInfoBox(this.venomBox);
+							this.venomBox = null;
+						}
+						if (this.poisonBox == null)
+						{
+							this.poisonBox = new PoisonInfobox(this.getPoisonSplat(), this, poisonDamage, false);
+							infoBoxManager.addInfoBox(this.poisonBox);
+						}
+						else
+						{
+							this.poisonBox.setCount(poisonDamage);
+						}
 					}
 					else
 					{
-						this.poisonBox.setCount(poisonDamage);
+						infoBoxManager.removeInfoBox(this.venomBox);
+						infoBoxManager.removeInfoBox(this.poisonBox);
+						this.poisonBox = null;
 					}
-				}
-				else
-				{
-					infoBoxManager.removeInfoBox(this.venomBox);
-					infoBoxManager.removeInfoBox(this.poisonBox);
-					this.poisonBox = null;
 				}
 				this.lastDamage = poisonDamage;
 			}
+		}
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (event.getGroup().equals("poison") && !config.showInfoboxes())
+		{
+			infoBoxManager.removeInfoBox(this.venomBox);
+			infoBoxManager.removeInfoBox(this.poisonBox);
+			this.poisonBox = null;
+			this.venomBox = null;
 		}
 	}
 
