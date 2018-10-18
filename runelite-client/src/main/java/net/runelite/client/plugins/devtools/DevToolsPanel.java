@@ -248,6 +248,14 @@ public class DevToolsPanel extends PluginPanel
 		});
 		container.add(examineInfoBtn);
 
+		final JButton soundsBtn = new JButton("Sound Effects");
+		soundsBtn.addActionListener(e ->
+		{
+			highlightButton(soundsBtn);
+			plugin.toggleSoundEffects();
+		});
+		container.add(soundsBtn);
+
 		return container;
 	}
 

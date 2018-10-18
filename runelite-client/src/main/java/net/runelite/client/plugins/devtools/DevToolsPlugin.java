@@ -97,6 +97,9 @@ public class DevToolsPlugin extends Plugin
 	private WorldMapLocationOverlay worldMapLocationOverlay;
 
 	@Inject
+	private SoundEffectOverlay soundEffectOverlay;
+
+	@Inject
 	private EventBus eventBus;
 
 	private boolean togglePlayers;
@@ -119,6 +122,7 @@ public class DevToolsPlugin extends Plugin
 	private boolean toggleTileLocation;
 	private boolean toggleInteracting;
 	private boolean toggleExamineInfo;
+	private boolean toggleSoundEffects;
 
 	Widget currentWidget;
 	int itemIndex = -1;
@@ -140,6 +144,7 @@ public class DevToolsPlugin extends Plugin
 		overlayManager.add(sceneOverlay);
 		overlayManager.add(cameraOverlay);
 		overlayManager.add(worldMapLocationOverlay);
+		overlayManager.add(soundEffectOverlay);
 
 		final DevToolsPanel panel = injector.getInstance(DevToolsPanel.class);
 
@@ -166,6 +171,7 @@ public class DevToolsPlugin extends Plugin
 		overlayManager.remove(sceneOverlay);
 		overlayManager.remove(cameraOverlay);
 		overlayManager.remove(worldMapLocationOverlay);
+		overlayManager.remove(soundEffectOverlay);
 		clientToolbar.removeNavigation(navButton);
 	}
 
@@ -270,6 +276,12 @@ public class DevToolsPlugin extends Plugin
 				player.getPlayerComposition().setTransformedNpcId(id);
 				player.setIdlePoseAnimation(-1);
 				player.setPoseAnimation(-1);
+				break;
+			}
+			case "sound":
+			{
+				int id = Integer.parseInt(args[0]);
+				client.playSoundEffect(id);
 				break;
 			}
 		}
@@ -419,6 +431,16 @@ public class DevToolsPlugin extends Plugin
 		toggleExamineInfo = !toggleExamineInfo;
 	}
 
+	void toggleSoundEffects()
+	{
+		toggleSoundEffects = !toggleSoundEffects;
+
+		if (!isToggleSoundEffects())
+		{
+			soundEffectOverlay.clear();
+		}
+	}
+
 	boolean isTogglePlayers()
 	{
 		return togglePlayers;
@@ -512,5 +534,10 @@ public class DevToolsPlugin extends Plugin
 	boolean isToggleInteracting()
 	{
 		return toggleInteracting;
+	}
+
+	boolean isToggleSoundEffects()
+	{
+		return toggleSoundEffects;
 	}
 }
