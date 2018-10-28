@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Devin French <https://github.com/devinfrench>
+ * Copyright (c) 2018, Psikoi <https://github.com/psikoi>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,4 +41,15 @@ public interface LootTrackerConfig extends Config
 	{
 		return 25000;
 	}
+	@ConfigItem(
+		position = 2,
+		keyName = "ignoredItems",
+		name = "Ignored items",
+		description = "Configures which items should be ignored when calculating loot prices."
+	)
+	default String getIgnoredItems()
+	{ 
+		return "";
+	}
+	void setIgnoredItems(String key);
 }
