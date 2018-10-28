@@ -1,10 +1,17 @@
 package net.runelite.client.plugins.inventorypresets;
 
+import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
+import net.runelite.api.ItemContainer;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.shadowlabel.JShadowedLabel;
+import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.util.ImageUtil;
 
+import javax.inject.Inject;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -12,6 +19,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -31,6 +39,12 @@ public class InventoryPresetCreationPanel extends JPanel
 	private final JShadowedLabel instructionsLabel = new JShadowedLabel();
 	private final JLabel confirmLabel = new JLabel();
 	private boolean lockedConfirm = true;
+
+	@Inject
+	private Client client;
+
+	@Inject
+	private ItemManager itemManager;
 
 	static
 	{
@@ -61,6 +75,7 @@ public class InventoryPresetCreationPanel extends JPanel
 
 		confirmLabel.setIcon(CONFIRM_LOCKED_ICON);
 		confirmLabel.setToolTipText("Confirm and save");
+
 		confirmLabel.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -131,4 +146,6 @@ public class InventoryPresetCreationPanel extends JPanel
 		this.lockedConfirm = true;
 		instructionsLabel.setText("Confirm to save preset.");
 	}
+
+	private final PanelComponent panelComponent = new PanelComponent();
 }

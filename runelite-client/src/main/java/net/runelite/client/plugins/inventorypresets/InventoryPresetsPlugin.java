@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.Getter;
+import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.Plugin;
@@ -45,6 +47,9 @@ public class InventoryPresetsPlugin extends Plugin
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	@Inject
+	private Client client;
 
 	private InventoryPresetPluginPanel pluginPanel;
 	private NavigationButton navigationButton;
@@ -99,7 +104,9 @@ public class InventoryPresetsPlugin extends Plugin
 		currentPreset = new InventoryPresets(
 				Instant.now().toEpochMilli(),
 				DEFAULT_PRESET_NAME + " " + (inventoryPresets.size() + 1),
-				true
+				true,
+				client.getItemContainer(InventoryID.INVENTORY),
+				client.getItemContainer(InventoryID.EQUIPMENT)
 		);
 
 		creatingPreset = true;
