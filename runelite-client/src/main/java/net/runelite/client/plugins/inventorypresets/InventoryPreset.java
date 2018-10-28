@@ -1,7 +1,6 @@
 package net.runelite.client.plugins.inventorypresets;
 
 import lombok.Getter;
-import net.runelite.api.ItemContainer;
 
 public class InventoryPreset
 {
@@ -13,9 +12,9 @@ public class InventoryPreset
 		this.preset = preset;
 	}
 
-	public InventoryPreset(long id, String name, boolean visible, ItemContainer inventory, ItemContainer equipment)
+	public String getName()
 	{
-		this.preset = new InventoryPresets(id, name, visible, inventory, equipment);
+		return "preset" + preset.getId();
 	}
 
 }
