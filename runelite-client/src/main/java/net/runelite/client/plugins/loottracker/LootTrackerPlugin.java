@@ -152,12 +152,6 @@ public class LootTrackerPlugin extends Plugin
 		return list;
 	}
 
-	@Provides
-	LootTrackerConfig provideConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(LootTrackerConfig.class);
-	}
-
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
@@ -367,6 +361,5 @@ public class LootTrackerPlugin extends Plugin
 		DiscordMessage dm = new DiscordMessage("OSRS", "", "https://img04.deviantart.net/360e/i/2015/300/9/d/temmie_by_ilovegir64-d9elpal.png");
 		dm.getEmbeds().add(de);
 		temmie.sendMessage(dm);
-
 	}
 }
