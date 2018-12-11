@@ -261,31 +261,8 @@ public interface MenuEntrySwapperConfig extends Config
 	{
 		return true;
 	}
-	
-	@ConfigItem(
-		position = 17,
-		keyName = "swapAssignment",
-		name = "Assignment",
-		description = "Swap Talk-to with Assignment for Slayer Masters. This will take priority over swapping Trade."
-	)
-	default boolean swapAssignment()
-	{
-		return true;
-	}
 
 	@ConfigItem(
-		position = 18,
-		keyName = "swapDecant",
-		name = "Decant",
-		description = "Swap Talk-to with Decant for Bob Barter and Murky Matt at the Grand Exchange."
-	)
-	default boolean swapDecant()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			position = 19,
 			keyName = "swapWithdrawXInt",
 			name = "X:",
 			description = "Swap Withdraw-?."
@@ -296,29 +273,6 @@ public interface MenuEntrySwapperConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 20,
-			keyName = "swapWithdrawX",
-			name = "Withdraw-X",
-			description = "Swap Withdraw-X."
-	)
-	default boolean swapWithdrawX()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			position = 21,
-			keyName = "swapDepositX",
-			name = "Deposit-X",
-			description = "Swap Deposit-X."
-	)
-	default boolean swapDepositX()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			position = 22,
 			keyName = "swapSmithAll",
 			name = "Smith-All",
 			description = "Swap Smith-All."
@@ -329,7 +283,6 @@ public interface MenuEntrySwapperConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 23,
 			keyName = "swapBuild",
 			name = "Build.",
 			description = "Swap Build."
@@ -340,7 +293,6 @@ public interface MenuEntrySwapperConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 24,
 			keyName = "removeWalkHere",
 			name = "Remove Walk here.",
 			description = "Removes walk here."
@@ -351,7 +303,6 @@ public interface MenuEntrySwapperConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 25,
 			keyName = "swapRemove",
 			name = "Remove.",
 			description = "Swap remove."

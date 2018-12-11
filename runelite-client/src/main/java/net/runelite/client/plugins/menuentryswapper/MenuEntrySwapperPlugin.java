@@ -542,14 +542,6 @@ public class MenuEntrySwapperPlugin extends Plugin
 		{
 			swap("empty", option, target, true);
 		}
-		else if (config.swapWithdrawX() && option.equals("withdraw-1"))
-		{
-			swap("withdraw-" + Integer.toString(config.swapWithdrawXInt()), option, target, true);
-		}
-		else if (config.swapDepositX() && option.equals("deposit-1"))
-		{
-			swap("deposit-" + Integer.toString(config.swapWithdrawXInt()), option, target, true);
-		}
 		else if (config.swapPickpocket() && option.equals("attack"))
 		{
 			swap("pickpocket", option, target, true);
