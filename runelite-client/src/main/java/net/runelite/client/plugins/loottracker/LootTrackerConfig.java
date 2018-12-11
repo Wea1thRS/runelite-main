@@ -22,6 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package net.runelite.client.plugins.loottracker;
 
 import net.runelite.client.config.Config;
@@ -32,7 +33,6 @@ import net.runelite.client.config.ConfigItem;
 public interface LootTrackerConfig extends Config
 {
 	@ConfigItem(
-			position = 1,
 			keyName = "lootPrice",
 			name = "Discord message price cut-off:",
 			description = "Decides what price of drops to send to discord."
@@ -41,15 +41,21 @@ public interface LootTrackerConfig extends Config
 	{
 		return 25000;
 	}
+
 	@ConfigItem(
-		position = 2,
-		keyName = "ignoredItems",
-		name = "Ignored items",
-		description = "Configures which items should be ignored when calculating loot prices."
+			keyName = "ignoredItems",
+			name = "Ignored items",
+			description = "Configures which items should be ignored when calculating loot prices."
 	)
 	default String getIgnoredItems()
-	{ 
+	{
 		return "";
 	}
+
+	@ConfigItem(
+			keyName = "ignoredItems",
+			name = "",
+			description = ""
+	)
 	void setIgnoredItems(String key);
 }

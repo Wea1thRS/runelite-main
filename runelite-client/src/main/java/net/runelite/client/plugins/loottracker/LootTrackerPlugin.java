@@ -109,9 +109,6 @@ public class LootTrackerPlugin extends Plugin
 	@Inject
 	private Client client;
 
-	@Inject
-	private LootTrackerConfig config;
-
 	@Provides
 	LootTrackerConfig getConfig(ConfigManager configManager)
 	{
