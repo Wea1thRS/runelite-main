@@ -67,7 +67,6 @@ import net.runelite.client.ui.overlay.infobox.InfoBoxOverlay;
 import net.runelite.client.ui.overlay.tooltip.TooltipOverlay;
 import net.runelite.client.ui.overlay.worldmap.WorldMapOverlay;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 @Singleton
 @Slf4j
@@ -194,9 +193,6 @@ public class RuneLite
 		}
 
 		PROFILES_DIR.mkdirs();
-
-		// Setup logger
-		MDC.put("logFileName", LOGS_FILE_NAME.getAbsolutePath());
 
 		if (options.has("debug"))
 		{
