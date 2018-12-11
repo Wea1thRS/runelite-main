@@ -101,12 +101,12 @@ public class ExaminePlugin extends Plugin
 		{
 			return;
 		}
-
 		ExamineType type;
 		int id;
 		switch (event.getMenuAction())
 		{
 			case EXAMINE_ITEM:
+			case EXAMINE_ITEM_GROUND:
 				type = ExamineType.ITEM;
 				id = event.getId();
 				break;
@@ -165,7 +165,7 @@ public class ExaminePlugin extends Plugin
 
 		PendingExamine pendingExamine = pending.pop();
 
-		if (pendingExamine.getType() != type)
+		if (pendingExamine.getType() != type && pendingExamine.getType() != ExamineType.ITEM)
 		{
 			log.debug("Type mismatch for pending examine: {} != {}", pendingExamine.getType(), type);
 			pending.clear(); // eh
@@ -196,13 +196,20 @@ public class ExaminePlugin extends Plugin
 		int widgetGroup = TO_GROUP(widgetId);
 		int widgetChild = TO_CHILD(widgetId);
 		Widget widget = client.getWidget(widgetGroup, widgetChild);
-
+		System.out.println("ID:" + widgetId + "\tWidgetGroup: " + widgetGroup + "\tWidgetChild: " + widgetChild + "\tWidget: " + widget);
 		if (widget == null)
 		{
-			return;
+			if (pendingExamine.getId() >= 0)
+			{
+				quantity = 1;
+				itemId = pendingExamine.getId();
+			}
+			else
+			{
+				return;
+			}
 		}
-
-		if (pendingExamine.getType() == ExamineType.ITEM)
+		else if (pendingExamine.getType() == ExamineType.ITEM)
 		{
 			WidgetItem widgetItem = widget.getWidgetItem(pendingExamine.getActionParam());
 			quantity = widgetItem != null ? widgetItem.getQuantity() : 1;
@@ -279,7 +286,7 @@ public class ExaminePlugin extends Plugin
 				}
 			}
 		}
-
+		System.out.println("Id: " + itemId + "\tquantity: " + quantity);
 		if (itemId == -1)
 		{
 			return;
