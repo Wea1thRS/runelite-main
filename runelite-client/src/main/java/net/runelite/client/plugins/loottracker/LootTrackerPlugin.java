@@ -408,15 +408,17 @@ public class LootTrackerPlugin extends Plugin
 	private void sendDiscordMessage(String a, int b, int c, String d)
 	{
 		String userName = client.getLocalPlayer().getName();
-		DiscordEmbed de = new DiscordEmbed("" + d,  userName + " has just received " + c + "x " + a + " as a drop!");
+		DiscordEmbed de = new DiscordEmbed("" + d, userName + " has just received " + c + "x " + a + " as a drop!");
 		ThumbnailEmbed te = new ThumbnailEmbed();
-		te.setUrl("https://api.runelite.net/runelite-1.4.11/item/" + b + "/icon");
+		te.setUrl("https://api.runelite.net/runelite-1.5.4/item/" + b + "/icon");
 		te.setHeight(96);
 		te.setWidth(96);
 		de.setThumbnail(te);
 		DiscordMessage dm = new DiscordMessage("OSRS", "", "https://img04.deviantart.net/360e/i/2015/300/9/d/temmie_by_ilovegir64-d9elpal.png");
 		dm.getEmbeds().add(de);
 		temmie.sendMessage(dm);
+	}
+
 	private static Collection<GameItem> toGameItems(Collection<ItemStack> items)
 	{
 		return items.stream()
