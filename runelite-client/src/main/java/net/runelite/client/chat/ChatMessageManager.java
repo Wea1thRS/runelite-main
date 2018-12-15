@@ -564,8 +564,6 @@ public class ChatMessageManager
 
 		// Update the message with RuneLite additions
 		line.setRuneLiteFormatMessage(message.getRuneLiteFormattedMessage());
-		line.setTimestamp(message.getTimestamp());
-
 		update(line);
 	}
 
