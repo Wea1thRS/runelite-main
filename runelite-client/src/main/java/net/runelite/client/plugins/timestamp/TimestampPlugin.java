@@ -76,8 +76,22 @@ public class TimestampPlugin extends Plugin
 		final ZonedDateTime time = ZonedDateTime.ofInstant(
 			Instant.ofEpochSecond(messageNode.getTimestamp()), ZoneId.systemDefault());
 
-		final String dateFormat = time.get(ChronoField.HOUR_OF_DAY) + ":" +
-			String.format("%02d", time.get(ChronoField.MINUTE_OF_HOUR));
+		StringBuilder dateFormat = new StringBuilder(time.get(ChronoField.HOUR_OF_DAY) + ":" +
+				String.format("%02d", time.get(ChronoField.MINUTE_OF_HOUR)) + ":" +
+				time.get(ChronoField.SECOND_OF_MINUTE));
+
+		String temp[] = dateFormat.toString().split(":");
+		dateFormat = new StringBuilder();
+		for (String field : temp)
+		{
+			if(field.length() < 2)
+			{
+				field = "0" + field;
+			}
+			dateFormat.append(field);
+		}
+		dateFormat.insert(2, ":");
+		dateFormat.insert(5, ":");
 
 		String timestamp = "[" + dateFormat + "] ";
 
