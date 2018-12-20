@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2018, Unmoon <https://github.com/Unmoon>
+ * Copyright (c) 2018, Joris K <kjorisje@gmail.com>
+ * Copyright (c) 2018, Lasse <cronick@zytex.dk>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,22 +23,38 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.timestamps;
+package net.runelite.client.plugins.cooking;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
+import java.time.Instant;
+import lombok.AccessLevel;
+import lombok.Getter;
 
-@ConfigGroup("timestamps")
-public interface TimestampsConfig extends Config
+class CookingSession
 {
-	@ConfigItem(
-			keyName = "ts",
-			name = "Timestamps",
-			description = "Timestamps!"
-	)
-	default boolean isEnabled()
+	@Getter(AccessLevel.PACKAGE)
+	private Instant lastCookingAction;
+	@Getter(AccessLevel.PACKAGE)
+	private int cookAmount;
+	@Getter(AccessLevel.PACKAGE)
+	private int burnAmount;
+
+	void updateLastCookingAction()
 	{
-		return true;
+		this.lastCookingAction = Instant.now();
+	}
+
+	void increaseCookAmount()
+	{
+		this.cookAmount++;
+	}
+
+	void increaseBurnAmount()
+	{
+		this.burnAmount++;
+	}
+
+	double getBurntPercentage()
+	{
+		return ((double) getBurnAmount() / (getCookAmount() + getBurnAmount())) * 100;
 	}
 }

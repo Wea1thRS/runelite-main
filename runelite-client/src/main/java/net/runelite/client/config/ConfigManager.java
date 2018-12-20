@@ -584,7 +584,7 @@ public class ConfigManager
 		return object.toString();
 	}
 
-	private void sendConfig()
+	public void sendConfig()
 	{
 		synchronized (pendingChanges)
 		{
