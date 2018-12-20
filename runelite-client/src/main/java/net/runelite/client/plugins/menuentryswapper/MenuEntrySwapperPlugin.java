@@ -56,11 +56,6 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.Text;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.inject.Inject;
-import java.awt.Color;
-import java.util.Collection;
-import java.util.Collections;
-
 @PluginDescriptor(
 		name = "Menu Entry Swapper",
 		description = "Change the default option that is displayed when hovering over objects",
@@ -562,6 +557,14 @@ public class MenuEntrySwapperPlugin extends Plugin
 		{
 			swap("guzzle", option, target, true);
 		}
+		else if (option.equals("fill") && target.equals("small pouch"))
+		{
+			swap("empty", option, target, true);
+		}
+		else if (option.equals("fill") && target.equals("medium pouch"))
+		{
+			swap("empty", option, target, true);
+		}
 	}
 
 	@Subscribe
@@ -616,23 +619,6 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private void swap(String optionA, String optionB, String target, boolean strict)
 	{
 		MenuEntry[] entries = client.getMenuEntries();
-		/*
-		System.out.println("Start");
-		for (MenuEntry entry : entries)
-		{
-			System.out.println("Entry: " + entry.toString());
-		}
-		*/
-		if (config.removeWalkHere() && (optionA.equals("build") || optionA.equals("open")))
-		{
-			for (MenuEntry entry : entries)
-			{
-				if (entry.getOption().equals("Walk here"))
-				{
-					entries = ArrayUtils.removeElement(entries, entry);
-				}
-			}
-		}
 
 		int idxA = searchIndex(entries, optionA, target, strict);
 		int idxB = searchIndex(entries, optionB, target, strict);

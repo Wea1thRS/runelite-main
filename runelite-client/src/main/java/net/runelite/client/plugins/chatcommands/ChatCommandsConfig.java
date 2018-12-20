@@ -76,7 +76,18 @@ public interface ChatCommandsConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 4,
+			position = 4,
+			keyName = "calculator",
+			name = "Calculate Command",
+			description = "Configures whether the Calculate command is enabled<br> !calc [expression]"
+	)
+	default boolean calc()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		position = 5,
 		keyName = "clearShortcuts",
 		name = "Clear shortcuts",
 		description = "Enable shortcuts (ctrl+w and backspace) for clearing the chatbox"
