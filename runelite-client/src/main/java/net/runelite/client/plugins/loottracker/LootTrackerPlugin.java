@@ -227,10 +227,17 @@ public class LootTrackerPlugin extends Plugin
 							return false;
 					}
 
-					Collection<LootRecord> persisted = lootTrackerClient.get();
-					log.debug("Loaded {} data entries", persisted.size());
-					Collection<LootTrackerRecord> records = convertToLootTrackerRecord(persisted);
-					SwingUtilities.invokeLater(() -> panel.addRecords(records));
+					// Run blocking web requests on new thread
+					new Thread(() ->
+					{
+						Collection<LootRecord> persisted = lootTrackerClient.get();
+						log.debug("Loaded {} data entries", persisted.size());
+						clientThread.invokeLater(() ->
+						{
+							Collection<LootTrackerRecord> records = convertToLootTrackerRecord(persisted);
+							SwingUtilities.invokeLater(() -> panel.addRecords(records));
+						});
+					}).start();
 					return true;
 				});
 			}
