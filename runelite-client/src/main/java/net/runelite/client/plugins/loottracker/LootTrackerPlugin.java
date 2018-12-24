@@ -264,7 +264,7 @@ public class LootTrackerPlugin extends Plugin
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		SwingUtilities.invokeLater(() -> panel.add(name, combat, entries));
 
-		if (lootTrackerClient != null && config.persistentData())
+		if (lootTrackerClient != null)
 		{
 			LootRecord lootRecord = new LootRecord(name, LootRecordType.NPC, toGameItems(items));
 			lootTrackerClient.submit(lootRecord);
@@ -281,7 +281,7 @@ public class LootTrackerPlugin extends Plugin
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		SwingUtilities.invokeLater(() -> panel.add(name, combat, entries));
 
-		if (lootTrackerClient != null && config.persistentData())
+		if (lootTrackerClient != null)
 		{
 			LootRecord lootRecord = new LootRecord(name, LootRecordType.PLAYER, toGameItems(items));
 			lootTrackerClient.submit(lootRecord);
@@ -340,7 +340,7 @@ public class LootTrackerPlugin extends Plugin
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		SwingUtilities.invokeLater(() -> panel.add(eventType, -1, entries));
 
-		if (lootTrackerClient != null && config.persistentData())
+		if (lootTrackerClient != null)
 		{
 			LootRecord lootRecord = new LootRecord(eventType, LootRecordType.EVENT, toGameItems(items));
 			lootTrackerClient.submit(lootRecord);
