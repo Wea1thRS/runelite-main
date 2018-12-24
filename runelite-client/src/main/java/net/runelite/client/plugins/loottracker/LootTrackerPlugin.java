@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -117,6 +118,9 @@ public class LootTrackerPlugin extends Plugin
 
 	@Inject
 	private SessionManager sessionManager;
+
+	@Inject
+	private ScheduledExecutorService executor;
 
 	private LootTrackerPanel panel;
 	private NavigationButton navButton;
@@ -227,8 +231,7 @@ public class LootTrackerPlugin extends Plugin
 							return false;
 					}
 
-					// Run blocking web requests on new thread
-					new Thread(() ->
+					executor.submit(() ->
 					{
 						Collection<LootRecord> persisted = lootTrackerClient.get();
 						log.debug("Loaded {} data entries", persisted.size());
@@ -237,7 +240,7 @@ public class LootTrackerPlugin extends Plugin
 							Collection<LootTrackerRecord> records = convertToLootTrackerRecord(persisted);
 							SwingUtilities.invokeLater(() -> panel.addRecords(records));
 						});
-					}).start();
+					});
 					return true;
 				});
 			}

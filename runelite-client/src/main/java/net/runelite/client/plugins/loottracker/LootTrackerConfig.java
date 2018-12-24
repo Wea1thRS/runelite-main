@@ -46,12 +46,12 @@ public interface LootTrackerConfig extends Config
 	@ConfigItem(
 		keyName = "loadDataInClient",
 		name = "Load data on client load",
-		description = "Configures whether persistent loot tracker data should load inside the client on load.",
+		description = "Configures whether persistent loot tracker data should load inside the client on load.<br/> Must be Logged in.",
 		position = 1
 	)
 	default boolean loadDataInClient()
 	{
-		return false;
+		return true;
 	}
 
 	@ConfigItem(
