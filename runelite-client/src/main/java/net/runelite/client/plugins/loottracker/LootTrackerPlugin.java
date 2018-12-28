@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,7 +58,6 @@ import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.account.AccountSession;
 import net.runelite.client.account.SessionManager;
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.NpcLootReceived;
@@ -114,13 +112,7 @@ public class LootTrackerPlugin extends Plugin
 	private Client client;
 
 	@Inject
-	private ClientThread clientThread;
-
-	@Inject
 	private SessionManager sessionManager;
-
-	@Inject
-	private ScheduledExecutorService executor;
 
 	private LootTrackerPanel panel;
 	private NavigationButton navButton;
@@ -217,33 +209,6 @@ public class LootTrackerPlugin extends Plugin
 		if (accountSession != null)
 		{
 			lootTrackerClient = new LootTrackerClient(accountSession.getUuid());
-
-
-			// Load all persistent data on client load if enabled
-			if (config.loadDataInClient())
-			{
-				clientThread.invokeLater(() ->
-				{
-					switch (client.getGameState())
-					{
-						case STARTING:
-						case UNKNOWN:
-							return false;
-					}
-
-					executor.submit(() ->
-					{
-						Collection<LootRecord> persisted = lootTrackerClient.get();
-						log.debug("Loaded {} data entries", persisted.size());
-						clientThread.invokeLater(() ->
-						{
-							Collection<LootTrackerRecord> records = convertToLootTrackerRecord(persisted);
-							SwingUtilities.invokeLater(() -> panel.addRecords(records));
-						});
-					});
-					return true;
-				});
-			}
 		}
 	}
 
@@ -406,7 +371,19 @@ public class LootTrackerPlugin extends Plugin
 	private LootTrackerItem[] buildEntries(final Collection<ItemStack> itemStacks)
 	{
 		return itemStacks.stream().map(itemStack ->
-			toLootTrackerItem(itemStack.getId(), itemStack.getQuantity())).toArray(LootTrackerItem[]::new);
+		{
+			final ItemComposition itemComposition = itemManager.getItemComposition(itemStack.getId());
+			final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : itemStack.getId();
+			final long price = (long) itemManager.getItemPrice(realItemId) * (long) itemStack.getQuantity();
+			final boolean ignored = ignoredItems.contains(itemComposition.getName());
+
+			return new LootTrackerItem(
+				itemStack.getId(),
+				itemComposition.getName(),
+				itemStack.getQuantity(),
+				price,
+				ignored);
+		}).toArray(LootTrackerItem[]::new);
 	}
 
 	private static Collection<GameItem> toGameItems(Collection<ItemStack> items)
@@ -414,35 +391,5 @@ public class LootTrackerPlugin extends Plugin
 		return items.stream()
 			.map(item -> new GameItem(item.getId(), item.getQuantity()))
 			.collect(Collectors.toList());
-	}
-
-	private LootTrackerItem toLootTrackerItem(int id, int qty)
-	{
-		final ItemComposition itemComposition = itemManager.getItemComposition(id);
-		final int realItemId = itemComposition.getNote() != -1 ? itemComposition.getLinkedNoteId() : id;
-		final long price = (long) itemManager.getItemPrice(realItemId) * qty;
-		final boolean ignored = ignoredItems.contains(itemComposition.getName());
-
-		return new LootTrackerItem(
-			id,
-			itemComposition.getName(),
-			qty,
-			price,
-			ignored);
-	}
-
-	private Collection<LootTrackerRecord> convertToLootTrackerRecord(final Collection<LootRecord> records)
-	{
-		Collection<LootTrackerRecord> trackerRecords = new ArrayList<>();
-		for (LootRecord record : records)
-		{
-			// Convert GameItem drops into LootTrackerItems
-			LootTrackerItem[] drops = record.getDrops().stream().map(GameItem ->
-				toLootTrackerItem(GameItem.getId(), GameItem.getQty())).toArray(LootTrackerItem[]::new);
-
-			trackerRecords.add(new LootTrackerRecord(record.getEventId(), "", drops, -1));
-		}
-
-		return trackerRecords;
 	}
 }

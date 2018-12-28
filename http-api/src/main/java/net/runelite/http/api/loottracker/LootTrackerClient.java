@@ -26,9 +26,6 @@ package net.runelite.http.api.loottracker;
 
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,37 +74,5 @@ public class LootTrackerClient
 				response.close();
 			}
 		});
-	}
-
-	public Collection<LootRecord> get()
-	{
-		HttpUrl url = RuneLiteAPI.getApiBase().newBuilder()
-			.addPathSegment("loottracker")
-			.build();
-
-		Request request = new Request.Builder()
-			.header(RuneLiteAPI.RUNELITE_AUTH, uuid.toString())
-			.get()
-			.url(url)
-			.build();
-
-		Collection<LootRecord> results = new ArrayList<>();
-
-		try (Response response = RuneLiteAPI.CLIENT.newCall(request).execute())
-		{
-			if (response.isSuccessful())
-			{
-				String result = response.body().string();
-				LootRecord[] records = RuneLiteAPI.GSON.fromJson(result, LootRecord[].class);
-				log.debug("Successfully loaded loot from API");
-				results = Arrays.asList(records);
-			}
-		}
-		catch (IOException e)
-		{
-			log.warn("IOException querying persistent data: {}", e.getMessage());
-		}
-
-		return results;
 	}
 }
