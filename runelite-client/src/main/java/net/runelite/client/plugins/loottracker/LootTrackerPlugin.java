@@ -312,6 +312,7 @@ public class LootTrackerPlugin extends Plugin
 
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		SwingUtilities.invokeLater(() -> panel.add(eventType, -1, entries));
+		handleDrops(entries, eventType);
 
 		if (lootTrackerClient != null)
 		{
