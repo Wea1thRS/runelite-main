@@ -126,6 +126,7 @@ public class WidgetID
 	public static final int SKOTIZO_GROUP_ID = 308;
 	public static final int ENTERING_HOUSE_GROUP_ID = 71;
 	public static final int FULLSCREEN_MAP_GROUP_ID = 165;
+	public static final int ITEMS_KEPT_ON_DEATH_GROUP_ID = 4;
 
 	static class WorldMap
 	{
@@ -373,6 +374,7 @@ public class WidgetID
 
 	static class ResizableViewport
 	{
+		static final int ITEMS_KEPT_ON_DEATH = 13;
 		static final int CLAN_CHAT_TAB = 35;
 		static final int FRIENDS_TAB = 37;
 		static final int IGNORES_TAB = 36;
@@ -767,6 +769,18 @@ public class WidgetID
 	static class FullScreenMap
 	{
 		static final int ROOT = 25;
+	}
+
+	static class KeptOnDeath
+	{
+		static final int KEPT_ITEMS_CONTAINER = 18;
+		static final int LOST_ITEMS_CONTAINER = 21;
+		static final int LOST_ITEMS_VALUE = 23;
+		static final int INFORMATION_CONTAINER = 29;
+		static final int MAX_ITEMS_KEPT_ON_DEATH = 30;
+		static final int SAFE_ZONE_CONTAINER = 31;
+
+		static final int CUSTOM_TEXT_CONTAINER = 33;
 	}
 }
 
