@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Psikoi <https://github.com/psikoi>
+ * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,62 +23,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.runelite.client.plugins.loottracker;
+package net.runelite.client.plugins.objectindicators;
 
+import java.awt.Color;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("loottracker")
-public interface LootTrackerConfig extends Config
+@ConfigGroup("objectindicators")
+public interface ObjectIndicatorsConfig extends Config
 {
 	@ConfigItem(
-		keyName = "lootPrice",
-		name = "Discord message price cut-off:",
-		description = "Decides what price of drops to send to discord."
+		keyName = "markerColor",
+		name = "Marker color",
+		description = "Configures the color of object marker"
 	)
-	default int lootPrice()
+	default Color markerColor()
 	{
-		return 25000;
-	}
-
-	@ConfigItem(
-		keyName = "loadDataInClient",
-		name = "Load data on client load",
-		description = "Configures whether persistent loot tracker data should load inside the client on load.<br/> Must be Logged in.",
-		position = 0
-	)
-	default boolean loadDataInClient()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "ignoredItems",
-		name = "Ignored items",
-		description = "Configures which items should be ignored when calculating loot prices.",
-		position = 1
-	)
-	default String getIgnoredItems()
-	{
-		return "";
-	}
-
-	@ConfigItem(
-		keyName = "ignoredItems",
-		name = "",
-		description = "",
-		position = 2
-	)
-	void setIgnoredItems(String key);
-
-	@ConfigItem(
-		keyName = "saveLoot",
-		name = "Save loot",
-		description = "Save loot between client sessions (requires being logged in)"
-	)
-	default boolean saveLoot()
-	{
-		return true;
+		return Color.YELLOW;
 	}
 }
