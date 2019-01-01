@@ -24,6 +24,7 @@
  */
 package net.runelite.client.plugins.pmcycle;
 
+import java.awt.event.KeyEvent;
 import java.util.TreeSet;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import net.runelite.client.chat.CommandManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ChatboxInput;
 import net.runelite.client.events.PrivateMessageInput;
+import net.runelite.client.input.KeyListener;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -50,8 +52,9 @@ import net.runelite.client.util.Text;
 	name = "Private Message Cycle",
 	description = "When sending a private message pressing the tab button again will cycle through your previous recipients"
 )
-public class PMCyclePlugin extends Plugin implements ChatboxInputListener
+public class PMCyclePlugin extends Plugin implements ChatboxInputListener, KeyListener
 {
+	private static final int HOTKEY = KeyEvent.VK_TAB;
 	private static final String PRIVATE_MESSAGE_TITLE_PREFIX = "Enter message to send to ";
 
 	private final TreeSet<String> friends = new TreeSet<>();
@@ -69,20 +72,17 @@ public class PMCyclePlugin extends Plugin implements ChatboxInputListener
 	@Inject
 	private KeyManager keyManager;
 
-	@Inject
-	private PMCycleInputListener inputListener;
-
 	@Override
 	protected void startUp()
 	{
-		keyManager.registerKeyListener(inputListener);
+		keyManager.registerKeyListener(this);
 		commandManager.register(this);
 	}
 
 	@Override
 	protected void shutDown()
 	{
-		keyManager.unregisterKeyListener(inputListener);
+		keyManager.unregisterKeyListener(this);
 		commandManager.unregister(this);
 		friends.clear();
 	}
@@ -147,7 +147,7 @@ public class PMCyclePlugin extends Plugin implements ChatboxInputListener
 		}
 	}
 
-	boolean isTypingPrivateMessage()
+	private boolean isTypingPrivateMessage()
 	{
 		Widget title = client.getWidget(WidgetInfo.CHATBOX_TITLE);
 		if (title == null || title.getText() == null)
@@ -159,25 +159,41 @@ public class PMCyclePlugin extends Plugin implements ChatboxInputListener
 
 	}
 
-	// Called via InputListener to cycle through friends
-	void cycleFriend()
+	@Override
+	public void keyPressed(KeyEvent e)
 	{
-		if (target == null || friends.size() == 0)
+		if (e.getKeyCode() == HOTKEY)
 		{
-			return;
-		}
+			if (target == null || friends.size() == 0)
+			{
+				return;
+			}
 
-		String newFriend = friends.lower(target);
-		if (newFriend != null && !target.equals(newFriend))
-		{
-			target = newFriend;
-		}
-		else
-		{
-			target = friends.last();
-		}
+			if (isTypingPrivateMessage())
+			{
+				String newFriend = friends.lower(target);
+				if (newFriend != null && !target.equals(newFriend))
+				{
+					target = newFriend;
+				}
+				else
+				{
+					target = friends.last();
+				}
 
-		Widget title = client.getWidget(WidgetInfo.CHATBOX_TITLE);
-		title.setText(PRIVATE_MESSAGE_TITLE_PREFIX + target);
+				Widget title = client.getWidget(WidgetInfo.CHATBOX_TITLE);
+				title.setText(PRIVATE_MESSAGE_TITLE_PREFIX + target);
+			}
+		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e)
+	{
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
 	}
 }
