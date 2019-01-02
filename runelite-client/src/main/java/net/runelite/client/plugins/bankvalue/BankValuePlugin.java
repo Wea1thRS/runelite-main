@@ -27,6 +27,7 @@ package net.runelite.client.plugins.bankvalue;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+
 import net.runelite.api.Client;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.widgets.Widget;
@@ -36,6 +37,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
 	name = "Bank Value",
@@ -51,7 +53,13 @@ public class BankValuePlugin extends Plugin
 	private ClientThread clientThread;
 
 	@Inject
-	private BankCalculation bankCalculation;
+	BankCalculation bankCalculation;
+
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private BankOverlay BankOverlay;
 
 	@Inject
 	private BankTitle bankTitle;
@@ -66,6 +74,12 @@ public class BankValuePlugin extends Plugin
 	protected void shutDown()
 	{
 		clientThread.invokeLater(bankTitle::reset);
+	}
+
+	@Override
+	protected void startUp() throws Exception
+	{
+		overlayManager.add(BankOverlay);
 	}
 
 	@Subscribe
@@ -87,12 +101,14 @@ public class BankValuePlugin extends Plugin
 	{
 		// Don't update on a search because rs seems to constantly update the title
 		if (bankTitleBar == null ||
-			bankTitleBar.isHidden() ||
-			bankTitleBar.getText().contains("Showing"))
+			bankTitleBar.isHidden())
 		{
 			return;
 		}
-
+		if (bankTitleBar.getText().contains("Showing") && !bankCalculation.showHV)
+		{
+			return;
+		}
 		bankCalculation.calculate();
 	}
 }

@@ -24,6 +24,7 @@
  */
 package net.runelite.client.plugins.bankvalue;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,14 @@ class BankCalculation
 	// Used to avoid extra calculation if the bank has not changed
 	private int itemsHash;
 
+	// Used to track most valuable items
+	Pair[] PairList;
+
+	//used to reduce function calls
+	private boolean showGE;
+	private boolean showHA;
+	boolean showHV;
+
 	@Getter
 	private long gePrice;
 
@@ -71,6 +80,11 @@ class BankCalculation
 	 */
 	void calculate()
 	{
+
+		showGE = config.showGE();
+		showHA = config.showHA();
+		showHV = config.showHV();
+
 		WidgetItem[] widgetItems = queryRunner.runQuery(new BankItemQuery());
 
 		if (widgetItems.length == 0 || !isBankDifferent(widgetItems))
@@ -79,6 +93,8 @@ class BankCalculation
 		}
 
 		log.debug("Calculating new bank value...");
+
+		PairList = new Pair[config.NumberOfItemsToHighlight()];
 
 		gePrice = haPrice = 0;
 
@@ -110,12 +126,12 @@ class BankCalculation
 
 			final ItemComposition itemComposition = itemManager.getItemComposition(widgetItem.getId());
 
-			if (config.showGE())
+			if (showGE)
 			{
 				itemIds.add(widgetItem.getId());
 			}
 
-			if (config.showHA())
+			if (showHA)
 			{
 				int price = itemComposition.getPrice();
 
@@ -125,10 +141,16 @@ class BankCalculation
 						(long) quantity;
 				}
 			}
+
+			if (showHV)
+			{
+				PairList = insertToList(PairList, widgetItem);
+			}
+
 		}
 
 		// Now do the calculations
-		if (config.showGE() && !itemIds.isEmpty())
+		if (showGE && !itemIds.isEmpty())
 		{
 			for (WidgetItem widgetItem : widgetItems)
 			{
@@ -144,6 +166,7 @@ class BankCalculation
 				gePrice += (long) itemManager.getItemPrice(itemId) * quantity;
 			}
 		}
+
 	}
 
 	private boolean isBankDifferent(WidgetItem[] widgetItems)
@@ -164,5 +187,50 @@ class BankCalculation
 		}
 
 		return false;
+	}
+
+	private Pair[] insertToList(Pair[] list, WidgetItem item)
+	{
+
+		long price = (long) itemManager.getItemPrice(item.getId()) * item.getQuantity();
+		int i, j;
+
+		for (i = 0; i < list.length; i++)
+		{
+			if (list[i] == null || price > list[i].value)
+			{
+				for (j = list.length - 1; j > i; j--)
+				{
+					list[j] = list[j - 1];
+				}
+
+				list[i] = new Pair(item, price);
+				i = list.length;
+
+			}
+		}
+		return list;
+	}
+
+	final class Pair
+	{
+		private WidgetItem key;
+		private Long value;
+
+		Pair(WidgetItem key, Long value)
+		{
+			this.key = key;
+			this.value = value;
+		}
+
+		public WidgetItem getKey()
+		{
+			return key;
+		}
+
+		public Long getValue()
+		{
+			return value;
+		}
 	}
 }
