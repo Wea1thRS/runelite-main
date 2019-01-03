@@ -56,3 +56,4 @@ runelite-client/src/main/java/net/runelite/client/plugins/projectilewarnings/Pro
 runelite-client/src/main/java/net/runelite/client/plugins/projectilewarnings/AOEProjectileInfo.java
 runelite-client/src/main/java/net/runelite/client/plugins/projectilewarnings/ProjectileWarningsOverlay.java
 runelite-client/src/main/java/net/runelite/client/plugins/projectilewarnings/ProjectileWarningsPlugin.java
+runelite-client/src/main/java/net/runelite/client/plugins/easyscape/EasyScapePluginOverlay.java
