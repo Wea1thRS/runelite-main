@@ -81,4 +81,14 @@ public interface LootTrackerConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "saveLocalLoot",
+		name = "Save loot locally",
+		description = "Outputs loot as json to log files on your local machine (only saves data)"
+	)
+	default boolean saveLocalLoot()
+	{
+		return false;
+	}
 }
