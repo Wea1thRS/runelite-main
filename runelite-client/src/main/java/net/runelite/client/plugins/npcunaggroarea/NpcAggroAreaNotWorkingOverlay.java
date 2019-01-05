@@ -28,7 +28,6 @@ import com.google.inject.Inject;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import net.runelite.client.ui.overlay.Overlay;
-import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -50,7 +49,6 @@ class NpcAggroAreaNotWorkingOverlay extends Overlay
 			.left("Unaggressive NPC timers will start working when you teleport far away or enter a dungeon.")
 			.build());
 
-		setLayer(OverlayLayer.ABOVE_SCENE);
 		setPriority(OverlayPriority.LOW);
 		setPosition(OverlayPosition.TOP_LEFT);
 	}

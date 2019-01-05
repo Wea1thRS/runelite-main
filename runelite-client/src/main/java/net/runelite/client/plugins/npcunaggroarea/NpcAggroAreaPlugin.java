@@ -26,7 +26,6 @@ package net.runelite.client.plugins.npcunaggroarea;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.eventbus.Subscribe;
 import com.google.inject.Provides;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -58,9 +57,7 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.geometry.Geometry;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.WildcardMatcher;
@@ -212,12 +209,12 @@ public class NpcAggroAreaPlugin extends Plugin
 		return ArrayUtils.contains(objectComposition.getActions(), "Open");
 	}
 
-	private boolean collisionFilter(float[] p1, float[] p2)
+	private boolean walkableTileFilter(float[] p1, float[] p2)
 	{
-		int x1 = (int)p1[0];
-		int y1 = (int)p1[1];
-		int x2 = (int)p2[0];
-		int y2 = (int)p2[1];
+		int x1 = Math.round(p1[0]);
+		int y1 = Math.round(p1[1]);
+		int x2 = Math.round(p2[0]);
+		int y2 = Math.round(p2[1]);
 
 		if (x1 > x2)
 		{
@@ -238,6 +235,17 @@ public class NpcAggroAreaPlugin extends Plugin
 
 		WorldArea wa1 = new WorldArea(new WorldPoint(x1, y1, currentPlane), 1, 1);
 		WorldArea wa2 = new WorldArea(new WorldPoint(x1 - dy, y1 - dx, currentPlane), 1, 1);
+
+		Tile[][][] tiles = client.getScene().getTiles();
+		Tile t1 = tiles[wa1.getPlane()][wa1.getX() - client.getBaseX()][wa1.getY() - client.getBaseY()];
+		Tile t2 = tiles[wa2.getPlane()][wa2.getX() - client.getBaseX()][wa2.getY() - client.getBaseY()];
+		if (t1 == null || t2 == null ||
+			(t1.getSceneTilePaint() == null && t1.getSceneTileModel() == null) ||
+			(t2.getSceneTilePaint() == null && t2.getSceneTileModel() == null))
+		{
+			// Tiles which aren't drawn are typically not walkable.
+			return false;
+		}
 
 		if (isOpenableAt(wa1.toWorldPoint()) || isOpenableAt(wa2.toWorldPoint()))
 		{
@@ -288,8 +296,8 @@ public class NpcAggroAreaPlugin extends Plugin
 
 			GeneralPath lines = new GeneralPath(generateSafeArea());
 			lines = Geometry.clipPath(lines, sceneRect);
-			lines = Geometry.unitifyPath(lines, 1);
-			lines = Geometry.filterPath(lines, this::collisionFilter);
+			lines = Geometry.splitIntoSegments(lines, 1);
+			lines = Geometry.filterPath(lines, this::walkableTileFilter);
 			lines = Geometry.transformPath(lines, this::transformWorldToLocal);
 			linesToDisplay[i] = lines;
 		}
@@ -355,11 +363,6 @@ public class NpcAggroAreaPlugin extends Plugin
 
 	private void checkAreaNpcs(final NPC... npcs)
 	{
-		if (active)
-		{
-			return;
-		}
-
 		for (NPC npc : npcs)
 		{
 			if (npc == null)
