@@ -76,12 +76,12 @@ public interface ChatCommandsConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 4,
-			keyName = "calculator",
-			name = "Calculate Command",
-			description = "Configures whether the Calculate command is enabled<br> !calc [expression]"
+		position = 4,
+		keyName = "qp",
+		name = "QP Command",
+		description = "Configures whether the quest point command is enabled<br> !qp"
 	)
-	default boolean calc()
+	default boolean qp()
 	{
 		return true;
 	}
