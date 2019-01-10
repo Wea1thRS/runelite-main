@@ -49,15 +49,15 @@ class BankCalculation
 {
 	private static final float HIGH_ALCHEMY_CONSTANT = 0.6f;
 	private static final ImmutableList<Varbits> TAB_VARBITS = ImmutableList.of(
-		Varbits.BANK_TAB_ONE_COUNT,
-		Varbits.BANK_TAB_TWO_COUNT,
-		Varbits.BANK_TAB_THREE_COUNT,
-		Varbits.BANK_TAB_FOUR_COUNT,
-		Varbits.BANK_TAB_FIVE_COUNT,
-		Varbits.BANK_TAB_SIX_COUNT,
-		Varbits.BANK_TAB_SEVEN_COUNT,
-		Varbits.BANK_TAB_EIGHT_COUNT,
-		Varbits.BANK_TAB_NINE_COUNT
+			Varbits.BANK_TAB_ONE_COUNT,
+			Varbits.BANK_TAB_TWO_COUNT,
+			Varbits.BANK_TAB_THREE_COUNT,
+			Varbits.BANK_TAB_FOUR_COUNT,
+			Varbits.BANK_TAB_FIVE_COUNT,
+			Varbits.BANK_TAB_SIX_COUNT,
+			Varbits.BANK_TAB_SEVEN_COUNT,
+			Varbits.BANK_TAB_EIGHT_COUNT,
+			Varbits.BANK_TAB_NINE_COUNT
 	);
 
 	private final BankValueConfig config;
@@ -66,14 +66,6 @@ class BankCalculation
 
 	// Used to avoid extra calculation if the bank has not changed
 	private int itemsHash;
-
-	// Used to track most valuable items
-	Pair[] PairList;
-
-	//used to reduce function calls
-	private boolean showGE;
-	private boolean showHA;
-	boolean showHV;
 
 	@Getter
 	private long gePrice;
@@ -124,8 +116,6 @@ class BankCalculation
 
 		log.debug("Calculating new bank value...");
 
-		PairList = new Pair[config.NumberOfItemsToHighlight()];
-
 		gePrice = haPrice = 0;
 
 		List<Integer> itemIds = new ArrayList<>();
@@ -156,31 +146,25 @@ class BankCalculation
 
 			final ItemComposition itemComposition = itemManager.getItemComposition(item.getId());
 
-			if (showGE)
+			if (config.showGE())
 			{
 				itemIds.add(item.getId());
 			}
 
-			if (showHA)
+			if (config.showHA())
 			{
 				int price = itemComposition.getPrice();
 
 				if (price > 0)
 				{
 					haPrice += (long) Math.round(price * HIGH_ALCHEMY_CONSTANT) *
-						(long) quantity;
+							(long) quantity;
 				}
 			}
-
-			if (showHV)
-			{
-				PairList = insertToList(PairList, widgetItem);
-			}
-
 		}
 
 		// Now do the calculations
-		if (showGE && !itemIds.isEmpty())
+		if (config.showGE() && !itemIds.isEmpty())
 		{
 			for (Item item : items)
 			{
@@ -188,7 +172,7 @@ class BankCalculation
 				int quantity = item.getQuantity();
 
 				if (itemId <= 0 || quantity == 0
-					|| itemId == ItemID.COINS_995 || itemId == ItemID.PLATINUM_TOKEN)
+						|| itemId == ItemID.COINS_995 || itemId == ItemID.PLATINUM_TOKEN)
 				{
 					continue;
 				}
@@ -196,7 +180,6 @@ class BankCalculation
 				gePrice += (long) itemManager.getItemPrice(itemId) * quantity;
 			}
 		}
-
 	}
 
 	private boolean isBankDifferent(Item[] items)
@@ -217,50 +200,5 @@ class BankCalculation
 		}
 
 		return false;
-	}
-
-	private Pair[] insertToList(Pair[] list, WidgetItem item)
-	{
-
-		long price = (long) itemManager.getItemPrice(item.getId()) * item.getQuantity();
-		int i, j;
-
-		for (i = 0; i < list.length; i++)
-		{
-			if (list[i] == null || price > list[i].value)
-			{
-				for (j = list.length - 1; j > i; j--)
-				{
-					list[j] = list[j - 1];
-				}
-
-				list[i] = new Pair(item, price);
-				i = list.length;
-
-			}
-		}
-		return list;
-	}
-
-	final class Pair
-	{
-		private WidgetItem key;
-		private Long value;
-
-		Pair(WidgetItem key, Long value)
-		{
-			this.key = key;
-			this.value = value;
-		}
-
-		public WidgetItem getKey()
-		{
-			return key;
-		}
-
-		public Long getValue()
-		{
-			return value;
-		}
 	}
 }

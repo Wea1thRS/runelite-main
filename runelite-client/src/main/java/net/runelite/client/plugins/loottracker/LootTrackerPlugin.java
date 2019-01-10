@@ -270,14 +270,7 @@ public class LootTrackerPlugin extends Plugin
 					clientThread.invokeLater(() ->
 					{
 						Collection<LootTrackerRecord> records = convertToLootTrackerRecord(lootRecords);
-						try
-						{
-							writer.addLootTrackerRecordToDB(records);
-						}
-						catch (SQLException e)
-						{
-							e.printStackTrace();
-						}
+						//writer.addLootTrackerRecordToDB(records);
 						SwingUtilities.invokeLater(() -> panel.addRecords(records));
 					});
 				});
