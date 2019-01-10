@@ -38,7 +38,6 @@
 	<properties>
 		<guice.version>4.1.0</guice.version>
 		<jogl.version>2.3.2</jogl.version>
-
 		<jarsigner.skip>true</jarsigner.skip>
 	</properties>
 
@@ -62,6 +61,11 @@
 			<groupId>net.sf.jopt-simple</groupId>
 			<artifactId>jopt-simple</artifactId>
 			<version>5.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.2.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

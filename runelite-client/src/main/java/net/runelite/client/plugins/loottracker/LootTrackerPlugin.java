@@ -28,20 +28,10 @@ package net.runelite.client.plugins.loottracker;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.inject.Provides;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.swing.SwingUtilities;
+import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
+import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
+import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
+import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -78,14 +68,27 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
-import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
-import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
-import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
-import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
+import net.runelite.http.api.RuneLiteAPI;
 import net.runelite.http.api.loottracker.GameItem;
 import net.runelite.http.api.loottracker.LootRecord;
 import net.runelite.http.api.loottracker.LootRecordType;
 import net.runelite.http.api.loottracker.LootTrackerClient;
+
+import javax.inject.Inject;
+import javax.swing.SwingUtilities;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @PluginDescriptor(
 	name = "Loot Tracker",
@@ -111,6 +114,9 @@ public class LootTrackerPlugin extends Plugin
 	private ClientToolbar clientToolbar;
 
 	@Inject
+	private LootRecordWriter writer;
+
+	@Inject
 	private ItemManager itemManager;
 
 	@Inject
@@ -127,6 +133,7 @@ public class LootTrackerPlugin extends Plugin
 	{
 		return configManager.getConfig(LootTrackerConfig.class);
 	}
+
 	@Inject
 	private ClientThread clientThread;
 
@@ -141,13 +148,11 @@ public class LootTrackerPlugin extends Plugin
 	private String eventType;
 
 	TemmieWebhook temmie = new TemmieWebhook("https://discordapp.com/api/webhooks/478488367093514280/CmaXv7dof2psRgV07lGPkYw9cYzwO2wVAM8s1easN9afwotbuA0cKLsAlDd3BBpQCREJ");
-	
+
 	private List<String> ignoredItems = new ArrayList<>();
 
 	@Getter(AccessLevel.PACKAGE)
 	private LootTrackerClient lootTrackerClient;
-
-	private LootRecordWriter writer;
 
 	private static Collection<ItemStack> stack(Collection<ItemStack> items)
 	{
@@ -265,6 +270,14 @@ public class LootTrackerPlugin extends Plugin
 					clientThread.invokeLater(() ->
 					{
 						Collection<LootTrackerRecord> records = convertToLootTrackerRecord(lootRecords);
+						try
+						{
+							writer.addLootTrackerRecordToDB(records);
+						}
+						catch (SQLException e)
+						{
+							e.printStackTrace();
+						}
 						SwingUtilities.invokeLater(() -> panel.addRecords(records));
 					});
 				});
@@ -272,7 +285,6 @@ public class LootTrackerPlugin extends Plugin
 			});
 		}
 
-		writer = new LootRecordWriter();
 	}
 
 	@Override
@@ -283,7 +295,7 @@ public class LootTrackerPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onNpcLootReceived(final NpcLootReceived npcLootReceived)
+	public void onNpcLootReceived(final NpcLootReceived npcLootReceived) throws SQLException
 	{
 		final NPC npc = npcLootReceived.getNpc();
 		final Collection<ItemStack> items = npcLootReceived.getItems();
@@ -301,12 +313,12 @@ public class LootTrackerPlugin extends Plugin
 
 		if (config.saveLocalLoot())
 		{
-			writer.addLootTrackerRecord(lootRecord);
+			writer.addLootTrackerRecordToDB(name, entries);
 		}
 	}
 
 	@Subscribe
-	public void onPlayerLootReceived(final PlayerLootReceived playerLootReceived)
+	public void onPlayerLootReceived(final PlayerLootReceived playerLootReceived) throws SQLException
 	{
 		final Player player = playerLootReceived.getPlayer();
 		final Collection<ItemStack> items = playerLootReceived.getItems();
@@ -323,12 +335,12 @@ public class LootTrackerPlugin extends Plugin
 
 		if (config.saveLocalLoot())
 		{
-			writer.addLootTrackerRecord(lootRecord);
+			writer.addLootTrackerRecordToDB(name, entries);
 		}
 	}
 
 	@Subscribe
-	public void onWidgetLoaded(WidgetLoaded event)
+	public void onWidgetLoaded(WidgetLoaded event) throws SQLException
 	{
 		final ItemContainer container;
 		switch (event.getGroupId())
@@ -486,7 +498,7 @@ public class LootTrackerPlugin extends Plugin
 		String userName = client.getLocalPlayer().getName();
 		DiscordEmbed de = new DiscordEmbed("" + d, userName + " has just received " + c + "x " + a + " as a drop!");
 		ThumbnailEmbed te = new ThumbnailEmbed();
-		te.setUrl("https://api.runelite.net/runelite-1.5.4/item/" + b + "/icon");
+		te.setUrl("https://api.runelite.net/runelite-" + RuneLiteAPI.getVersion() + "/item/" + b + "/icon");
 		te.setHeight(96);
 		te.setWidth(96);
 		de.setThumbnail(te);

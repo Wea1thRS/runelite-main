@@ -65,6 +65,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.WildcardMatcher;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.text.StrMatcher;
 
 @Slf4j
 @PluginDescriptor(
@@ -348,8 +349,9 @@ public class NpcAggroAreaPlugin extends Plugin
 		int playerLvl = client.getLocalPlayer().getCombatLevel();
 		int npcLvl = composition.getCombatLevel();
 		String npcName = composition.getName().toLowerCase();
-		if (npcLvl > 0 && playerLvl > npcLvl * 2 && !isInWilderness(npc.getWorldLocation()))
+		if (npcLvl > 0 && playerLvl > npcLvl * 2 && !isInWilderness(npc.getWorldLocation()) && !config.ignoreCombatLevels())
 		{
+			log.debug("return");
 			return false;
 		}
 
@@ -357,6 +359,7 @@ public class NpcAggroAreaPlugin extends Plugin
 		{
 			if (WildcardMatcher.matches(pattern, npcName))
 			{
+				log.debug("Pattern: {}\tNPC: {}", pattern, npcName);
 				return true;
 			}
 		}
@@ -467,6 +470,7 @@ public class NpcAggroAreaPlugin extends Plugin
 				break;
 			case "npcUnaggroNames":
 				npcNamePatterns = NAME_SPLITTER.splitToList(config.npcNamePatterns());
+				log.debug(Integer.toString(npcNamePatterns.size()));
 				recheckActive();
 				break;
 		}

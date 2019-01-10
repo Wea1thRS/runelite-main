@@ -91,4 +91,14 @@ public interface LootTrackerConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+			keyName = "saveDBLoot",
+			name = "Save loot to database",
+			description = "Outputs loot as objects to database."
+	)
+	default boolean saveDBLoot()
+	{
+		return true;
+	}
 }
