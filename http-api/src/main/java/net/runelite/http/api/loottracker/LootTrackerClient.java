@@ -57,7 +57,6 @@ public class LootTrackerClient
 	{
 		HttpUrl url = RuneLiteAPI.getApiBase().newBuilder()
 			.addPathSegment("loottracker")
-			.addQueryParameter("count", "10240")
 			.build();
 
 		Request request = new Request.Builder()
@@ -87,6 +86,7 @@ public class LootTrackerClient
 	{
 		HttpUrl url = RuneLiteAPI.getApiBase().newBuilder()
 			.addPathSegment("loottracker")
+			//.addQueryParameter("count", "10240")
 			.build();
 
 		Request request = new Request.Builder()
