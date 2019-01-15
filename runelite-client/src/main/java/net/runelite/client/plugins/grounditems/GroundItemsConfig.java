@@ -346,4 +346,15 @@ public interface GroundItemsConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+		keyName = "collapseEntries",
+		name = "Collapse ground item menu entries",
+		description = "Collapses ground item menu entries together and appends count",
+		position = 26
+	)
+	default boolean collapseEntries()
+	{
+		return false;
+	}
 }
