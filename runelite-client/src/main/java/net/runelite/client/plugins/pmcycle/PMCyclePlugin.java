@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
+ * Copyright (c) 2018, TheStonedTurtle <https://github.com/TheStonedTurtle>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,22 +25,19 @@
 package net.runelite.client.plugins.pmcycle;
 
 import java.awt.event.KeyEvent;
-import java.util.TreeSet;
+import java.util.LinkedHashSet;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.ScriptID;
+import net.runelite.api.VarClientInt;
+import net.runelite.api.VarClientStr;
 import net.runelite.api.events.SetMessage;
-import net.runelite.api.events.WidgetHiddenChanged;
-import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.events.VarClientStrChanged;
+import net.runelite.api.vars.InputType;
 import net.runelite.client.callback.ClientThread;
-import net.runelite.client.chat.ChatboxInputListener;
-import net.runelite.client.chat.CommandManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.events.ChatboxInput;
-import net.runelite.client.events.PrivateMessageInput;
 import net.runelite.client.input.KeyListener;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
@@ -52,13 +49,9 @@ import net.runelite.client.util.Text;
 	name = "Private Message Cycle",
 	description = "When sending a private message pressing the tab button again will cycle through your previous recipients"
 )
-public class PMCyclePlugin extends Plugin implements ChatboxInputListener, KeyListener
+public class PMCyclePlugin extends Plugin implements KeyListener
 {
 	private static final int HOTKEY = KeyEvent.VK_TAB;
-	private static final String PRIVATE_MESSAGE_TITLE_PREFIX = "Enter message to send to ";
-
-	private final TreeSet<String> friends = new TreeSet<>();
-	private String target;
 
 	@Inject
 	private Client client;
@@ -67,23 +60,21 @@ public class PMCyclePlugin extends Plugin implements ChatboxInputListener, KeyLi
 	private ClientThread clientThread;
 
 	@Inject
-	private CommandManager commandManager;
-
-	@Inject
 	private KeyManager keyManager;
+
+	private final LinkedHashSet<String> friends = new LinkedHashSet<>();
+	private String target;
 
 	@Override
 	protected void startUp()
 	{
 		keyManager.registerKeyListener(this);
-		commandManager.register(this);
 	}
 
 	@Override
 	protected void shutDown()
 	{
 		keyManager.unregisterKeyListener(this);
-		commandManager.unregister(this);
 		friends.clear();
 	}
 
@@ -96,94 +87,59 @@ public class PMCyclePlugin extends Plugin implements ChatboxInputListener, KeyLi
 			case PRIVATE_MESSAGE_SENT:
 			case PRIVATE_MESSAGE_RECEIVED:
 			case PRIVATE_MESSAGE_RECEIVED_MOD:
-				String name = Text.removeTags(message.getName());
+				final String name = Text.removeTags(message.getName());
 				// Remove and readd to update its position in history.
 				friends.remove(name);
 				friends.add(name);
 		}
 	}
 
-	@Override
-	public boolean onChatboxInput(ChatboxInput c)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean onPrivateMessageInput(PrivateMessageInput p)
-	{
-		boolean check = target != null && !p.getTarget().equals(target);
-		if (check)
-		{
-			log.debug("Custom Private Message.  Target: {} | Message: {}", target, p.getMessage());
-			sendPrivmsg(target, p.getMessage());
-		}
-
-		target = null;
-		return check;
-	}
-
-	private void sendPrivmsg(String t, String message)
-	{
-		clientThread.invokeLater(() -> client.runScript(ScriptID.PRIVMSG, t, message));
-	}
-
 	@Subscribe
-	protected void onWidgetHiddenChanged(WidgetHiddenChanged l)
+	public void onVarClientStrChanged(VarClientStrChanged c)
 	{
-		if (l.getWidget() == client.getWidget(WidgetInfo.CHATBOX_CONTAINER) && !l.isHidden())
+		if (c.getIndex() == VarClientStr.PRIVATE_MESSAGE_TARGET.getIndex())
 		{
-			// Chatbox no longer hidden, invoke on clientThread to ensure widget text is updated.
-			clientThread.invokeLater(this::privateMessageInterfaceOpened);
+			target = client.getVar(VarClientStr.PRIVATE_MESSAGE_TARGET);
 		}
-	}
-
-	private void privateMessageInterfaceOpened()
-	{
-		if (isTypingPrivateMessage())
-		{
-			Widget title = client.getWidget(WidgetInfo.CHATBOX_TITLE);
-			target = title.getText().replace(PRIVATE_MESSAGE_TITLE_PREFIX, "").trim();
-		}
-	}
-
-	private boolean isTypingPrivateMessage()
-	{
-		Widget title = client.getWidget(WidgetInfo.CHATBOX_TITLE);
-		if (title == null || title.getText() == null)
-		{
-			return false;
-		}
-
-		return title.getText().startsWith(PRIVATE_MESSAGE_TITLE_PREFIX);
-
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
-		if (e.getKeyCode() == HOTKEY)
+		if (e.getKeyCode() == HOTKEY && (client.getVar(VarClientInt.INPUT_TYPE) == InputType.PRIVATE_MESSAGE.getType()))
 		{
-			if (target == null || friends.size() == 0)
+			clientThread.invoke(() ->
 			{
-				return;
-			}
-
-			if (isTypingPrivateMessage())
-			{
-				String newFriend = friends.lower(target);
-				if (newFriend != null && !target.equals(newFriend))
+				if (target == null || friends.size() == 0)
 				{
-					target = newFriend;
-				}
-				else
-				{
-					target = friends.last();
+					return;
 				}
 
-				Widget title = client.getWidget(WidgetInfo.CHATBOX_TITLE);
-				title.setText(PRIVATE_MESSAGE_TITLE_PREFIX + target);
-			}
+				final String oldTarget = target;
+				String lastTarget = null;
+				target = null;
+				for (final String friend : friends)
+				{
+					if (friend.equals(oldTarget))
+					{
+						target = lastTarget;
+						// Target will be null if we matched to first friend. Keep looping and default to last friend
+						if (target != null)
+						{
+							break;
+						}
+					}
+
+					lastTarget = friend;
+				}
+
+				if (target == null)
+				{
+					target = lastTarget;
+				}
+
+				client.runScript(ScriptID.OPEN_PRIVATE_MESSAGE_INTERFACE, target);
+			});
 		}
 	}
 
