@@ -333,7 +333,7 @@ public class LootTrackerPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onWidgetLoaded(WidgetLoaded event) throws SQLException
+	public void onWidgetLoaded(WidgetLoaded event)
 	{
 		final ItemContainer container;
 		switch (event.getGroupId())

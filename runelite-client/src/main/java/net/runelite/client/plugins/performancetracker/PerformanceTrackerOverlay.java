@@ -51,8 +51,8 @@ public class PerformanceTrackerOverlay extends Overlay
 		setPriority(OverlayPriority.LOW);
 		this.tracker = tracker;
 
-		getMenuOptions().put("Pause", tracker::togglePaused);
-		getMenuOptions().put("Reset", tracker::resetTracker);
+		//getMenuOptions().put("Pause", tracker::togglePaused);
+		//getMenuOptions().put("Reset", tracker::resetTracker);
 	}
 
 	@Override
