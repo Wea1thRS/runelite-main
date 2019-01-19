@@ -294,6 +294,7 @@ public class RuneLite
 
 	public void shutdown()
 	{
+		configManager.sendConfig();
 		clientSessionManager.shutdown();
 		discordService.close();
 	}

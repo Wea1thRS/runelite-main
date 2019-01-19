@@ -35,7 +35,7 @@ import java.awt.Rectangle;
 import static java.lang.Boolean.TRUE;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -310,8 +310,10 @@ public class GroundItemsPlugin extends Plugin
 		final List<MenuEntryWithCount> newEntries = new ArrayList<>(menuEntries.length);
 
 		outer:
-		for (MenuEntry menuEntry : menuEntries)
+		for (int i = menuEntries.length - 1; i >= 0; i--)
 		{
+			MenuEntry menuEntry = menuEntries[i];
+
 			int menuType = menuEntry.getType();
 			if (menuType == FIRST_OPTION || menuType == SECOND_OPTION || menuType == THIRD_OPTION
 				|| menuType == FOURTH_OPTION || menuType == FIFTH_OPTION || menuType == EXAMINE_ITEM)
@@ -328,6 +330,8 @@ public class GroundItemsPlugin extends Plugin
 
 			newEntries.add(new MenuEntryWithCount(menuEntry));
 		}
+
+		Collections.reverse(newEntries);
 
 		client.setMenuEntries(newEntries.stream().map(e ->
 		{
