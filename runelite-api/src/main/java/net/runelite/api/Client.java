@@ -1569,4 +1569,8 @@ public interface Client extends GameEngine
 	int getRasterizer3D_clipMidY2();
 
 	void checkClickbox(Model model, int orientation, int pitchSin, int pitchCos, int yawSin, int yawCos, int x, int y, int z, long hash);
+
+	boolean isGeFuzzySearchEnabled();
+
+	void setGeFuzzySearchEnabled(boolean enabled);
 }
