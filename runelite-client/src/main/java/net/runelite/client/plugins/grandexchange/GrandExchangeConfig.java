@@ -74,4 +74,15 @@ public interface GrandExchangeConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		position = 5,
+		keyName = "enableGeFuzzySearch",
+		name = "Enable Fuzzy Search",
+		description = "Uses fuzzy matching for GE search"
+	)
+	default boolean enableGeFuzzySearch()
+	{
+		return false;
+	}
 }
