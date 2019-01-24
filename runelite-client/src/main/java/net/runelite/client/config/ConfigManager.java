@@ -516,11 +516,15 @@ public class ConfigManager
 		{
 			return Instant.parse(str);
 		}
-		if (type == Keybind.class)
+		if (type == Keybind.class || type == ModifierlessKeybind.class)
 		{
 			String[] splitStr = str.split(":");
 			int code = Integer.parseInt(splitStr[0]);
 			int mods = Integer.parseInt(splitStr[1]);
+			if (type == ModifierlessKeybind.class)
+			{
+				return new ModifierlessKeybind(code, mods);
+			}
 			return new Keybind(code, mods);
 		}
 		if (type == WorldPoint.class)

@@ -88,6 +88,11 @@ public final class ScriptID
 	public static final int KEPT_LOST_ITEM_EXAMINE = 1603;
 
 	/**
+	 * Builds the chatbox input widget
+	 */
+	public static final int CHAT_PROMPT_INIT = 223;
+
+	/**
 	 * Queries the completion state of a quest by its struct id
 	 * <ul>
 	 * <li> int (struct) The id of the quest

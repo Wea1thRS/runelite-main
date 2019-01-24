@@ -317,6 +317,11 @@ public class WorldArea
 		}
 
 		CollisionData[] collisionData = client.getCollisionMaps();
+		if (collisionData == null)
+		{
+			return false;
+		}
+
 		int[][] collisionDataFlags = collisionData[plane].getFlags();
 
 		if (dx != 0)
