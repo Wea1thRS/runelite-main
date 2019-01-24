@@ -34,9 +34,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;
@@ -52,7 +49,6 @@ import net.runelite.api.GrandExchangeOffer;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
-import net.runelite.api.VarClientStr;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.FocusChanged;
@@ -60,7 +56,6 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.ScriptCallbackEvent;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
@@ -143,48 +138,6 @@ public class GrandExchangePlugin extends Plugin
 	private Widget grandExchangeItem;
 	private Map<Integer, Integer> itemGELimits;
 
-	/**
-	 * Logic from {@link org.apache.commons.text.similarity.FuzzyScore}
-	 */
-	private static List<Integer> findMatchingIndices(String term, String query)
-	{
-		List<Integer> indices = new ArrayList<>();
-
-		// fuzzy logic is case insensitive. We normalize the Strings to lower
-		// case right from the start. Turning characters to lower case
-		// via Character.toLowerCase(char) is unfortunately insufficient
-		// as it does not accept a locale.
-		final String termLowerCase = term.toLowerCase();
-		final String queryLowerCase = query.toLowerCase();
-
-		// the position in the term which will be scanned next for potential
-		// query character matches
-		int termIndex = 0;
-
-		for (int queryIndex = 0; queryIndex < queryLowerCase.length(); queryIndex++)
-		{
-			final char queryChar = queryLowerCase.charAt(queryIndex);
-
-			boolean termCharacterMatchFound = false;
-			for (; termIndex < termLowerCase.length()
-					&& !termCharacterMatchFound; termIndex++)
-			{
-				final char termChar = termLowerCase.charAt(termIndex);
-
-				if (queryChar == termChar)
-				{
-					indices.add(termIndex);
-
-					// we can leave the nested loop. Every character in the
-					// query can match at most one character in the term.
-					termCharacterMatchFound = true;
-				}
-			}
-		}
-
-		return indices;
-	}
-
 	@Provides
 	GrandExchangeConfig provideConfig(ConfigManager configManager)
 	{
@@ -214,8 +167,6 @@ public class GrandExchangePlugin extends Plugin
 			mouseManager.registerMouseListener(inputListener);
 			keyManager.registerKeyListener(inputListener);
 		}
-
-		client.setGeFuzzySearchEnabled(config.enableGeFuzzySearch());
 	}
 
 	@Override
@@ -227,7 +178,6 @@ public class GrandExchangePlugin extends Plugin
 		grandExchangeText = null;
 		grandExchangeItem = null;
 		itemGELimits = null;
-		client.setGeFuzzySearchEnabled(false);
 	}
 
 	@Subscribe
@@ -248,49 +198,6 @@ public class GrandExchangePlugin extends Plugin
 					keyManager.unregisterKeyListener(inputListener);
 				}
 			}
-			else if (event.getKey().equals("enableGeFuzzySearch"))
-			{
-				client.setGeFuzzySearchEnabled(config.enableGeFuzzySearch());
-			}
-		}
-	}
-
-	@Subscribe
-	public void onScriptCallbackEvent(ScriptCallbackEvent event)
-	{
-		if (!config.enableGeFuzzySearch())
-		{
-			return;
-		}
-		if (!event.getEventName().equals("geSearchResultsAdded"))
-		{
-			return;
-		}
-		String input = client.getVar(VarClientStr.INPUT_TEXT);
-
-		Widget results = client.getWidget(WidgetInfo.CHATBOX_GE_SEARCH_RESULTS);
-		Widget[] children = results.getDynamicChildren();
-		int resultCount = children.length / 3;
-		for (int i = 0; i < resultCount; i++)
-		{
-			Widget itemNameWidget = children[i * 3 + 1];
-			String itemName = itemNameWidget.getText();
-
-			List<Integer> indices = findMatchingIndices(itemName, input);
-			Collections.reverse(indices);
-
-			StringBuilder newItemName = new StringBuilder(itemName);
-			for (int index : indices)
-			{
-				if (itemName.charAt(index) == ' ')
-				{
-					continue;
-				}
-				newItemName.insert(index + 1, "</u>");
-				newItemName.insert(index, "<u=800000>");
-			}
-
-			itemNameWidget.setText(newItemName.toString());
 		}
 	}
 
