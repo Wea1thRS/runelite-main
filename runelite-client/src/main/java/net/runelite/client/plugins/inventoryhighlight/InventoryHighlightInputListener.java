@@ -32,9 +32,10 @@ import net.runelite.api.Point;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
+import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseListener;
 
-public abstract class InventoryHighlightInputListener implements MouseListener
+public class InventoryHighlightInputListener extends MouseAdapter implements MouseListener
 {
 	private final InventoryHighlightPlugin plugin;
 	private final Client client;
