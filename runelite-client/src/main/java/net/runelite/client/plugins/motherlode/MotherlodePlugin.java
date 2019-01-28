@@ -31,7 +31,6 @@ import com.google.inject.Provides;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import javax.inject.Inject;
@@ -76,17 +75,17 @@ import net.runelite.client.task.Schedule;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
-	name = "Motherlode Mine",
-	description = "Show helpful information inside the Motherload Mine",
-	tags = {"pay", "dirt", "mining", "mlm", "skilling", "overlay"},
-	enabledByDefault = false
+		name = "Motherlode Mine",
+		description = "Show helpful information inside the Motherload Mine",
+		tags = {"pay", "dirt", "mining", "mlm", "skilling", "overlay"},
+		enabledByDefault = false
 )
 public class MotherlodePlugin extends Plugin
 {
 	private static final Set<Integer> MOTHERLODE_MAP_REGIONS = ImmutableSet.of(14679, 14680, 14681, 14935, 14936, 14937, 15191, 15192, 15193);
 	private static final Set<Integer> MINE_SPOTS = ImmutableSet.of(ORE_VEIN_26661, ORE_VEIN_26662, ORE_VEIN_26663, ORE_VEIN_26664);
 	private static final Set<Integer> MLM_ORE_TYPES = ImmutableSet.of(ItemID.RUNITE_ORE, ItemID.ADAMANTITE_ORE,
-		ItemID.MITHRIL_ORE, ItemID.GOLD_ORE, ItemID.COAL, ItemID.GOLDEN_NUGGET);
+			ItemID.MITHRIL_ORE, ItemID.GOLD_ORE, ItemID.COAL, ItemID.GOLDEN_NUGGET);
 	private static final Set<Integer> ROCK_OBSTACLES = ImmutableSet.of(ROCKFALL, ROCKFALL_26680);
 
 	private static final int MAX_INVENTORY_SIZE = 28;
@@ -95,8 +94,6 @@ public class MotherlodePlugin extends Plugin
 	private static final int SACK_SIZE = 81;
 
 	private static final int UPPER_FLOOR_HEIGHT = -500;
-
-	private static HashMap<Integer, Integer> inventorySnapshop = null;
 
 	@Inject
 	private OverlayManager overlayManager;
@@ -158,6 +155,8 @@ public class MotherlodePlugin extends Plugin
 		overlayManager.add(motherlodeOreOverlay);
 		overlayManager.add(motherlodeSackOverlay);
 
+		session = new MotherlodeSession();
+		inMlm = checkInMlm();
 
 		if (inMlm)
 		{
@@ -239,8 +238,8 @@ public class MotherlodePlugin extends Plugin
 	}
 
 	@Schedule(
-		period = 1,
-		unit = ChronoUnit.SECONDS
+			period = 1,
+			unit = ChronoUnit.SECONDS
 	)
 	public void checkMining()
 	{
@@ -470,112 +469,9 @@ public class MotherlodePlugin extends Plugin
 
 	private void refreshSackValues()
 	{
-
-		int newSackSize = client.getVar(Varbits.SACK_NUMBER);
-
-		if (newSackSize < curSackSize) // Checks if ores were removed from the sack
-		{
-			takeInventorySnapShot();
-		}
-
-		curSackSize = newSackSize;
-
+		curSackSize = client.getVar(Varbits.SACK_NUMBER);
 		boolean sackUpgraded = client.getVar(Varbits.SACK_UPGRADED) == 1;
 		maxSackSize = sackUpgraded ? SACK_LARGE_SIZE : SACK_SIZE;
-
-	}
-
-	private void takeInventorySnapShot()
-	{
-
-		if (inventorySnapshop != null)
-			inventorySnapshop.clear();
-		else
-			inventorySnapshop  = new HashMap<>(); // Reset the ignore list
-
-		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-
-		if (inventory != null)
-		{
-			Item[] items = inventory.getItems();
-
-			for (Item item : items)
-			{
-				int id = item.getId();
-				if (MLM_ORE_TYPES.contains(id))
-				{
-
-					// This builds an 'ignore' list for the following ore amount calculation
-					// Allowing any ores in the players inventory before they empty the sack to be ignored from the totals
-
-					int amount = item.getQuantity() + (inventorySnapshop.containsKey(id) ? inventorySnapshop.get(id) : 0);
-					inventorySnapshop.put(id, amount);
-
-				}
-			}
-		}
-	}
-
-	@Schedule(
-			period = 1,
-			unit = ChronoUnit.SECONDS
-	)
-	public void calculateOresCollected()
-	{
-
-		if (!inMlm || inventorySnapshop == null)
-			return;
-
-		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-
-		if (inventory != null)
-		{
-
-			Item[] items = inventory.getItems();
-
-			for (Item item : items)
-			{
-
-				int id = item.getId();
-
-				if (MLM_ORE_TYPES.contains(id))
-				{
-
-					int amount = item.getQuantity();
-
-					if (inventorySnapshop.containsKey(id))
-					{
-
-						int ignoreCount = inventorySnapshop.get(id);
-
-						if (ignoreCount >= amount)
-						{
-							ignoreCount -= amount;
-							amount = 0;
-						}
-						else if (ignoreCount > 0)
-						{
-							amount -= ignoreCount;
-							ignoreCount = 0;
-						}
-
-						if (ignoreCount > 0)
-							inventorySnapshop.put(id, ignoreCount);
-						else
-							inventorySnapshop.remove(id);
-
-					}
-
-					if (amount > 0)
-						session.incrementCollectedOre(item.getId(), item.getQuantity());
-
-				}
-			}
-		}
-
-		inventorySnapshop.clear();
-		inventorySnapshop = null; // We're done, so reset the ignore list
-
 	}
 
 	/**

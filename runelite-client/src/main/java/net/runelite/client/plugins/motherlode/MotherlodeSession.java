@@ -152,16 +152,6 @@ public class MotherlodeSession
 		}
 	}
 
-	public void incrementCollectedOre(int itemID, int amount)
-	{
-
-		MotherloadeOre ore = MotherloadeOre.getFromItem(itemID);
-
-		if (ore != null)
-			collectedOres.put(ore, collectedOres.get(ore) + amount);
-
-	}
-
 	public void resetRecent()
 	{
 		recentPayDirtMined = null;
@@ -192,10 +182,4 @@ public class MotherlodeSession
 	{
 		return recentMined;
 	}
-
-	public boolean showOres()
-	{
-		return collectedOres.values().stream().mapToInt(o -> o.intValue()).sum() > 0;
-	}
-
 }

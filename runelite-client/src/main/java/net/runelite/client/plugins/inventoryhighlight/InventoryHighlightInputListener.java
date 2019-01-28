@@ -34,7 +34,7 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.input.MouseListener;
 
-public class InventoryHighlightInputListener extends MouseListener
+public abstract class InventoryHighlightInputListener implements MouseListener
 {
 	private final InventoryHighlightPlugin plugin;
 	private final Client client;
@@ -50,7 +50,7 @@ public class InventoryHighlightInputListener extends MouseListener
 	public MouseEvent mouseDragged(MouseEvent mouseEvent)
 	{
 		plugin.setDragging(true);
-		return super.mouseDragged(mouseEvent);
+		return mouseEvent;
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class InventoryHighlightInputListener extends MouseListener
 	{
 		if (client.getGameState() != GameState.LOGGED_IN)
 		{
-			return super.mousePressed(mouseEvent);
+			return mouseEvent;
 		}
 
 		final Widget inventoryWidget = client.getWidget(WidgetInfo.INVENTORY);
@@ -67,7 +67,7 @@ public class InventoryHighlightInputListener extends MouseListener
 		if ((inventoryWidget == null || inventoryWidget.isSelfHidden()) &&
 			(inventoryWidget == null || bankInventoryWidget == null || bankInventoryWidget.isSelfHidden()))
 		{
-			return super.mousePressed(mouseEvent);
+			return mouseEvent;
 		}
 
 		final Point mouse = client.getMouseCanvasPosition();
@@ -81,7 +81,7 @@ public class InventoryHighlightInputListener extends MouseListener
 			}
 		}
 
-		return super.mousePressed(mouseEvent);
+		return mouseEvent;
 	}
 
 	@Override
@@ -89,6 +89,6 @@ public class InventoryHighlightInputListener extends MouseListener
 	{
 		plugin.setDragging(false);
 		plugin.setDraggingItem(-1);
-		return super.mouseReleased(mouseEvent);
+		return mouseEvent;
 	}
 }
