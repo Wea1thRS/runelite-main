@@ -24,14 +24,13 @@
  */
 package net.runelite.client.plugins.motherlode;
 
+import java.time.Duration;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Item;
 import net.runelite.api.ItemID;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
 
 @Slf4j
 public class MotherlodeSession
@@ -62,15 +61,24 @@ public class MotherlodeSession
 	private int sapphiresFound;
 
 	@Getter(AccessLevel.PACKAGE)
-	private HashMap<MotherloadeOre, Integer> collectedOres;
+	private int nuggetsFound;
 
-	public void setupCollectedOres()
-	{
-		collectedOres = new HashMap<>();
-		Arrays.stream(MotherloadeOre.values()).forEach(o -> collectedOres.put(o, 0));
-	}
+	@Getter(AccessLevel.PACKAGE)
+	private int coalFound;
 
-	public void incrementGemFound(int gemID)
+	@Getter(AccessLevel.PACKAGE)
+	private int goldFound;
+
+	@Getter(AccessLevel.PACKAGE)
+	private int mithrilFound;
+
+	@Getter(AccessLevel.PACKAGE)
+	private int adamantiteFound;
+
+	@Getter(AccessLevel.PACKAGE)
+	private int runiteFound;
+
+	void incrementGemFound(int gemID)
 	{
 		lastGemFound = Instant.now();
 
@@ -93,7 +101,34 @@ public class MotherlodeSession
 				break;
 
 			default:
-				log.error("Invalid gem type specified. The gem count will not be incremented.");
+				log.debug("Invalid gem type specified. The gem count will not be incremented.");
+		}
+	}
+
+	void updateOreFound(Item ore)
+	{
+		switch (ore.getId())
+		{
+			case ItemID.GOLDEN_NUGGET:
+				nuggetsFound += ore.getQuantity();
+				break;
+			case ItemID.COAL:
+				coalFound++;
+				break;
+			case ItemID.GOLD_ORE:
+				goldFound++;
+				break;
+			case ItemID.MITHRIL_ORE:
+				mithrilFound++;
+				break;
+			case ItemID.ADAMANTITE_ORE:
+				adamantiteFound++;
+				break;
+			case ItemID.RUNITE_ORE:
+				runiteFound++;
+				break;
+			default:
+				log.debug("Invalid ore specified. The ore count will not be updated.");
 		}
 	}
 

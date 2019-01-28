@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Craftiii4 <craftiii4@gmail.com>
+ * Copyright (c) 2019, Sir Girion <https://github.com/sirgirion>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,14 +24,14 @@
  */
 package net.runelite.client.plugins.motherlode;
 
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import javax.inject.Inject;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
-
-import javax.inject.Inject;
-import java.awt.*;
 
 public class MotherlodeOreOverlay extends Overlay
 {
@@ -50,27 +50,78 @@ public class MotherlodeOreOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		if (!plugin.isInMlm() || !config.showOresFound())
+		{
+			return null;
+		}
+
 		MotherlodeSession session = plugin.getSession();
 
-		if (!plugin.isInMlm() || !config.showOresFound() || !session.showOres())
+		int nuggetsFound = session.getNuggetsFound();
+		int coalFound = session.getCoalFound();
+		int goldFound = session.getGoldFound();
+		int mithrilFound = session.getMithrilFound();
+		int adamantiteFound = session.getAdamantiteFound();
+		int runiteFound = session.getRuniteFound();
+
+		// If no ores have even been collected, don't bother showing anything
+		if (nuggetsFound == 0 && coalFound == 0 && goldFound == 0 && mithrilFound == 0
+			&& adamantiteFound == 0 && runiteFound == 0)
+		{
 			return null;
+		}
 
 		panelComponent.getChildren().clear();
-		panelComponent.getChildren().add(TitleComponent.builder().color(Color.ORANGE).text("Ores found").build());
+		panelComponent.getChildren().add(TitleComponent.builder().text("Ores found").build());
 
-		for (MotherloadeOre ore : MotherloadeOre.values())
+		if (nuggetsFound > 0)
 		{
-			int mined = session.getCollectedOres().get(ore);
-			if (mined > 0)
-			{
-				panelComponent.getChildren().add(LineComponent.builder()
-					.left(ore.getName() + ":")
-					.right(Integer.toString(mined))
-					.build());
-			}
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Nuggets:")
+				.right(Integer.toString(nuggetsFound))
+				.build());
+		}
+
+		if (coalFound > 0)
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Coal:")
+				.right(Integer.toString(coalFound))
+				.build());
+		}
+
+		if (goldFound > 0)
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Gold:")
+				.right(Integer.toString(goldFound))
+				.build());
+		}
+
+		if (mithrilFound > 0)
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Mithril:")
+				.right(Integer.toString(mithrilFound))
+				.build());
+		}
+
+		if (adamantiteFound > 0)
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Adamantite:")
+				.right(Integer.toString(adamantiteFound))
+				.build());
+		}
+
+		if (runiteFound > 0)
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Runite:")
+				.right(Integer.toString(runiteFound))
+				.build());
 		}
 
 		return panelComponent.render(graphics);
-
 	}
 }
