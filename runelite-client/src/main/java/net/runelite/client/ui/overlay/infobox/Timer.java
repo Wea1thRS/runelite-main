@@ -33,6 +33,7 @@ import java.time.temporal.ChronoUnit;
 import lombok.Getter;
 import net.runelite.client.plugins.Plugin;
 
+@Getter
 public class Timer extends InfoBox
 {
 	private final Instant startTime;
