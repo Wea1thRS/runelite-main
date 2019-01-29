@@ -28,6 +28,7 @@ import com.google.inject.Provides;
 import java.awt.event.KeyEvent;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -43,7 +44,8 @@ import net.runelite.client.plugins.PluginDescriptor;
 )
 public class AntiDragPlugin extends Plugin implements KeyListener
 {
-	private static final int DEFAULT_DELAY = 5;
+	private static final String CONFIG_GROUP = "antiDrag";
+	private static final int DEFAULT_DELAY = 20;
 
 	@Inject
 	private Client client;
@@ -63,6 +65,10 @@ public class AntiDragPlugin extends Plugin implements KeyListener
 	@Override
 	protected void startUp() throws Exception
 	{
+		if (!config.onShiftOnly())
+		{
+			client.setInventoryDragDelay(config.dragDelay());
+		}
 		keyManager.registerKeyListener(this);
 	}
 
@@ -82,7 +88,7 @@ public class AntiDragPlugin extends Plugin implements KeyListener
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
-		if (e.getKeyCode() == KeyEvent.VK_SHIFT)
+		if (config.onShiftOnly() && e.getKeyCode() == KeyEvent.VK_SHIFT)
 		{
 			client.setInventoryDragDelay(config.dragDelay());
 		}
@@ -91,9 +97,25 @@ public class AntiDragPlugin extends Plugin implements KeyListener
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
-		if (e.getKeyCode() == KeyEvent.VK_SHIFT)
+		if (config.onShiftOnly() && e.getKeyCode() == KeyEvent.VK_SHIFT)
 		{
 			client.setInventoryDragDelay(DEFAULT_DELAY);
+		}
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (event.getGroup().equals(CONFIG_GROUP))
+		{
+			if (config.onShiftOnly())
+			{
+				client.setInventoryDragDelay(DEFAULT_DELAY);
+			}
+			else
+			{
+				client.setInventoryDragDelay(config.dragDelay());
+			}
 		}
 	}
 

@@ -41,4 +41,15 @@ public interface AntiDragConfig extends Config
 	{
 		return 600 / 20; // one game tick
 	}
+
+	@ConfigItem(
+			keyName = "onShiftOnly",
+			name = "On Shift Only",
+			description = "Configures whether to only adjust the delay while holding shift",
+			position = 2
+	)
+	default boolean onShiftOnly()
+	{
+		return true;
+	}
 }
