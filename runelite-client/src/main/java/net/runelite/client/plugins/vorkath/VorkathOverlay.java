@@ -3,13 +3,11 @@ package net.runelite.client.plugins.vorkath;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
-import net.runelite.api.Skill;
 import net.runelite.api.coords.LocalPoint;
-import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.OverlayUtil;
+import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -28,9 +26,6 @@ public class VorkathOverlay extends Overlay {
     private VorkathPlugin plugin;
 
     @Inject
-    private SkillIconManager iconManager;
-
-    @Inject
     public VorkathOverlay(Client client, VorkathPlugin plugin)
     {
         setPosition(OverlayPosition.DYNAMIC);
@@ -43,9 +38,9 @@ public class VorkathOverlay extends Overlay {
     {
         switch (attackStyle)
         {
-            case MAGERANGE: return iconManager.getSkillImage(Skill.MAGERANGE);
-            case ICE: return iconManager.getSkillImage(Skill.ICE);
-            case ACID: return iconManager.getSkillImage(Skill.ACID);
+            case MAGERANGE: return ImageUtil.getResourceStreamFromClass(getClass(), "magerange.png");
+            case ICE: return ImageUtil.getResourceStreamFromClass(getClass(), "ice.png");
+            case ACID: return ImageUtil.getResourceStreamFromClass(getClass(), "acid.png");
         }
         return null;
     }
@@ -71,6 +66,7 @@ public class VorkathOverlay extends Overlay {
                         icon = getIcon(Vorkath.AttackStyle.ICE);
                     }
 
+                    assert icon != null;
                     int totalWidth = icon.getWidth() * OVERLAY_ICON_MARGIN;
                     int bgPadding = 8;
                     int currentPosX = 0;
