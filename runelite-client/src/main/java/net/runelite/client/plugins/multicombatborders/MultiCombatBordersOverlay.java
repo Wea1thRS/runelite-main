@@ -35,6 +35,8 @@ import static net.runelite.api.Perspective.LOCAL_TILE_SIZE;
 import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
@@ -95,11 +97,17 @@ public class MultiCombatBordersOverlay extends Overlay
 			if (localPointStart != null && localPointEnd != null)
 			{
 				Polygon multiLine = linePoly(client, localPointStart, localPointEnd, 0, 0);
-				Polygon singleLine = linePoly(client, localPointStart, localPointEnd, 2 * sign, 2 * sign);
+				Polygon singleLine = linePoly(client, localPointStart, localPointEnd, 0, 0);
 				if (multiLine != null && singleLine != null)
 				{
-					OverlayUtil.renderPolygon(graphics, multiLine, config.multiColor());
-					OverlayUtil.renderPolygon(graphics, singleLine, config.singleColor());
+					if(isMulti())
+					{
+						OverlayUtil.renderPolygon(graphics, singleLine, config.singleColor());
+					}
+					else
+					{
+						OverlayUtil.renderPolygon(graphics, multiLine, config.multiColor());
+					}
 				}
 			}
 		}
@@ -124,8 +132,8 @@ public class MultiCombatBordersOverlay extends Overlay
 
 		int plane = client.getPlane();
 
-		Point p1 = Perspective.worldToCanvas(client, startPoint.getX(), startPoint.getY(), plane);
-		Point p2 = Perspective.worldToCanvas(client, endPoint.getX(), endPoint.getY(), plane);
+		Point p1 = Perspective.localToCanvas(client, new LocalPoint(startPoint.getX(), startPoint.getY()), plane);
+		Point p2 = Perspective.localToCanvas(client, new LocalPoint(endPoint.getX(), endPoint.getY()), plane);
 
 		if (p1 != null && p2 != null)
 		{
@@ -136,5 +144,14 @@ public class MultiCombatBordersOverlay extends Overlay
 		}
 
 		return null;
+	}
+
+	private boolean isMulti()
+	{
+		Widget widget = client.getWidget(WidgetInfo.RESIZABLE_MULTI_MODE);
+		if (widget == null)
+			widget = client.getWidget(WidgetInfo.FIXED_MULTI_MODE);
+		else return widget.isHidden();
+		return widget.isHidden();
 	}
 }

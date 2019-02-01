@@ -24,7 +24,6 @@
  */
 package net.runelite.client.plugins.multicombatborders;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -46,6 +45,7 @@ import static net.runelite.api.Constants.CHUNK_SIZE;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.opponentinfo.OpponentInfoPlugin;
@@ -138,7 +138,7 @@ public class MultiCombatBordersPlugin extends Plugin
 	}
 
 	@Subscribe
-	void onTick(GameTick tick)
+	void onGameTick(GameTick tick)
 	{
 		WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
 		if (playerLocation != null && !playerLocation.equals(prevPlayerLocation))
