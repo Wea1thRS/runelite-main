@@ -97,7 +97,6 @@ public class DevToolsPlugin extends Plugin
 
 	@Inject
 	private WorldMapRegionOverlay mapRegionOverlay;
-	private SoundEffectOverlay soundEffectOverlay;
 
 	@Inject
 	private EventBus eventBus;
@@ -125,13 +124,7 @@ public class DevToolsPlugin extends Plugin
 	private DevToolsButton detachedCamera;
 	private DevToolsButton widgetInspector;
 	private DevToolsButton varInspector;
-	private DebToolsButton soundEffects;
 	private NavigationButton navButton;
-
-	Widget currentWidget;
-	int itemIndex = -1;
-
-	private Font font;
 
 	@Provides
 	DevToolsConfig provideConfig(ConfigManager configManager)
@@ -178,7 +171,6 @@ public class DevToolsPlugin extends Plugin
 		overlayManager.add(cameraOverlay);
 		overlayManager.add(worldMapLocationOverlay);
 		overlayManager.add(mapRegionOverlay);
-		overlayManager.add(soundEffectOverlay);
 
 		final DevToolsPanel panel = injector.getInstance(DevToolsPanel.class);
 
@@ -203,7 +195,6 @@ public class DevToolsPlugin extends Plugin
 		overlayManager.remove(cameraOverlay);
 		overlayManager.remove(worldMapLocationOverlay);
 		overlayManager.remove(mapRegionOverlay);
-		overlayManager.remove(soundEffectOverlay);
 		clientToolbar.removeNavigation(navButton);
 	}
 
@@ -316,10 +307,6 @@ public class DevToolsPlugin extends Plugin
 				Player player = client.getLocalPlayer();
 				player.getPlayerComposition().getEquipmentIds()[KitType.CAPE.getIndex()] = id + 512;
 				player.getPlayerComposition().setHash();
-			case "sound":
-			{
-				int id = Integer.parseInt(args[0]);
-				client.playSoundEffect(id);
 				break;
 			}
 		}
@@ -362,10 +349,5 @@ public class DevToolsPlugin extends Plugin
 			entry.setTarget(entry.getTarget() + " " + ColorUtil.prependColorTag("(" + info + ")", JagexColors.MENU_TARGET));
 			client.setMenuEntries(entries);
 		}
-	}
-
-	Font getFont()
-	{
-		return font;
 	}
 }
