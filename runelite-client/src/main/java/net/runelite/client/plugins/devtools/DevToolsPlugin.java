@@ -28,10 +28,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
-import java.awt.image.BufferedImage;
-import static java.lang.Math.min;
-import java.util.List;
-import javax.inject.Inject;
 import lombok.Getter;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -60,10 +56,16 @@ import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.awt.image.BufferedImage;
+import java.util.List;
+
+import static java.lang.Math.min;
+
 @PluginDescriptor(
-	name = "Developer Tools",
-	tags = {"panel"},
-	developerPlugin = true
+		name = "Developer Tools",
+		tags = {"panel"},
+		developerPlugin = true
 )
 @Getter
 public class DevToolsPlugin extends Plugin
@@ -97,6 +99,8 @@ public class DevToolsPlugin extends Plugin
 
 	@Inject
 	private WorldMapRegionOverlay mapRegionOverlay;
+
+	@Inject
 	private SoundEffectOverlay soundEffectOverlay;
 
 	@Inject
@@ -118,20 +122,15 @@ public class DevToolsPlugin extends Plugin
 	private DevToolsButton validMovement;
 	private DevToolsButton lineOfSight;
 	private DevToolsButton cameraPosition;
-	private DevToolsButton worldMapLocation ;
+	private DevToolsButton worldMapLocation;
 	private DevToolsButton tileLocation;
 	private DevToolsButton interacting;
 	private DevToolsButton examine;
 	private DevToolsButton detachedCamera;
 	private DevToolsButton widgetInspector;
 	private DevToolsButton varInspector;
-	private DebToolsButton soundEffects;
+	private DevToolsButton soundEffects;
 	private NavigationButton navButton;
-
-	Widget currentWidget;
-	int itemIndex = -1;
-
-	private Font font;
 
 	@Provides
 	DevToolsConfig provideConfig(ConfigManager configManager)
@@ -171,6 +170,7 @@ public class DevToolsPlugin extends Plugin
 		detachedCamera = new DevToolsButton("Detached Camera");
 		widgetInspector = new DevToolsButton("Widget Inspector");
 		varInspector = new DevToolsButton("Var Inspector");
+		soundEffects = new DevToolsButton("Sound Effects");
 
 		overlayManager.add(overlay);
 		overlayManager.add(locationOverlay);
@@ -185,11 +185,11 @@ public class DevToolsPlugin extends Plugin
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "devtools_icon.png");
 
 		navButton = NavigationButton.builder()
-			.tooltip("Developer Tools")
-			.icon(icon)
-			.priority(1)
-			.panel(panel)
-			.build();
+				.tooltip("Developer Tools")
+				.icon(icon)
+				.priority(1)
+				.panel(panel)
+				.build();
 
 		clientToolbar.addNavigation(navButton);
 	}
@@ -316,6 +316,8 @@ public class DevToolsPlugin extends Plugin
 				Player player = client.getLocalPlayer();
 				player.getPlayerComposition().getEquipmentIds()[KitType.CAPE.getIndex()] = id + 512;
 				player.getPlayerComposition().setHash();
+			}
+
 			case "sound":
 			{
 				int id = Integer.parseInt(args[0]);
@@ -363,9 +365,5 @@ public class DevToolsPlugin extends Plugin
 			client.setMenuEntries(entries);
 		}
 	}
-
-	Font getFont()
-	{
-		return font;
-	}
 }
+
