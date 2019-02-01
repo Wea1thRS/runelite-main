@@ -25,6 +25,7 @@
 package net.runelite.client.plugins.devtools;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -34,7 +35,6 @@ import net.runelite.api.Player;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.SoundEffectPlayed;
-import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -69,7 +69,7 @@ public class SoundEffectOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!plugin.getSoundEffects().isActive())
+		if (!plugin.isToggleSoundEffects())
 		{
 			return null;
 		}
@@ -80,7 +80,7 @@ public class SoundEffectOverlay extends Overlay
 	@Subscribe
 	public void onSoundEffectPlayed(SoundEffectPlayed event)
 	{
-		if (!plugin.getSoundEffects().isActive())
+		if (!plugin.isToggleSoundEffects())
 		{
 			return;
 		}
@@ -100,7 +100,7 @@ public class SoundEffectOverlay extends Overlay
 	@Subscribe
 	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed event)
 	{
-		if (!plugin.getSoundEffects().isActive())
+		if (!plugin.isToggleSoundEffects())
 		{
 			return;
 		}
