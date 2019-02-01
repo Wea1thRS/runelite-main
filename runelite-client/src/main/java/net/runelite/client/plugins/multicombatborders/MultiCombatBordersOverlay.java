@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018, Mattias Cederlund <https://github.com/mattec92>
- * Copyright (c) 2019, Ethan <https://github.com/wea1th>
+ * Copyright (c) 2019, Ethan <https://github.com/Wea1thRS>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
