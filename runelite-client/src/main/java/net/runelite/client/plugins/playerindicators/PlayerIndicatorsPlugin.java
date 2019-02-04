@@ -132,7 +132,7 @@ public class PlayerIndicatorsPlugin extends Plugin
 			int image = -1;
 			Color color = null;
 
-			if (config.highlightFriends() && player.isFriend())
+			if (config.highlightFriends() && client.isFriended(player.getName(), false))
 			{
 				color = config.getFriendColor();
 			}
