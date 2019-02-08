@@ -2,9 +2,8 @@ package net.runelite.client.plugins.vorkath;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.runelite.api.AnimationID;
-import net.runelite.api.HeadIcon;
 import net.runelite.api.NPC;
+import net.runelite.api.coords.LocalPoint;
 
 public class Vorkath {
 
@@ -25,6 +24,18 @@ public class Vorkath {
 
     @Getter
     @Setter
+    private boolean bomb;
+
+    @Getter
+    @Setter
+    private LocalPoint bombLoc;
+
+    @Getter
+    @Setter
+    private long bombTime;
+
+    @Getter
+    @Setter
     private int attacksUntilSwitch;
 
     @Getter
@@ -35,7 +46,7 @@ public class Vorkath {
     @Setter
     private boolean icePhaseAttack;
 
-    public Vorkath(NPC npc)
+    Vorkath(NPC npc)
     {
         this.npc = npc;
         this.attacksUntilSwitch = ATTACKS_PER_SWITCH;

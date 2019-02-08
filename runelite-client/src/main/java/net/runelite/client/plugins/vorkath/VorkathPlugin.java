@@ -89,11 +89,21 @@ public class VorkathPlugin extends Plugin {
     @Subscribe
     public void onNpcDespawned(NpcDespawned npcDespawned) {
         final NPC npc = npcDespawned.getNpc();
-        if(this.vorkath != null || this.spawn != null){
-            if (npc.getId() == this.vorkath.getNpc().getId()) {
-                this.vorkath = null;
-            } else if (npc.getId() == this.spawn.getNpc().getId()) {
-                this.spawn = null;
+        if (npc != null)
+        {
+            if (this.vorkath != null)
+            {
+                if (npc.getId() == this.vorkath.getNpc().getId())
+                {
+                    this.vorkath = null;
+                }
+            }
+            if (this.spawn != null)
+            {
+                if (npc.getId() == this.spawn.getNpc().getId())
+                {
+                    this.spawn = null;
+                }
             }
         }
     }
@@ -119,29 +129,35 @@ public class VorkathPlugin extends Plugin {
             if (animationId != vorkath.getLastTickAnimation()) {
 
                 if (animationId == AnimationID.VORKATH_ACID_ATTACK) {
-
+                    vorkath.setBomb(false);
                     vorkath.setPhase(2);
                     vorkath.setAttacksUntilSwitch(Vorkath.ATTACKS_PER_SWITCH);
 
                 } else if (animationId == AnimationID.VORKATH_ATTACK && vorkath.getAttacksUntilSwitch() == 0) {
-
+                    vorkath.setBomb(false);
                     vorkath.setPhase(1);
                     vorkath.setAttacksUntilSwitch(Vorkath.ATTACKS_PER_SWITCH);
                     //Vorkath does a bomb animation after the ice dragon breathe, we need to account for it
                     vorkath.setIcePhaseAttack(true);
 
                 } else if (animationId == AnimationID.VORKATH_ATTACK || animationId == AnimationID.VORKATH_FIRE_BOMB_ATTACK) {
-
+                    if (animationId == AnimationID.VORKATH_FIRE_BOMB_ATTACK)
+                    {
+                        vorkath.setBomb(true);
+                        vorkath.setBombTime(System.currentTimeMillis());
+                        vorkath.setBombLoc(client.getLocalPlayer().getLocalLocation());
+                    }
+                    else
+                    {
+                        vorkath.setBomb(false);
+                    }
                     if (vorkath.isIcePhaseAttack()) {
                         vorkath.setIcePhaseAttack(false);
                     } else {
                         vorkath.setAttacksUntilSwitch(vorkath.getAttacksUntilSwitch() - 1);
                     }
-
                 }
-
             }
-
             vorkath.setLastTickAnimation(animationId);
         }
     }

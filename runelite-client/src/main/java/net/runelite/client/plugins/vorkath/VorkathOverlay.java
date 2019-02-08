@@ -21,6 +21,8 @@ public class VorkathOverlay extends Overlay {
     private static final Color COLOR_ICON_BORDER_FILL = new Color(219, 175, 0, 255);
     private static final int OVERLAY_ICON_DISTANCE = 30;
     private static final int OVERLAY_ICON_MARGIN = 1;
+    private static final int FILL_START_ALPHA = 25;
+    private static final int OUTLINE_START_ALPHA = 255;
 
     private Client client;
     private VorkathPlugin plugin;
@@ -64,6 +66,40 @@ public class VorkathOverlay extends Overlay {
                         icon = getIcon(Vorkath.AttackStyle.ACID);
                     } else if(vorkath.getPhase() == 2) {
                         icon = getIcon(Vorkath.AttackStyle.ICE);
+                    }
+
+                    if (vorkath.isBomb())
+                    {
+                        Polygon tilePoly = Perspective.getCanvasTileAreaPoly(client, vorkath.getBombLoc(), 3);
+                        if (tilePoly != null)
+                        {
+                            double progress = (System.currentTimeMillis() - vorkath.getBombTime()) / (double) 4000;
+
+                            int fillAlpha = (int) ((1 - progress) * FILL_START_ALPHA);//alpha drop off over lifetime
+                            int outlineAlpha = (int) ((1 - progress) * OUTLINE_START_ALPHA);
+
+                            if (fillAlpha < 0)
+                            {
+                                fillAlpha = 0;
+                            }
+                            if (outlineAlpha < 0)
+                            {
+                                outlineAlpha = 0;
+                            }
+
+                            if (fillAlpha > 255)
+                            {
+                                fillAlpha = 255;
+                            }
+                            if (outlineAlpha > 255)
+                            {
+                                outlineAlpha = 255;//Make sure we don't pass in an invalid alpha
+                            }
+                            graphics.setColor(new Color(255, 0, 0, outlineAlpha));
+                            graphics.drawPolygon(tilePoly);
+                            graphics.setColor(new Color(255, 0, 0, fillAlpha));
+                            graphics.fillPolygon(tilePoly);
+                        }
                     }
 
                     assert icon != null;
