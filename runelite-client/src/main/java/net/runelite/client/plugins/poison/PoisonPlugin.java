@@ -52,9 +52,9 @@ import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ColorUtil;
 
 @PluginDescriptor(
-	name = "Poison",
-	description = "Tracks current damage values for Poison and Venom",
-	tags = {"combat", "poison", "venom"}
+		name = "Poison",
+		description = "Tracks current damage values for Poison and Venom",
+		tags = {"combat", "poison", "venom"}
 )
 @Slf4j
 public class PoisonPlugin extends Plugin
@@ -82,6 +82,8 @@ public class PoisonPlugin extends Plugin
 	private PoisonConfig config;
 
 	@Getter
+	private int lastDamage;
+	private boolean envenomed;
 	private PoisonInfobox infobox;
 	private Instant poisonNaturalCure;
 	private Instant nextPoisonTick;
@@ -89,6 +91,7 @@ public class PoisonPlugin extends Plugin
 
 	@Provides
 	PoisonConfig getConfig(ConfigManager configManager)
+	{
 		return configManager.getConfig(PoisonConfig.class);
 	}
 
@@ -208,10 +211,10 @@ public class PoisonPlugin extends Plugin
 		}
 
 		final BufferedImage splat = new BufferedImage(
-			rawSplat.getColorModel(),
-			rawSplat.copyData(null),
-			rawSplat.getColorModel().isAlphaPremultiplied(),
-			null);
+				rawSplat.getColorModel(),
+				rawSplat.copyData(null),
+				rawSplat.getColorModel().isAlphaPremultiplied(),
+				null);
 
 		final Graphics g = splat.getGraphics();
 		g.setFont(FontManager.getRunescapeSmallFont());
@@ -242,7 +245,7 @@ public class PoisonPlugin extends Plugin
 	String createTooltip()
 	{
 		String line1 = MessageFormat.format("Next {0} damage: {1}</br>Time until damage: {2}",
-			envenomed ? "venom" : "poison", ColorUtil.wrapWithColorTag(String.valueOf(lastDamage), Color.RED), getFormattedTime(nextPoisonTick));
+				envenomed ? "venom" : "poison", ColorUtil.wrapWithColorTag(String.valueOf(lastDamage), Color.RED), getFormattedTime(nextPoisonTick));
 		String line2 = envenomed ? "" : MessageFormat.format("</br>Time until cure: {0}", getFormattedTime(poisonNaturalCure));
 
 		return line1 + line2;

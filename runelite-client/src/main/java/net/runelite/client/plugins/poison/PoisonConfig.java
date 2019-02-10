@@ -34,9 +34,9 @@ public interface PoisonConfig extends Config
 	String GROUP = "poison";
 
 	@ConfigItem(
-		keyName = "showInfoboxes",
-		name = "Show Infoboxes",
-		description = "Configures whether to show the infoboxes"
+			keyName = "showInfoboxes",
+			name = "Show Infoboxes",
+			description = "Configures whether to show the infoboxes"
 	)
 	default boolean showInfoboxes()
 	{
