@@ -24,9 +24,15 @@
  */
 package net.runelite.client.plugins.poison;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.inject.Provides;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +42,14 @@ import net.runelite.api.VarPlayer;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.util.ColorUtil;
 
 @PluginDescriptor(
 	name = "Poison",
@@ -50,6 +59,10 @@ import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 @Slf4j
 public class PoisonPlugin extends Plugin
 {
+	static final int POISON_TICK_MILLIS = 18200;
+	private static final int VENOM_THRESHOLD = 1000000;
+	private static final int VENOM_MAXIUMUM_DAMAGE = 20;
+
 	@Inject
 	private Client client;
 
@@ -68,106 +81,85 @@ public class PoisonPlugin extends Plugin
 	@Inject
 	private PoisonConfig config;
 
+	@Getter
+	private PoisonInfobox infobox;
+	private Instant poisonNaturalCure;
+	private Instant nextPoisonTick;
+	private int lastValue = -1;
+
 	@Provides
 	PoisonConfig getConfig(ConfigManager configManager)
-	{
 		return configManager.getConfig(PoisonConfig.class);
 	}
 
-	@Getter
-	private boolean envenomed = false;
-
-	@Getter
-	private int lastDamage = 0;
-	private PoisonInfobox poisonBox = null;
-	private PoisonInfobox venomBox = null;
-
-	private BufferedImage poisonSplat = null;
-	private BufferedImage venomSplat = null;
-
 	@Override
-	public void startUp() throws Exception
+	protected void startUp() throws Exception
 	{
 		overlayManager.add(poisonOverlay);
 	}
 
 	@Override
-	public void shutDown() throws Exception
+	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(poisonOverlay);
+
+		if (infobox != null)
+		{
+			infoBoxManager.removeInfoBox(infobox);
+			infobox = null;
+		}
+
+		envenomed = false;
+		lastDamage = 0;
+		poisonNaturalCure = null;
+		nextPoisonTick = null;
+		lastValue = -1;
+
 	}
 
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged event)
 	{
-		int poisonValue = client.getVar(VarPlayer.POISON);
-		if (poisonValue >= 1000000)
+		final int poisonValue = client.getVar(VarPlayer.POISON);
+		if (poisonValue == lastValue)
 		{
-			//Venom Damage starts at 6, and increments in twos;
-			//The VarPlayer increments in values of 1, however.
-			poisonValue -= 1000000 - 3;
-			int venomDamage = poisonValue * 2;
-			//Venom Damage caps at 20, but the VarPlayer keeps increasing
-			if (venomDamage > 20)
-			{
-				venomDamage = 20;
-			}
-			if (venomDamage != this.lastDamage || !this.envenomed)
-			{
-				this.envenomed = true;
-				if (config.showInfoboxes())
-				{
-					if (this.poisonBox != null)
-					{
-						infoBoxManager.removeInfoBox(this.poisonBox);
-						this.poisonBox = null;
-					}
-					if (this.venomBox == null)
-					{
-						this.venomBox = new PoisonInfobox(this.getVenomSplat(), this, venomDamage, true);
-						infoBoxManager.addInfoBox(this.venomBox);
-					}
-					else
-					{
-						this.venomBox.setCount(venomDamage);
-					}
-				}
-				this.lastDamage = venomDamage;
-			}
+			return;
+		}
+
+		lastValue = poisonValue;
+		nextPoisonTick = Instant.now().plus(Duration.of(POISON_TICK_MILLIS, ChronoUnit.MILLIS));
+
+		final int damage = nextDamage(poisonValue);
+		this.lastDamage = damage;
+
+		envenomed = poisonValue >= VENOM_THRESHOLD;
+
+		if (poisonValue < VENOM_THRESHOLD)
+		{
+			poisonNaturalCure = Instant.now().plus(Duration.of(POISON_TICK_MILLIS * poisonValue, ChronoUnit.MILLIS));
 		}
 		else
 		{
-			int poisonDamage = (int) Math.ceil(poisonValue / 5.0f);
-			if (poisonDamage != this.lastDamage || this.envenomed)
+			poisonNaturalCure = null;
+		}
+
+		if (config.showInfoboxes())
+		{
+			if (infobox != null)
 			{
-				this.envenomed = false;
-				if (config.showInfoboxes())
+				infoBoxManager.removeInfoBox(infobox);
+				infobox = null;
+			}
+
+			if (damage > 0)
+			{
+				final BufferedImage image = getSplat(envenomed ? SpriteID.HITSPLAT_DARK_GREEN_VENOM : SpriteID.HITSPLAT_GREEN_POISON, damage);
+
+				if (image != null)
 				{
-					if (poisonDamage > 0)
-					{
-						if (this.venomBox != null)
-						{
-							infoBoxManager.removeInfoBox(this.venomBox);
-							this.venomBox = null;
-						}
-						if (this.poisonBox == null)
-						{
-							this.poisonBox = new PoisonInfobox(this.getPoisonSplat(), this, poisonDamage, false);
-							infoBoxManager.addInfoBox(this.poisonBox);
-						}
-						else
-						{
-							this.poisonBox.setCount(poisonDamage);
-						}
-					}
-					else
-					{
-						infoBoxManager.removeInfoBox(this.venomBox);
-						infoBoxManager.removeInfoBox(this.poisonBox);
-						this.poisonBox = null;
-					}
+					infobox = new PoisonInfobox(image, this);
+					infoBoxManager.addInfoBox(infobox);
 				}
-				this.lastDamage = poisonDamage;
 			}
 		}
 	}
@@ -175,30 +167,84 @@ public class PoisonPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (event.getGroup().equals("poison") && !config.showInfoboxes())
+		if (event.getGroup().equals(PoisonConfig.GROUP) && !config.showInfoboxes() && infobox != null)
 		{
-			infoBoxManager.removeInfoBox(this.venomBox);
-			infoBoxManager.removeInfoBox(this.poisonBox);
-			this.poisonBox = null;
-			this.venomBox = null;
+			infoBoxManager.removeInfoBox(infobox);
+			infobox = null;
 		}
 	}
 
-	private BufferedImage getPoisonSplat()
+	private static int nextDamage(int poisonValue)
 	{
-		if (this.poisonSplat == null)
+		int damage;
+
+		if (poisonValue >= VENOM_THRESHOLD)
 		{
-			this.poisonSplat = spriteManager.getSprite(SpriteID.HITSPLAT_GREEN_POISON, 0);
+			//Venom Damage starts at 6, and increments in twos;
+			//The VarPlayer increments in values of 1, however.
+			poisonValue -= VENOM_THRESHOLD - 3;
+			damage = poisonValue * 2;
+			//Venom Damage caps at 20, but the VarPlayer keeps increasing
+			if (damage > VENOM_MAXIUMUM_DAMAGE)
+			{
+				damage = VENOM_MAXIUMUM_DAMAGE;
+			}
 		}
-		return this.poisonSplat;
+		else
+		{
+			damage = (int) Math.ceil(poisonValue / 5.0f);
+		}
+
+		return damage;
 	}
 
-	private BufferedImage getVenomSplat()
+	private BufferedImage getSplat(int id, int damage)
 	{
-		if (this.venomSplat == null)
+		//Get a copy of the hitsplat to get a clean one each time
+		final BufferedImage rawSplat = spriteManager.getSprite(id, 0);
+		if (rawSplat == null)
 		{
-			this.venomSplat = spriteManager.getSprite(SpriteID.HITSPLAT_DARK_GREEN_VENOM, 0);
+			return null;
 		}
-		return this.venomSplat;
+
+		final BufferedImage splat = new BufferedImage(
+			rawSplat.getColorModel(),
+			rawSplat.copyData(null),
+			rawSplat.getColorModel().isAlphaPremultiplied(),
+			null);
+
+		final Graphics g = splat.getGraphics();
+		g.setFont(FontManager.getRunescapeSmallFont());
+
+		// Align the text in the centre of the hitsplat
+		final FontMetrics metrics = g.getFontMetrics();
+		final String text = String.valueOf(damage);
+		final int x = (splat.getWidth() - metrics.stringWidth(text)) / 2;
+		final int y = (splat.getHeight() - metrics.getHeight()) / 2 + metrics.getAscent();
+
+		g.setColor(Color.BLACK);
+		g.drawString(String.valueOf(damage), x + 1, y + 1);
+		g.setColor(Color.WHITE);
+		g.drawString(String.valueOf(damage), x, y);
+		return splat;
+	}
+
+	private static String getFormattedTime(Instant endTime)
+	{
+		final Duration timeLeft = Duration.between(Instant.now(), endTime);
+		int seconds = (int) (timeLeft.toMillis() / 1000L);
+		int minutes = seconds / 60;
+		int secs = seconds % 60;
+
+		return String.format("%d:%02d", minutes, secs);
+	}
+
+	String createTooltip()
+	{
+		String line1 = MessageFormat.format("Next {0} damage: {1}</br>Time until damage: {2}",
+			envenomed ? "venom" : "poison", ColorUtil.wrapWithColorTag(String.valueOf(lastDamage), Color.RED), getFormattedTime(nextPoisonTick));
+		String line2 = envenomed ? "" : MessageFormat.format("</br>Time until cure: {0}", getFormattedTime(poisonNaturalCure));
+
+		return line1 + line2;
 	}
 }

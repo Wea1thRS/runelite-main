@@ -28,9 +28,11 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("poison")
+@ConfigGroup(PoisonConfig.GROUP)
 public interface PoisonConfig extends Config
 {
+	String GROUP = "poison";
+
 	@ConfigItem(
 		keyName = "showInfoboxes",
 		name = "Show Infoboxes",

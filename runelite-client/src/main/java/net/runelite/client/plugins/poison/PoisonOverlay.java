@@ -57,6 +57,11 @@ class PoisonOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		if (plugin.getLastDamage() <= 0)
+		{
+			return null;
+		}
+
 		final Widget healthOrb = client.getWidget(WidgetInfo.MINIMAP_HEALTH_ORB);
 
 		if (healthOrb == null || healthOrb.isHidden())
@@ -75,23 +80,7 @@ class PoisonOverlay extends Overlay
 
 		if (bounds.contains(mousePosition.getX(), mousePosition.getY()))
 		{
-			if (plugin.getLastDamage() > 0)
-			{
-				StringBuilder sb = new StringBuilder();
-				sb.append("Next ");
-				if (plugin.isEnvenomed())
-				{
-					sb.append("venom ");
-				}
-				else
-				{
-					sb.append("poison ");
-				}
-				sb.append("damage: ");
-				sb.append(plugin.getLastDamage());
-
-				tooltipManager.add(new Tooltip(sb.toString()));
-			}
+			tooltipManager.add(new Tooltip(plugin.createTooltip()));
 		}
 
 		return null;
