@@ -33,7 +33,7 @@ import net.runelite.api.Client;
 import net.runelite.api.ScriptID;
 import net.runelite.api.VarClientInt;
 import net.runelite.api.VarClientStr;
-import net.runelite.api.events.SetMessage;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.VarClientStrChanged;
 import net.runelite.api.vars.InputType;
 import net.runelite.client.callback.ClientThread;
@@ -79,7 +79,7 @@ public class PMCyclePlugin extends Plugin implements KeyListener
 	}
 
 	@Subscribe
-	public void onSetMessage(SetMessage message)
+	public void onChatMessage(ChatMessage message)
 	{
 		ChatMessageType t = message.getType();
 		switch (t)
