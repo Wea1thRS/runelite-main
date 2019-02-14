@@ -79,6 +79,7 @@ public interface Widget
 
 	/**
 	 * Gets the current click configuration of the widget.
+	 * @see WidgetConfig
 	 *
 	 * @see WidgetConfig
 	 */
@@ -552,6 +553,13 @@ public interface Widget
 	void setOnMouseOverListener(Object... args);
 
 	/**
+	 * Sets a script to be ran every frame when the mouse is in the widget bounds
+	 *
+	 * @param args A ScriptID, then the args for the script
+	 */
+	void setOnMouseRepeatListener(Object... args);
+
+	/**
 	 * Sets a script to be ran when the mouse leaves the widget bounds
 	 *
 	 * @param args A ScriptID, then the args for the script
@@ -564,6 +572,20 @@ public interface Widget
 	 * @param args A ScriptID, then the args for the script
 	 */
 	void setOnTimerListener(Object... args);
+
+	/**
+	 * Sets a script to be ran when the target mode has been activated for this widget
+	 *
+	 * @param args A ScriptID, then the args for the script
+	 */
+	void setOnTargetEnterListener(Object... args);
+
+	/**
+	 * Sets a script to be ran when the target mode has been deactivated for this widget
+	 *
+	 * @param args A ScriptID, then the args for the script
+	 */
+	void setOnTargetLeaveListener(Object... args);
 
 	/**
 	 * If this widget has any listeners on it
@@ -771,22 +793,32 @@ public interface Widget
 	void setFilled(boolean filled);
 
 	/**
-	 * Changes the parent ID for the widget
+	 * Verb for spell targets
 	 */
-	void setParentId(int id);
+	String getTargetVerb();
 
 	/**
-	 * Changes the ID of the widget
+	 * Verb for spell targets
 	 */
-	void setId(int id);
+	void setTargetVerb(String targetVerb);
 
 	/**
-	 * Sets the index of this element
+	 * Can widgets under this widgets be clicked in this widgets bounding box
 	 */
-	void setIndex(int index);
+	boolean getNoClickThrough();
 
 	/**
-	 * Seems like this needs to set to true when creating new widgets
+	 * Can widgets under this widgets be clicked in this widgets bounding box
 	 */
-	void setIsIf3(boolean isIf3);
+	void setNoClickThrough(boolean noClickThrough);
+
+	/**
+	 * Can widgets under this widgets be scrolled in this widgets bounding box
+	 */
+	boolean getNoScrollThrough();
+
+	/**
+	 * Can widgets under this widgets be scrolled in this widgets bounding box
+	 */
+	void setNoScrollThrough(boolean noScrollThrough);
 }

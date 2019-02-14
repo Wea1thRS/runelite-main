@@ -30,6 +30,21 @@ import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
 import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
 import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
 import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -292,6 +307,7 @@ public class LootTrackerPlugin extends Plugin
 		LootRecord lootRecord = new LootRecord(name, LootRecordType.NPC, toGameItems(items));
 		if (lootTrackerClient != null && config.saveLoot())
 		{
+			LootRecord lootRecord = new LootRecord(name, LootRecordType.NPC, toGameItems(items), Instant.now());
 			lootTrackerClient.submit(lootRecord);
 		}
 
@@ -314,6 +330,7 @@ public class LootTrackerPlugin extends Plugin
 		LootRecord lootRecord = new LootRecord(name, LootRecordType.PLAYER, toGameItems(items));
 		if (lootTrackerClient != null && config.saveLoot())
 		{
+			LootRecord lootRecord = new LootRecord(name, LootRecordType.PLAYER, toGameItems(items), Instant.now());
 			lootTrackerClient.submit(lootRecord);
 		}
 
@@ -379,6 +396,7 @@ public class LootTrackerPlugin extends Plugin
 		LootRecord lootRecord = new LootRecord(eventType, LootRecordType.EVENT, toGameItems(items));
 		if (lootTrackerClient != null && config.saveLoot())
 		{
+			LootRecord lootRecord = new LootRecord(eventType, LootRecordType.EVENT, toGameItems(items), Instant.now());
 			lootTrackerClient.submit(lootRecord);
 		}
 
