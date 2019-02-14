@@ -304,16 +304,15 @@ public class LootTrackerPlugin extends Plugin
 		handleDrops(entries, name);
 		SwingUtilities.invokeLater(() -> panel.add(name, combat, entries));
 
-		LootRecord lootRecord = new LootRecord(name, LootRecordType.NPC, toGameItems(items));
 		if (lootTrackerClient != null && config.saveLoot())
 		{
 			LootRecord lootRecord = new LootRecord(name, LootRecordType.NPC, toGameItems(items), Instant.now());
 			lootTrackerClient.submit(lootRecord);
-		}
 
-		if (config.saveLocalLoot())
-		{
-			writer.addLootTrackerRecordToDB(name, entries);
+			if (config.saveLocalLoot())
+			{
+				writer.addLootTrackerRecordToDB(name, entries);
+			}
 		}
 	}
 
@@ -327,16 +326,15 @@ public class LootTrackerPlugin extends Plugin
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		SwingUtilities.invokeLater(() -> panel.add(name, combat, entries));
 
-		LootRecord lootRecord = new LootRecord(name, LootRecordType.PLAYER, toGameItems(items));
 		if (lootTrackerClient != null && config.saveLoot())
 		{
 			LootRecord lootRecord = new LootRecord(name, LootRecordType.PLAYER, toGameItems(items), Instant.now());
 			lootTrackerClient.submit(lootRecord);
-		}
 
-		if (config.saveLocalLoot())
-		{
-			writer.addLootTrackerRecordToDB(name, entries);
+			if (config.saveLocalLoot())
+			{
+				writer.addLootTrackerRecordToDB(name, entries);
+			}
 		}
 	}
 
@@ -393,16 +391,15 @@ public class LootTrackerPlugin extends Plugin
 		SwingUtilities.invokeLater(() -> panel.add(eventType, -1, entries));
 		handleDrops(entries, eventType);
 
-		LootRecord lootRecord = new LootRecord(eventType, LootRecordType.EVENT, toGameItems(items));
 		if (lootTrackerClient != null && config.saveLoot())
 		{
 			LootRecord lootRecord = new LootRecord(eventType, LootRecordType.EVENT, toGameItems(items), Instant.now());
 			lootTrackerClient.submit(lootRecord);
-		}
 
-		if (config.saveLocalLoot())
-		{
-			writer.addLootTrackerRecord(lootRecord);
+			if (config.saveLocalLoot())
+			{
+				writer.addLootTrackerRecord(lootRecord);
+			}
 		}
 	}
 
