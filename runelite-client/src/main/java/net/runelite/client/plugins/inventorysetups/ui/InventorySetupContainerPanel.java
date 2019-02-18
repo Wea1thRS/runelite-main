@@ -81,7 +81,6 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		AsyncBufferedImage itemImg = itemManager.getImage(itemId, quantity, quantity > 1);
 		String itemName = itemManager.getItemComposition(itemId).getName();
 		String toolTip = itemName;
-		// TODO get image with stack number on it
 		if (quantity > 1)
 		{
 			toolTip += " (" + String.valueOf(quantity) + ")";
@@ -161,9 +160,6 @@ public abstract class InventorySetupContainerPanel extends JPanel
 			currId = ItemVariationMapping.map(currId);
 			checkId = ItemVariationMapping.map(checkId);
 		}
-
-		int qt1 = currContainer[index].getQuantity();
-		int qt2 = containerToCheck.get(index).getQty();
 
 		if (config.getStackDifference() && currContainer[index].getQuantity() != containerToCheck.get(index).getQty())
 		{
