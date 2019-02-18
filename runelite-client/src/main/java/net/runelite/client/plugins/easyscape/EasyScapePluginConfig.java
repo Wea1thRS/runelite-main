@@ -5,7 +5,7 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
 @ConfigGroup("easyscape")
-public interface EasyScapePluginConfig extends Config {
+public interface EasyscapePluginConfig extends Config {
 
     @ConfigItem(
             keyName = "removeExamine",
@@ -19,7 +19,7 @@ public interface EasyScapePluginConfig extends Config {
 
     @ConfigItem(
             keyName = "swapShop",
-            name = "Shop",
+            name = "Easy Shop",
             description = "Enables swapping of items in the shop with their buy-50 option.",
             position = 1
     )
@@ -39,7 +39,7 @@ public interface EasyScapePluginConfig extends Config {
 
     @ConfigItem(
             keyName = "easyConstruction",
-            name = "Swap Build",
+            name = "Easy Construction",
             description = "",
             position = 3
     )
@@ -50,7 +50,7 @@ public interface EasyScapePluginConfig extends Config {
 
     @ConfigItem(
             keyName = "constructionItems",
-            name = "Build Items",
+            name = "Construction Items",
             description = "",
             position = 4
     )
@@ -60,22 +60,22 @@ public interface EasyScapePluginConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "removeMonster",
-            name = "Remove Mobs",
+            keyName = "removeObjects",
+            name = "Remove Objects",
             description = "",
             position = 5
     )
-    default boolean getRemoveMonster() {
+    default boolean getRemoveObjects() {
         return true;
     }
 
     @ConfigItem(
-            keyName = "removedMonsters",
-            name = "Removed Mobs",
+            keyName = "removedObjects",
+            name = "Removed Objects",
             description = "",
             position = 6
     )
-    default String getRemovedMonsters() {
+    default String getRemovedObjects() {
         return "";
     }
 
@@ -101,7 +101,7 @@ public interface EasyScapePluginConfig extends Config {
 
     @ConfigItem(
             keyName = "swapCrafting",
-            name = "Swap Crafting Make",
+            name = "Swap Crafting",
             description = "",
             position = 9
     )
@@ -225,12 +225,24 @@ public interface EasyScapePluginConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "showSafespot",
-            name = "Show Safespot",
-            description = "Enables showing of safespots.",
+            keyName = "swapGlory",
+            name = "Swap Glory",
+            description = "Enables swapping of Amulet of Glory.",
             position = 21
     )
-    default boolean getShowSafespot() {
+    default boolean getGlory() {
         return true;
     }
+
+    @ConfigItem(
+            keyName = "gloryMode",
+            name = "Glory Mode",
+            description = "Teleport location mode.",
+            position = 22
+    )
+
+    default GloryMode getGloryMode() {
+        return GloryMode.EDGEVILLE;
+    }
+
 }
