@@ -1580,4 +1580,9 @@ public interface Client extends GameEngine
 	 * Sets if a widget is in target mode
 	 */
 	void setSpellSelected(boolean selected);
+
+	/**
+     * Returns client item composition cache
+	 */
+	NodeCache getItemCompositionCache();
 }
