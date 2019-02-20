@@ -53,6 +53,10 @@ public class InventorySetupsBankOverlay extends Overlay
 
 			for (final WidgetItem item : widgetItems)
 			{
+				if (item.getId() == -1)
+				{
+					return null;
+				}
 				final Color color = config.getBankHighlightColor();
 
 				if (color != null)
