@@ -29,11 +29,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup(
-		keyName = "runecrafting",
-		name = "Runecrafting Profit",
-		description = "Configuration for the Runecrafting Profit Plugin"
-)
+@ConfigGroup("runecraftingtracker")
 public interface RunecraftingProfitConfig extends Config
 {
 

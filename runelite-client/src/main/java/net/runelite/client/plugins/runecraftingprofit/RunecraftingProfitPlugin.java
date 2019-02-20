@@ -25,8 +25,8 @@
  */
 package net.runelite.client.plugins.runecraftingprofit;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.inject.Provides;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.AnimationID;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
@@ -36,19 +36,19 @@ import net.runelite.api.Player;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.task.Schedule;
-import net.runelite.client.ui.overlay.Overlay;
+import net.runelite.client.ui.overlay.OverlayManager;
+
 import javax.inject.Inject;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
-import static net.runelite.client.callback.Hooks.log;
-
+@Slf4j
 @PluginDescriptor(
 		name = "Runecrafting Profit",
 		enabledByDefault = false
@@ -70,6 +70,9 @@ public class RunecraftingProfitPlugin extends Plugin
 	private RunecraftingProfitSession session;
 
 	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
 	private RunecraftingProfitOverlay overlay;
 
 	@Inject
@@ -84,21 +87,17 @@ public class RunecraftingProfitPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		overlayManager.add(overlay);
 		lastRunecraftingAnimation = Instant.now();
 	}
 
 	@Override
 	protected void shutDown()
 	{
+		overlayManager.remove(overlay);
 		session.clearSession();
 		this.firstRunecraft = false;
 		this.displayOverlay = false;
-	}
-
-	@Override
-	public Collection<Overlay> getOverlays()
-	{
-		return Arrays.asList(overlay);
 	}
 
 	@Subscribe
