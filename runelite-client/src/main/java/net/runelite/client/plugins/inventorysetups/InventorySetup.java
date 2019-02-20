@@ -1,18 +1,20 @@
 package net.runelite.client.plugins.inventorysetups;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.http.api.loottracker.GameItem;
 
 import java.util.ArrayList;
 
+@Slf4j
 public class InventorySetup {
 
 	// TODO use GameItem
     private ArrayList<GameItem> inventoryIds;
     private ArrayList<GameItem> equipmentIds;
 
-    public InventorySetup(final ItemContainer inventory, final ItemContainer equipment)
+    InventorySetup(final ItemContainer inventory, final ItemContainer equipment)
     {
     	Item[] invIds = null;
     	if (inventory != null)
@@ -31,20 +33,18 @@ public class InventorySetup {
 
         if (invIds != null)
         {
-            for (int i = 0; i < invIds.length; i++)
-            {
-                final Item item  = invIds[i];
-                inventoryIds.add(new GameItem(item.getId(), item.getQuantity()));
-            }
+			for (final Item item : invIds)
+			{
+				inventoryIds.add(new GameItem(item.getId(), item.getQuantity()));
+			}
         }
 
         if (equipIds != null)
         {
-            for (int i = 0; i < equipIds.length; i++)
-            {
-                final Item item = equipIds[i];
-                equipmentIds.add(new GameItem(item.getId(), item.getQuantity()));
-            }
+			for (final Item item : equipIds)
+			{
+				equipmentIds.add(new GameItem(item.getId(), item.getQuantity()));
+			}
         }
     }
 

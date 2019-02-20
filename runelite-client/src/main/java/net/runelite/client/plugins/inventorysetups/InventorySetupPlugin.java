@@ -3,6 +3,7 @@ package net.runelite.client.plugins.inventorysetups;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
@@ -20,12 +21,16 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.inventorysetups.ui.InventorySetupPluginPanel;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.http.api.loottracker.GameItem;
 
 import javax.inject.Inject;
 import javax.swing.JOptionPane;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 @PluginDescriptor(
@@ -34,7 +39,7 @@ import java.util.HashMap;
 		tags = { "items", "inventory", "setups"},
 		enabledByDefault = false
 )
-
+@Slf4j
 public class InventorySetupPlugin extends Plugin
 {
 
@@ -59,6 +64,12 @@ public class InventorySetupPlugin extends Plugin
 	@Inject
 	private ClientThread clientThread;
 
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private InventorySetupsBankOverlay overlay;
+
 	private InventorySetupPluginPanel panel;
 
 	private HashMap<String, InventorySetup> inventorySetups;
@@ -70,6 +81,8 @@ public class InventorySetupPlugin extends Plugin
 	@Override
 	public void startUp()
 	{
+
+		overlayManager.add(overlay);
 
 		panel = new InventorySetupPluginPanel(this, itemManager);
 
@@ -149,7 +162,7 @@ public class InventorySetupPlugin extends Plugin
 		final InventorySetup invSetup = new InventorySetup(inventory, equipment);
 
 		inventorySetups.put(name, invSetup);
-		panel.addInventorySetup(name, invSetup, true);
+		clientThread.invokeLater(() -> panel.addInventorySetup(name, invSetup, true));
 
 		updateConfig();
 
@@ -183,7 +196,7 @@ public class InventorySetupPlugin extends Plugin
 	{
 		if (inventorySetups.containsKey(name))
 		{
-			panel.setCurrentInventorySetup(inventorySetups.get(name));
+			clientThread.invokeLater(() -> panel.setCurrentInventorySetup(inventorySetups.get(name)));
 		}
 	}
 
@@ -203,7 +216,7 @@ public class InventorySetupPlugin extends Plugin
 			final String setupName = panel.getSelectedInventorySetup();
 			if (!setupName.isEmpty())
 			{
-				panel.setCurrentInventorySetup(inventorySetups.get(setupName));
+				clientThread.invokeLater(() -> panel.setCurrentInventorySetup(inventorySetups.get(setupName)));
 			}
 		}
 	}
@@ -237,7 +250,7 @@ public class InventorySetupPlugin extends Plugin
 
 		for (final String key : inventorySetups.keySet())
 		{
-			panel.addInventorySetup(key, inventorySetups.get(key), false);
+			clientThread.invokeLater(() -> panel.addInventorySetup(key, inventorySetups.get(key), false));
 		}
 
 		highlightDifference = false;
@@ -288,13 +301,29 @@ public class InventorySetupPlugin extends Plugin
 		final String setupName = panel.getSelectedInventorySetup();
 		if (!setupName.isEmpty())
 		{
-			panel.setCurrentInventorySetup(inventorySetups.get(setupName));
+			clientThread.invokeLater(() -> panel.setCurrentInventorySetup(inventorySetups.get(setupName)));
 		}
 	}
 
 	public final ItemContainer getCurrentPlayerContainer(final InventoryID type)
 	{
 		return client.getItemContainer(type);
+	}
+
+	final int[] getCurrentInventorySetupIds() {
+		InventorySetup setup = inventorySetups.get(panel.getSelectedInventorySetup());
+		if (setup == null)
+		{
+			return null;
+		}
+		ArrayList<GameItem> items = setup.getEquipment();
+		items.addAll(setup.getInventory());
+		ArrayList<Integer> itemIds = new ArrayList<>();
+		for (GameItem item : items)
+		{
+			itemIds.add(item.getId());
+		}
+		return itemIds.stream().mapToInt(i -> i).toArray();
 	}
 
 	public final InventorySetupConfig getConfig()
@@ -310,6 +339,7 @@ public class InventorySetupPlugin extends Plugin
 	@Override
 	public void shutDown()
 	{
+		overlayManager.remove(overlay);
 		clientToolbar.removeNavigation(navButton);
 	}
 

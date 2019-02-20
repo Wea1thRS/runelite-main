@@ -1,17 +1,17 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
-import net.runelite.client.plugins.screenmarkers.ScreenMarkerPlugin;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.http.api.loottracker.GameItem;
 
+import javax.inject.Inject;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -19,21 +19,21 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+@Slf4j
 public class InventorySetupPluginPanel extends PluginPanel
 {
+	@Inject
+	ClientThread clientThread;
 
 	private static ImageIcon ADD_ICON;
 	private static ImageIcon ADD_HOVER_ICON;
@@ -129,31 +129,27 @@ public class InventorySetupPluginPanel extends PluginPanel
 		// add empty to indicate the empty position
 		setupComboBox.addItem("");
 		setupComboBox.setSelectedIndex(0);
-		setupComboBox.addItemListener(new ItemListener()
+		setupComboBox.addItemListener(e ->
 		{
-			@Override
-			public void itemStateChanged(ItemEvent e)
+			if (e.getStateChange() == ItemEvent.SELECTED)
 			{
-				if (e.getStateChange() == ItemEvent.SELECTED)
+				String selection = (String)e.getItem();
+
+				// empty selection
+				if (selection.isEmpty())
 				{
-					String selection = (String)e.getItem();
-
-					// empty selection
-					if (selection.isEmpty())
-					{
-						removeMarker.setEnabled(false);
-						noSetupsPanel.setVisible(true);
-						invEqPanel.setVisible(false);
-					}
-					else
-					{
-						removeMarker.setEnabled(true);
-						noSetupsPanel.setVisible(false);
-						invEqPanel.setVisible(true);
-					}
-
-					plugin.changeCurrentInventorySetup(selection);
+					removeMarker.setEnabled(false);
+					noSetupsPanel.setVisible(true);
+					invEqPanel.setVisible(false);
 				}
+				else
+				{
+					removeMarker.setEnabled(true);
+					noSetupsPanel.setVisible(false);
+					invEqPanel.setVisible(true);
+				}
+
+				plugin.changeCurrentInventorySetup(selection);
 			}
 		});
 
@@ -256,7 +252,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 		// set this inventory setup to be the current one
 		if (setToCurrent)
 		{
-			setCurrentInventorySetup(setup);
+			clientThread.invokeLater(() -> setCurrentInventorySetup(setup));
 		}
 	}
 

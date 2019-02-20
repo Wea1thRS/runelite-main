@@ -21,7 +21,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	private ArrayList<InventorySetupSlot> inventorySlots;
 
-	public InventorySetupInventoryPanel(final ItemManager itemManager, final InventorySetupPlugin plugin) {
+	InventorySetupInventoryPanel(final ItemManager itemManager, final InventorySetupPlugin plugin) {
 		super(itemManager, plugin, "Inventory", "No inventory specified for this setup");
 	}
 
@@ -43,7 +43,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	public void setInventorySetupSlots(final InventorySetup setup)
+	void setInventorySetupSlots(final InventorySetup setup)
 	{
 		ArrayList<GameItem> inventory = setup.getInventory();
 
@@ -61,7 +61,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void highlightDifferentSlots(final ItemContainer currInventory, final InventorySetup inventorySetup) {
+	void highlightDifferentSlots(final ItemContainer currInventory, final InventorySetup inventorySetup) {
 
 		Item[] items = null;
 		if (currInventory != null) {
@@ -76,7 +76,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		// inventory setup is empty but the current inventory is not, make the text red
 		if (allEmpty && items != null && items.length > 0)
 		{
-			super.modifyNoContainerCaption(inventoryToCheck, items);
+			super.modifyNoContainerCaption(items);
 			return;
 		}
 
@@ -86,11 +86,11 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	public void resetInventorySlotsColor()
+	void resetInventorySlotsColor()
 	{
-		for (int i = 0; i < inventorySlots.size(); i++)
+		for (InventorySetupSlot inventorySlot : inventorySlots)
 		{
-			inventorySlots.get(i).setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			inventorySlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
 
 		emptyContainerLabel.setForeground(originalLabelColor);

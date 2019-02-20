@@ -1,5 +1,6 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.ItemManager;
@@ -16,22 +17,23 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public abstract class InventorySetupContainerPanel extends JPanel
 {
 
 	protected ItemManager itemManager;
 
-	protected JPanel containerPanel;
+	JPanel containerPanel;
 
-	protected JPanel emptyContainerPanel;
+	JPanel emptyContainerPanel;
 
-	protected JLabel emptyContainerLabel;
+	JLabel emptyContainerLabel;
 
-	protected final Color originalLabelColor;
+	final Color originalLabelColor;
 
 	private final InventorySetupPlugin plugin;
 
-	public InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
+	InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
 	{
 		this.itemManager = itemManager;
 		this.plugin = plugin;
@@ -60,7 +62,7 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerPanel.add(containerSlotsPanel, BorderLayout.CENTER);
 	}
 
-	protected void setContainerSlot(int index,
+	void setContainerSlot(int index,
 	                             final InventorySetupSlot containerSlot,
 	                             final ArrayList<GameItem> items,
                                  final AtomicBoolean hasItems)
@@ -76,23 +78,22 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		int itemId = items.get(index).getId();
 		int quantity = items.get(index).getQty();
 		AsyncBufferedImage itemImg = itemManager.getImage(itemId, quantity, quantity > 1);
-		String itemName = itemManager.getItemComposition(itemId).getName();
-		String toolTip = itemName;
+		String toolTip = itemManager.getItemComposition(itemId).getName();
+
 		if (quantity > 1)
 		{
-			toolTip += " (" + String.valueOf(quantity) + ")";
+			toolTip += " (" + quantity + ")";
 		}
 		containerSlot.setImageLabel(toolTip, itemImg);
 	}
 
-	protected void modifyNoContainerCaption(final ArrayList<GameItem> containerToCheck,
-	                                           final Item[] currContainer)
+	void modifyNoContainerCaption(final Item[] currContainer)
 	{
 		// inventory setup is empty but the current inventory is not, make the text red
 		boolean hasDifference = false;
-		for  (int i = 0; i < currContainer.length; i++)
+		for (Item item : currContainer)
 		{
-			if (currContainer[i].getId() != -1)
+			if (item.getId() != -1)
 			{
 				hasDifference = true;
 				break;
@@ -111,7 +112,7 @@ public abstract class InventorySetupContainerPanel extends JPanel
 
 	}
 
-	protected void highlightDifferentSlotColor(final ArrayList<GameItem> containerToCheck,
+	void highlightDifferentSlotColor(final ArrayList<GameItem> containerToCheck,
 	                                     final Item[] currContainer,
 	                                     final InventorySetupSlot containerSlot,
 	                                     int index)
