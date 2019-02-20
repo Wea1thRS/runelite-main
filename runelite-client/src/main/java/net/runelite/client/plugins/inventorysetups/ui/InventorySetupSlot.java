@@ -7,9 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import java.awt.Color;
 
-/**
- * Created by Dillon on 1/31/2019.
- */
 public class InventorySetupSlot extends JPanel
 {
 

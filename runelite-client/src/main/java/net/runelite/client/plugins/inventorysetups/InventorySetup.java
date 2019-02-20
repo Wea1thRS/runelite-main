@@ -6,9 +6,6 @@ import net.runelite.http.api.loottracker.GameItem;
 
 import java.util.ArrayList;
 
-/**
- * Created by Dillon on 1/31/2019.
- */
 public class InventorySetup {
 
 	// TODO use GameItem

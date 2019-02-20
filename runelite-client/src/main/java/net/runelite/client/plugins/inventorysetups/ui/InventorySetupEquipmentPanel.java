@@ -16,9 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Created by Dillon on 2/2/2019.
- */
 public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 {
 	private HashMap<EquipmentInventorySlot, InventorySetupSlot> equipmentSlots;

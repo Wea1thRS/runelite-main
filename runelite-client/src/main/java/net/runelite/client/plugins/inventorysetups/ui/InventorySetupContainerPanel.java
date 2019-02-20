@@ -16,9 +16,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Created by Dillon on 2/15/2019.
- */
 public abstract class InventorySetupContainerPanel extends JPanel
 {
 

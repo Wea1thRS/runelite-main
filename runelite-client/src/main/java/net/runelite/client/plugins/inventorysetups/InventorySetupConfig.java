@@ -1,15 +1,11 @@
 package net.runelite.client.plugins.inventorysetups;
 
-import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
 import java.awt.Color;
 
-/**
- * Created by Dillon on 2/10/2019.
- */
 @ConfigGroup("inventorysetups")
 public interface InventorySetupConfig extends Config
 {
