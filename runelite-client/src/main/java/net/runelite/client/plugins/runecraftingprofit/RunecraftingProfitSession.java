@@ -26,26 +26,20 @@
 package net.runelite.client.plugins.runecraftingprofit;
 
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.client.game.ItemManager;
-import net.runelite.http.api.item.ItemPrice;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import static net.runelite.client.callback.Hooks.log;
-
-
+@Slf4j
 public class RunecraftingProfitSession
 {
-
-
 	private final RunecraftingProfitPlugin plugin;
 	private HashMap<Integer, Integer> previousRunesInInventory = new HashMap<>();
 	private HashMap<Integer, Integer> numberOfTotalRunesCrafted = new HashMap<>();
@@ -66,15 +60,8 @@ public class RunecraftingProfitSession
 			runesSet.add(rune.getItemId());
 			numberOfTotalRunesCrafted.put(rune.getItemId(), 0);
 			profitPerRuneType.put(rune, 0);
-			try
-			{
-				ItemPrice price = itemManager.getItemPrice(rune.getItemId());
-				runePrices.put(rune.getItemId(), price.getPrice());
-			}
-			catch (IOException e)
-			{
-				log.debug(Arrays.asList(e.getStackTrace()).toString());
-			}
+			int price = itemManager.getItemPrice(rune.getItemId());
+			runePrices.put(rune.getItemId(), price);
 		}
 		this.plugin = plugin;
 	}
