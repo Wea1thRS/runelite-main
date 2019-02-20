@@ -67,38 +67,4 @@ public interface BankValueConfig extends Config
 	{
 		return false;
 	}
-
-	@ConfigItem(
-		keyName = "ShowValueableItems ",
-		name = "Show Valuable Items",
-		description = "Highlights valuable items",
-		position = 4
-	)
-	default boolean showHV()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "HighValueColour ",
-		name = "High value Colour",
-		description = "Configures the colour for most valuable items",
-		position = 5
-	)
-	default Color HighValueColour()
-	{
-		return Color.decode("#AA00FF");
-	}
-
-	@ConfigItem(
-		keyName = "NumberOfItemsToHighlight ",
-		name = "Number Of Items To Highlight",
-		description = "Configures the Number Of Items To Highlight",
-		position = 6
-	)
-	default int NumberOfItemsToHighlight()
-	{
-		return 3;
-	}
-
 }
