@@ -196,7 +196,15 @@ public class EasyscapePlugin extends Plugin {
 						if (widgetBankTitleBar == null || widgetBankTitleBar.isHidden()) {
 							swap("Empty", option, target);
 						} else {
-							swap("Fill", option, target);
+							for (int i = entries.length - 1; i >= 0; i--) {
+								if (!entries[i].getOption().equals("Fill")) {
+									entries = ArrayUtils.remove(entries, i);
+									i--;
+								}
+							}
+							entries[0].setForceLeftClick(true);
+							client.setMenuEntries(entries);
+							return;
 						}
 						break;
 					case ESSENCE_MINING:
