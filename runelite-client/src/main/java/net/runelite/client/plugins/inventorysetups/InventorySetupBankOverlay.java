@@ -4,9 +4,8 @@ import net.runelite.api.Client;
 import net.runelite.api.Query;
 import net.runelite.api.SpritePixels;
 import net.runelite.api.queries.BankItemQuery;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
-import net.runelite.client.game.ItemManager;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -27,7 +26,7 @@ public class InventorySetupBankOverlay extends Overlay
 	private final InventorySetupConfig config;
 
 	@Inject
-	public InventorySetupBankOverlay(Client client, QueryRunner queryRunner, ItemManager itemManager, InventorySetupPlugin plugin, InventorySetupConfig config)
+	public InventorySetupBankOverlay(Client client, QueryRunner queryRunner, InventorySetupPlugin plugin, InventorySetupConfig config)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setPriority(OverlayPriority.LOW);
@@ -64,9 +63,15 @@ public class InventorySetupBankOverlay extends Overlay
 				{
 					final BufferedImage outline = loadItemOutline(item.getId(), item.getQuantity(), color);
 					graphics.drawImage(outline, item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 1, null);
+					if (item.getQuantity() > 1)
+					{
+						graphics.setColor(Color.BLACK);
+						graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX()+ 2, item.getCanvasLocation().getY() + 11);
+						graphics.setColor(Color.YELLOW);
+						graphics.setFont(FontManager.getRunescapeSmallFont());
+						graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX()+ 1, item.getCanvasLocation().getY() + 10);
+					}
 				}
-
-				client.getWidget(WidgetInfo.BANK_CONTAINER).revalidate();
 			}
 		}
 		return null;
