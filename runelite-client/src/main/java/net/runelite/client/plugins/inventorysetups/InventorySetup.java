@@ -15,7 +15,7 @@ public class InventorySetup
 	private ArrayList<InventorySetupItem> inventory;
 	private ArrayList<InventorySetupItem> equipment;
 
-	public InventorySetup(final ItemContainer inventoryToAdd, final ItemContainer equipmentToAdd, final ItemManager itemManager)
+	InventorySetup(final ItemContainer inventoryToAdd, final ItemContainer equipmentToAdd, final ItemManager itemManager)
 	{
 		this.inventory = new ArrayList<>();
 		this.equipment = new ArrayList<>();
