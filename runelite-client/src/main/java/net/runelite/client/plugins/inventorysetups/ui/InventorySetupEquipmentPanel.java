@@ -20,7 +20,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 {
 	private HashMap<EquipmentInventorySlot, InventorySetupSlot> equipmentSlots;
 
-	public InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
+	InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
 	{
 		super(itemManager, plugin, "Equipment", "No equipment for this setup.");
 	}
@@ -55,7 +55,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.RING));
 	}
 
-	public void setEquipmentSetupSlots(final InventorySetup setup)
+	void setEquipmentSetupSlots(final InventorySetup setup)
 	{
 		final ArrayList<InventorySetupItem> equipment = setup.getEquipment();
 
@@ -74,7 +74,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void highlightDifferences(final ItemContainer currEquipment, final InventorySetup inventorySetup)
+	void highlightDifferences(final ItemContainer currEquipment, final InventorySetup inventorySetup)
 	{
 		Item[] items = null;
 		if (currEquipment != null)
@@ -90,7 +90,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		// equipment setup is empty but the current equipment is not, make the text red
 		if (allEmpty && items != null && items.length > 0)
 		{
-			super.modifyNoContainerCaption(equipToCheck, items);
+			super.modifyNoContainerCaption(items);
 			return;
 		}
 
@@ -102,7 +102,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	public void resetEquipmentSlotsColor()
+	void resetEquipmentSlotsColor()
 	{
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{

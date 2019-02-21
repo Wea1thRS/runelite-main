@@ -2,16 +2,13 @@ package net.runelite.client.plugins.inventorysetups.ui;
 
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
-import net.runelite.client.plugins.screenmarkers.ScreenMarkerPlugin;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.http.api.loottracker.GameItem;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -20,15 +17,12 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -217,7 +211,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 		invEqPanel.setVisible(false);
 	}
 
-	public void showHasSetupPanel(final String name)
+	private void showHasSetupPanel(final String name)
 	{
 		setupComboBox.setSelectedItem(name);
 		removeMarker.setEnabled(true);

@@ -1,6 +1,6 @@
 package net.runelite.client.plugins.inventorysetups;
 
-import com.google.common.reflect.TypeToken;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
@@ -134,11 +134,10 @@ public class InventorySetupPlugin extends Plugin
 
 		if (inventorySetups.containsKey(name))
 		{
-			final StringBuilder builder = new StringBuilder();
-			builder.append("The setup ").append(name).append(" already exists. ")
-					.append("Would you like to replace it with the current setup?");
+			String builder = "The setup " + name + " already exists. " +
+					"Would you like to replace it with the current setup?";
 			int confirm = JOptionPane.showConfirmDialog(panel,
-					builder.toString(),
+					builder,
 					"Warning",
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.PLAIN_MESSAGE);
@@ -285,15 +284,13 @@ public class InventorySetupPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		switch (event.getGameState())
+		if (event.getGameState() == GameState.LOGGED_IN)
 		{
-			case LOGGED_IN:
-				highlightDifference = config.getHighlightDifferences();
-				break;
-
-			default:
-				highlightDifference = false;
-				break;
+			highlightDifference = config.getHighlightDifferences();
+		}
+		else
+		{
+			highlightDifference = false;
 		}
 
 		// reset the current inventory setup

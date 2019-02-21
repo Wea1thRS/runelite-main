@@ -8,7 +8,6 @@ import net.runelite.client.plugins.inventorysetups.InventorySetupConfig;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.http.api.loottracker.GameItem;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,17 +21,17 @@ public abstract class InventorySetupContainerPanel extends JPanel
 
 	protected ItemManager itemManager;
 
-	protected JPanel containerPanel;
+	JPanel containerPanel;
 
-	protected JPanel emptyContainerPanel;
+	JPanel emptyContainerPanel;
 
-	protected JLabel emptyContainerLabel;
+	JLabel emptyContainerLabel;
 
-	protected final Color originalLabelColor;
+	final Color originalLabelColor;
 
 	private final InventorySetupPlugin plugin;
 
-	public InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
+	InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
 	{
 		this.itemManager = itemManager;
 		this.plugin = plugin;
@@ -61,10 +60,10 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerPanel.add(containerSlotsPanel, BorderLayout.CENTER);
 	}
 
-	protected void setContainerSlot(int index,
-	                             final InventorySetupSlot containerSlot,
-	                             final ArrayList<InventorySetupItem> items,
-                                 final AtomicBoolean hasItems)
+	void setContainerSlot(int index,
+			final InventorySetupSlot containerSlot,
+			final ArrayList<InventorySetupItem> items,
+			final AtomicBoolean hasItems)
 	{
 		if (index >= items.size() || items.get(index).getId() == -1)
 		{
@@ -81,19 +80,18 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		String toolTip = itemName;
 		if (quantity > 1)
 		{
-			toolTip += " (" + String.valueOf(quantity) + ")";
+			toolTip += " (" + quantity + ")";
 		}
 		containerSlot.setImageLabel(toolTip, itemImg);
 	}
 
-	protected void modifyNoContainerCaption(final ArrayList<InventorySetupItem> containerToCheck,
-	                                           final Item[] currContainer)
+	void modifyNoContainerCaption(final Item[] currContainer)
 	{
 		// inventory setup is empty but the current inventory is not, make the text red
 		boolean hasDifference = false;
-		for  (int i = 0; i < currContainer.length; i++)
+		for (Item item : currContainer)
 		{
-			if (currContainer[i].getId() != -1)
+			if (item.getId() != -1)
 			{
 				hasDifference = true;
 				break;
@@ -112,10 +110,10 @@ public abstract class InventorySetupContainerPanel extends JPanel
 
 	}
 
-	protected void highlightDifferentSlotColor(final ArrayList<InventorySetupItem> containerToCheck,
-	                                     final Item[] currContainer,
-	                                     final InventorySetupSlot containerSlot,
-	                                     int index)
+	void highlightDifferentSlotColor(final ArrayList<InventorySetupItem> containerToCheck,
+			final Item[] currContainer,
+			final InventorySetupSlot containerSlot,
+			int index)
 	{
 		final InventorySetupConfig config = plugin.getConfig();
 		final Color highlightColor = config.getHighlightColor();
@@ -127,8 +125,9 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		}
 
 		// the current inventory is smaller in size than the inventory to check
-		if ((currContainer == null || index >= currContainer.length) && index < containerToCheck.size())
+		if ((currContainer == null || index >= currContainer.length))
 		{
+			containerToCheck.size();
 			if (containerToCheck.get(index).getId() != -1)
 			{
 				containerSlot.setBackground(highlightColor);
@@ -137,7 +136,7 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		}
 
 		// the inventory to check is smaller than the current inventory
-		if (index >= containerToCheck.size() && (currContainer != null && index < currContainer.length))
+		if (index >= containerToCheck.size())
 		{
 			if (currContainer[index].getId() != -1)
 			{
