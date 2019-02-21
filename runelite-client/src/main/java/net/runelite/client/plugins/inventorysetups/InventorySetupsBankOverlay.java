@@ -4,6 +4,7 @@ import net.runelite.api.Client;
 import net.runelite.api.Query;
 import net.runelite.api.SpritePixels;
 import net.runelite.api.queries.BankItemQuery;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.Overlay;
@@ -65,6 +66,8 @@ public class InventorySetupsBankOverlay extends Overlay
 					final BufferedImage outline = loadItemOutline(item.getId(), item.getQuantity(), color);
 					graphics.drawImage(outline, item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 1, null);
 				}
+
+				client.getWidget(WidgetInfo.BANK_CONTAINER).revalidate();
 			}
 		}
 		return null;
