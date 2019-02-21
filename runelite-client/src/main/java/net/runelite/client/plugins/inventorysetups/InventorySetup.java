@@ -3,59 +3,52 @@ package net.runelite.client.plugins.inventorysetups;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
-import net.runelite.http.api.loottracker.GameItem;
+import net.runelite.client.game.ItemManager;
 
 import java.util.ArrayList;
 
+
 @Slf4j
-public class InventorySetup {
+public class InventorySetup
+{
 
-	// TODO use GameItem
-    private ArrayList<GameItem> inventoryIds;
-    private ArrayList<GameItem> equipmentIds;
+	private ArrayList<InventorySetupItem> inventory;
+	private ArrayList<InventorySetupItem> equipment;
 
-    InventorySetup(final ItemContainer inventory, final ItemContainer equipment)
-    {
-    	Item[] invIds = null;
-    	if (inventory != null)
-	    {
-	    	invIds = inventory.getItems();
-	    }
+	public InventorySetup(final ItemContainer inventoryToAdd, final ItemContainer equipmentToAdd, final ItemManager itemManager)
+	{
+		this.inventory = new ArrayList<>();
+		this.equipment = new ArrayList<>();
+		populateContainer(inventoryToAdd, inventory, itemManager);
+		populateContainer(equipmentToAdd, equipment, itemManager);
+	}
 
-	    Item[] equipIds = null;
-    	if (equipment != null)
-	    {
-	    	equipIds = equipment.getItems();
-	    }
+	public final ArrayList<InventorySetupItem> getInventory()
+	{
+		return inventory;
+	}
 
-        inventoryIds = new ArrayList<>();
-        equipmentIds = new ArrayList<>();
+	public final ArrayList<InventorySetupItem> getEquipment()
+	{
+		return equipment;
+	}
 
-        if (invIds != null)
-        {
-			for (final Item item : invIds)
+	private void populateContainer(final ItemContainer container, final ArrayList<InventorySetupItem> containerToPopulate, final ItemManager itemManager)
+	{
+		Item[] items = null;
+		if (container != null)
+		{
+			items = container.getItems();
+		}
+
+		if (items != null)
+		{
+			for (final Item item : items)
 			{
-				inventoryIds.add(new GameItem(item.getId(), item.getQuantity()));
+				// get the item name from the client thread
+				containerToPopulate.add(new InventorySetupItem(item.getId(), itemManager.getItemComposition(item.getId()).getName(), item.getQuantity()));
 			}
-        }
-
-        if (equipIds != null)
-        {
-			for (final Item item : equipIds)
-			{
-				equipmentIds.add(new GameItem(item.getId(), item.getQuantity()));
-			}
-        }
-    }
-
-    public final ArrayList<GameItem> getInventory()
-    {
-    	return inventoryIds;
-    }
-
-    public final ArrayList<GameItem> getEquipment()
-    {
-    	return equipmentIds;
-    }
+		}
+	}
 
 }

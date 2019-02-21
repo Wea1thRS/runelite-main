@@ -1,12 +1,13 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
+import net.runelite.client.plugins.screenmarkers.ScreenMarkerPlugin;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.util.ImageUtil;
@@ -19,19 +20,22 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
-@Slf4j
 public class InventorySetupPluginPanel extends PluginPanel
 {
+
 	private static ImageIcon ADD_ICON;
 	private static ImageIcon ADD_HOVER_ICON;
 	private static ImageIcon REMOVE_ICON;
@@ -51,6 +55,8 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	private final ItemManager itemManager;
 
+	private final ClientThread clientThread;
+
 	static
 	{
 		final BufferedImage addIcon = ImageUtil.getResourceStreamFromClass(InventorySetupPlugin.class, "add_icon.png");
@@ -62,17 +68,19 @@ public class InventorySetupPluginPanel extends PluginPanel
 		REMOVE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.53f));
 	}
 
-	public InventorySetupPluginPanel(InventorySetupPlugin plugin, ItemManager itemManager)
+	public InventorySetupPluginPanel(final InventorySetupPlugin plugin, final ItemManager itemManager, final ClientThread clientThread)
 	{
 		super(false);
 		this.plugin = plugin;
 		this.itemManager = itemManager;
+		this.clientThread = clientThread;
 		this.removeMarker = new JLabel(REMOVE_ICON);
 		this.invPanel = new InventorySetupInventoryPanel(itemManager, plugin);
 		this.eqpPanel = new InventorySetupEquipmentPanel(itemManager, plugin);
 		this.noSetupsPanel = new JPanel();
 		this.invEqPanel = new JPanel();
 		this.setupComboBox = new JComboBox<>();
+
 
 		// setup the title
 		final JLabel addMarker = new JLabel(ADD_ICON);
@@ -85,15 +93,20 @@ public class InventorySetupPluginPanel extends PluginPanel
 		addMarker.addMouseListener(new MouseAdapter()
 		{
 			@Override
-			public void mouseClicked(MouseEvent e) { plugin.addInventorySetup(); }
+			public void mouseClicked(MouseEvent e)
+			{
+				plugin.addInventorySetup();
+			}
 
 			@Override
-			public void mouseEntered(MouseEvent e) {
+			public void mouseEntered(MouseEvent e)
+			{
 				addMarker.setIcon(ADD_HOVER_ICON);
 			}
 
 			@Override
-			public void mouseExited(MouseEvent e) {
+			public void mouseExited(MouseEvent e)
+			{
 				addMarker.setIcon(ADD_ICON);
 			}
 		});
@@ -119,7 +132,10 @@ public class InventorySetupPluginPanel extends PluginPanel
 			}
 
 			@Override
-			public void mouseExited(MouseEvent e) { removeMarker.setIcon(REMOVE_ICON); }
+			public void mouseExited(MouseEvent e)
+			{
+				removeMarker.setIcon(REMOVE_ICON);
+			}
 		});
 
 		// setup the combo box for selection switching
@@ -131,22 +147,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 			if (e.getStateChange() == ItemEvent.SELECTED)
 			{
 				String selection = (String)e.getItem();
-
-				// empty selection
-				if (selection.isEmpty())
-				{
-					removeMarker.setEnabled(false);
-					noSetupsPanel.setVisible(true);
-					invEqPanel.setVisible(false);
-				}
-				else
-				{
-					removeMarker.setEnabled(true);
-					noSetupsPanel.setVisible(false);
-					invEqPanel.setVisible(true);
-				}
-
-				plugin.changeCurrentInventorySetup(selection);
+				setCurrentInventorySetup(selection);
 			}
 		});
 
@@ -216,26 +217,29 @@ public class InventorySetupPluginPanel extends PluginPanel
 		invEqPanel.setVisible(false);
 	}
 
-	public void setCurrentInventorySetup(final InventorySetup inventorySetup)
+	public void showHasSetupPanel(final String name)
 	{
-		if (inventorySetup == null) {
+		setupComboBox.setSelectedItem(name);
+		removeMarker.setEnabled(true);
+		noSetupsPanel.setVisible(false);
+		invEqPanel.setVisible(true);
+	}
+
+	public void setCurrentInventorySetup(final String name)
+	{
+
+		if (name.isEmpty())
+		{
+			showNoSetupsPanel();
 			return;
 		}
 
-		if( inventorySetup.getEquipment() == null || inventorySetup.getInventory() == null)
-		{
-			return;
-		}
+		showHasSetupPanel(name);
 
-		for (GameItem item : inventorySetup.getEquipment())
-		{
-			log.debug("Equipment: " + String.valueOf(item.getId()));
-		}
+		final InventorySetup inventorySetup = plugin.getInventorySetup(name);
 
-		log.debug("-------------");
-
-		invPanel.setInventorySetupSlots(inventorySetup.getInventory());
-		eqpPanel.setEquipmentSetupSlots(inventorySetup.getEquipment());
+		invPanel.setInventorySetupSlots(inventorySetup);
+		eqpPanel.setEquipmentSetupSlots(inventorySetup);
 
 		if (plugin.getHighlightDifference())
 		{
@@ -254,20 +258,9 @@ public class InventorySetupPluginPanel extends PluginPanel
 		repaint();
 	}
 
-	public void addInventorySetup(final String name, final InventorySetup setup, boolean setToCurrent)
+	public void addInventorySetup(final String name)
 	{
 		setupComboBox.addItem(name);
-		setupComboBox.setSelectedItem(name);
-		removeMarker.setEnabled(true);
-		noSetupsPanel.setVisible(false);
-		invEqPanel.setVisible(true);
-
-		// set this inventory setup to be the current one
-		if (setToCurrent)
-		{
-			log.debug("4");
-			setCurrentInventorySetup(setup);
-		}
 	}
 
 	public void removeInventorySetup(final String name)

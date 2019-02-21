@@ -1,20 +1,18 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
+import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.http.api.loottracker.GameItem;
 
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Slf4j
 public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 {
 
@@ -23,7 +21,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	private ArrayList<InventorySetupSlot> inventorySlots;
 
-	InventorySetupInventoryPanel(final ItemManager itemManager, final InventorySetupPlugin plugin) {
+	public InventorySetupInventoryPanel(final ItemManager itemManager, final InventorySetupPlugin plugin) {
 		super(itemManager, plugin, "Inventory", "No inventory specified for this setup");
 	}
 
@@ -45,8 +43,10 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	void setInventorySetupSlots(final ArrayList<GameItem> inventory)
+	public void setInventorySetupSlots(final InventorySetup setup)
 	{
+		ArrayList<InventorySetupItem> inventory = setup.getInventory();
+
 		final AtomicBoolean hasInventory = new AtomicBoolean(false);
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
 		{
@@ -61,14 +61,14 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	}
 
-	void highlightDifferentSlots(final ItemContainer currInventory, final InventorySetup inventorySetup) {
+	public void highlightDifferentSlots(final ItemContainer currInventory, final InventorySetup inventorySetup) {
 
 		Item[] items = null;
 		if (currInventory != null) {
 			items = currInventory.getItems();
 		}
 
-		final ArrayList<GameItem> inventoryToCheck = inventorySetup.getInventory();
+		final ArrayList<InventorySetupItem> inventoryToCheck = inventorySetup.getInventory();
 
 		// check to see if the inventory is all empty
 		boolean allEmpty = inventoryToCheck.isEmpty() || inventoryToCheck.stream().allMatch(item -> item.getId() == -1);
@@ -76,7 +76,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		// inventory setup is empty but the current inventory is not, make the text red
 		if (allEmpty && items != null && items.length > 0)
 		{
-			super.modifyNoContainerCaption(items);
+			super.modifyNoContainerCaption(inventoryToCheck, items);
 			return;
 		}
 
@@ -86,11 +86,11 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	void resetInventorySlotsColor()
+	public void resetInventorySlotsColor()
 	{
-		for (InventorySetupSlot inventorySlot : inventorySlots)
+		for (int i = 0; i < inventorySlots.size(); i++)
 		{
-			inventorySlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			inventorySlots.get(i).setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
 
 		emptyContainerLabel.setForeground(originalLabelColor);

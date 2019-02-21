@@ -18,9 +18,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.util.concurrent.ExecutionException;
 
-public class InventorySetupsBankOverlay extends Overlay
+public class InventorySetupBankOverlay extends Overlay
 {
 	private final Client client;
 	private final QueryRunner queryRunner;
@@ -28,7 +27,7 @@ public class InventorySetupsBankOverlay extends Overlay
 	private final InventorySetupConfig config;
 
 	@Inject
-	public InventorySetupsBankOverlay(Client client, QueryRunner queryRunner, ItemManager itemManager, InventorySetupPlugin plugin, InventorySetupConfig config)
+	public InventorySetupBankOverlay(Client client, QueryRunner queryRunner, ItemManager itemManager, InventorySetupPlugin plugin, InventorySetupConfig config)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setPriority(OverlayPriority.LOW);

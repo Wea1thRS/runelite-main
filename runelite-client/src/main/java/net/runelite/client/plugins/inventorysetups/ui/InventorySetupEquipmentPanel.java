@@ -1,33 +1,26 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.EquipmentInventorySlot;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
+import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.http.api.loottracker.GameItem;
 
-import javax.inject.Inject;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Slf4j
 public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 {
-	@Inject
-	ItemManager itemManager;
-
 	private HashMap<EquipmentInventorySlot, InventorySetupSlot> equipmentSlots;
 
-	InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
+	public InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
 	{
 		super(itemManager, plugin, "Equipment", "No equipment for this setup.");
 	}
@@ -62,8 +55,10 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.RING));
 	}
 
-	void setEquipmentSetupSlots(final ArrayList<GameItem> equipment)
+	public void setEquipmentSetupSlots(final InventorySetup setup)
 	{
+		final ArrayList<InventorySetupItem> equipment = setup.getEquipment();
+
 		final AtomicBoolean hasEquipment = new AtomicBoolean(false);
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
@@ -79,7 +74,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	}
 
-	void highlightDifferences(final ItemContainer currEquipment, final InventorySetup inventorySetup)
+	public void highlightDifferences(final ItemContainer currEquipment, final InventorySetup inventorySetup)
 	{
 		Item[] items = null;
 		if (currEquipment != null)
@@ -87,7 +82,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 			items = currEquipment.getItems();
 		}
 
-		final ArrayList<GameItem> equipToCheck = inventorySetup.getEquipment();
+		final ArrayList<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
 		// check to see if the inventory is all empty
 		boolean allEmpty = equipToCheck.isEmpty() || equipToCheck.stream().allMatch(item -> item.getId() == -1);
@@ -95,7 +90,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		// equipment setup is empty but the current equipment is not, make the text red
 		if (allEmpty && items != null && items.length > 0)
 		{
-			super.modifyNoContainerCaption(items);
+			super.modifyNoContainerCaption(equipToCheck, items);
 			return;
 		}
 
@@ -107,7 +102,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	void resetEquipmentSlotsColor()
+	public void resetEquipmentSlotsColor()
 	{
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{

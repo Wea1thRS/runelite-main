@@ -63,4 +63,5 @@ public interface InventorySetupConfig extends Config
 
 	default Color getBankHighlightColor() { return Color.RED; }
 
+
 }

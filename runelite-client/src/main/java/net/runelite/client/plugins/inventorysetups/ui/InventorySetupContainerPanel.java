@@ -1,17 +1,15 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.inventorysetups.InventorySetupConfig;
+import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
-import net.runelite.client.plugins.loottracker.LootTrackerPlugin;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.http.api.loottracker.GameItem;
 
-import javax.inject.Inject;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -19,22 +17,22 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Slf4j
 public abstract class InventorySetupContainerPanel extends JPanel
 {
+
 	protected ItemManager itemManager;
 
-	JPanel containerPanel;
+	protected JPanel containerPanel;
 
-	JPanel emptyContainerPanel;
+	protected JPanel emptyContainerPanel;
 
-	JLabel emptyContainerLabel;
+	protected JLabel emptyContainerLabel;
 
-	final Color originalLabelColor;
+	protected final Color originalLabelColor;
 
 	private final InventorySetupPlugin plugin;
 
-	InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
+	public InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
 	{
 		this.itemManager = itemManager;
 		this.plugin = plugin;
@@ -63,38 +61,39 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerPanel.add(containerSlotsPanel, BorderLayout.CENTER);
 	}
 
-	void setContainerSlot(int index,
+	protected void setContainerSlot(int index,
 	                             final InventorySetupSlot containerSlot,
-	                             final ArrayList<GameItem> items,
+	                             final ArrayList<InventorySetupItem> items,
                                  final AtomicBoolean hasItems)
 	{
 		if (index >= items.size() || items.get(index).getId() == -1)
 		{
-			containerSlot.setImageLabel(null, itemManager.getImage(-1));
+			containerSlot.setImageLabel(null, null);
 			return;
 		}
 
 		hasItems.set(true);
 
 		int itemId = items.get(index).getId();
-		int quantity = items.get(index).getQty();
+		int quantity = items.get(index).getQuantity();
+		final String itemName = items.get(index).getName();
 		AsyncBufferedImage itemImg = itemManager.getImage(itemId, quantity, quantity > 1);
-		String toolTip = itemManager.getItemComposition(itemId).getName();
-
+		String toolTip = itemName;
 		if (quantity > 1)
 		{
-			toolTip += " (" + quantity + ")";
+			toolTip += " (" + String.valueOf(quantity) + ")";
 		}
 		containerSlot.setImageLabel(toolTip, itemImg);
 	}
 
-	void modifyNoContainerCaption(final Item[] currContainer)
+	protected void modifyNoContainerCaption(final ArrayList<InventorySetupItem> containerToCheck,
+	                                           final Item[] currContainer)
 	{
 		// inventory setup is empty but the current inventory is not, make the text red
 		boolean hasDifference = false;
-		for (Item item : currContainer)
+		for  (int i = 0; i < currContainer.length; i++)
 		{
-			if (item.getId() != -1)
+			if (currContainer[i].getId() != -1)
 			{
 				hasDifference = true;
 				break;
@@ -113,7 +112,7 @@ public abstract class InventorySetupContainerPanel extends JPanel
 
 	}
 
-	void highlightDifferentSlotColor(final ArrayList<GameItem> containerToCheck,
+	protected void highlightDifferentSlotColor(final ArrayList<InventorySetupItem> containerToCheck,
 	                                     final Item[] currContainer,
 	                                     final InventorySetupSlot containerSlot,
 	                                     int index)
@@ -160,7 +159,7 @@ public abstract class InventorySetupContainerPanel extends JPanel
 			checkId = ItemVariationMapping.map(checkId);
 		}
 
-		if (config.getStackDifference() && currContainer[index].getQuantity() != containerToCheck.get(index).getQty())
+		if (config.getStackDifference() && currContainer[index].getQuantity() != containerToCheck.get(index).getQuantity())
 		{
 			containerSlot.setBackground(highlightColor);
 			return;
