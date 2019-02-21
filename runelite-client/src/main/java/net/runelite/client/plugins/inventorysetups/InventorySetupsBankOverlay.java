@@ -57,6 +57,7 @@ public class InventorySetupsBankOverlay extends Overlay
 				{
 					return null;
 				}
+
 				final Color color = config.getBankHighlightColor();
 
 				if (color != null)

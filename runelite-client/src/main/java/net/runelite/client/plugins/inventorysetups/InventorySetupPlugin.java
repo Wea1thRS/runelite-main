@@ -162,7 +162,7 @@ public class InventorySetupPlugin extends Plugin
 		final InventorySetup invSetup = new InventorySetup(inventory, equipment);
 
 		inventorySetups.put(name, invSetup);
-		clientThread.invokeLater(() -> panel.addInventorySetup(name, invSetup, true));
+		panel.addInventorySetup(name, invSetup, true);
 
 		updateConfig();
 
@@ -196,7 +196,7 @@ public class InventorySetupPlugin extends Plugin
 	{
 		if (inventorySetups.containsKey(name))
 		{
-			clientThread.invokeLater(() -> panel.setCurrentInventorySetup(inventorySetups.get(name)));
+			panel.setCurrentInventorySetup(inventorySetups.get(name));
 		}
 	}
 
@@ -216,7 +216,7 @@ public class InventorySetupPlugin extends Plugin
 			final String setupName = panel.getSelectedInventorySetup();
 			if (!setupName.isEmpty())
 			{
-				clientThread.invokeLater(() -> panel.setCurrentInventorySetup(inventorySetups.get(setupName)));
+				panel.setCurrentInventorySetup(inventorySetups.get(setupName));
 			}
 		}
 	}
@@ -250,7 +250,7 @@ public class InventorySetupPlugin extends Plugin
 
 		for (final String key : inventorySetups.keySet())
 		{
-			clientThread.invokeLater(() -> panel.addInventorySetup(key, inventorySetups.get(key), false));
+			panel.addInventorySetup(key, inventorySetups.get(key), false);
 		}
 
 		highlightDifference = false;
@@ -301,7 +301,7 @@ public class InventorySetupPlugin extends Plugin
 		final String setupName = panel.getSelectedInventorySetup();
 		if (!setupName.isEmpty())
 		{
-			clientThread.invokeLater(() -> panel.setCurrentInventorySetup(inventorySetups.get(setupName)));
+			panel.setCurrentInventorySetup(inventorySetups.get(setupName));
 		}
 	}
 
