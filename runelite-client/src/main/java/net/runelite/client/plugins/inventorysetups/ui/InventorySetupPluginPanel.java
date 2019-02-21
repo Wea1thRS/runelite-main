@@ -234,8 +234,8 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 		log.debug("-------------");
 
-		clientThread.invokeLater(() -> invPanel.setInventorySetupSlots(inventorySetup.getInventory()));
-		clientThread.invokeLater(() -> eqpPanel.setEquipmentSetupSlots(inventorySetup.getEquipment()));
+		invPanel.setInventorySetupSlots(inventorySetup.getInventory());
+		eqpPanel.setEquipmentSetupSlots(inventorySetup.getEquipment());
 
 		if (plugin.getHighlightDifference())
 		{
