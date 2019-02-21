@@ -10,8 +10,8 @@ import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.http.api.loottracker.GameItem;
 
-import javax.inject.Inject;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -32,9 +32,6 @@ import java.awt.image.BufferedImage;
 @Slf4j
 public class InventorySetupPluginPanel extends PluginPanel
 {
-	@Inject
-	ClientThread clientThread;
-
 	private static ImageIcon ADD_ICON;
 	private static ImageIcon ADD_HOVER_ICON;
 	private static ImageIcon REMOVE_ICON;
@@ -221,8 +218,24 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	public void setCurrentInventorySetup(final InventorySetup inventorySetup)
 	{
-		invPanel.setInventorySetupSlots(inventorySetup);
-		eqpPanel.setEquipmentSetupSlots(inventorySetup);
+		if (inventorySetup == null) {
+			return;
+		}
+
+		if( inventorySetup.getEquipment() == null || inventorySetup.getInventory() == null)
+		{
+			return;
+		}
+
+		for (GameItem item : inventorySetup.getEquipment())
+		{
+			log.debug("Equipment: " + String.valueOf(item.getId()));
+		}
+
+		log.debug("-------------");
+
+		clientThread.invokeLater(() -> invPanel.setInventorySetupSlots(inventorySetup.getInventory()));
+		clientThread.invokeLater(() -> eqpPanel.setEquipmentSetupSlots(inventorySetup.getEquipment()));
 
 		if (plugin.getHighlightDifference())
 		{
@@ -252,7 +265,8 @@ public class InventorySetupPluginPanel extends PluginPanel
 		// set this inventory setup to be the current one
 		if (setToCurrent)
 		{
-			clientThread.invokeLater(() -> setCurrentInventorySetup(setup));
+			log.debug("4");
+			setCurrentInventorySetup(setup);
 		}
 	}
 

@@ -23,9 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 {
 	@Inject
-	ClientThread clientThread;
-
-	@Inject
 	ItemManager itemManager;
 
 	private HashMap<EquipmentInventorySlot, InventorySetupSlot> equipmentSlots;
@@ -65,16 +62,12 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.RING));
 	}
 
-	void setEquipmentSetupSlots(final InventorySetup setup)
+	void setEquipmentSetupSlots(final ArrayList<GameItem> equipment)
 	{
-		final ArrayList<GameItem> equipment = setup.getEquipment();
-
 		final AtomicBoolean hasEquipment = new AtomicBoolean(false);
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
-			log.debug(slot.name());
 			int i = slot.getSlotIdx();
-			log.debug(i + " " + slot.getSlotIdx());
 			super.setContainerSlot(i, equipmentSlots.get(slot), equipment, hasEquipment);
 		}
 

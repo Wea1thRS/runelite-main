@@ -1,5 +1,6 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.client.game.ItemManager;
@@ -13,6 +14,7 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 {
 
@@ -43,10 +45,8 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	void setInventorySetupSlots(final InventorySetup setup)
+	void setInventorySetupSlots(final ArrayList<GameItem> inventory)
 	{
-		ArrayList<GameItem> inventory = setup.getInventory();
-
 		final AtomicBoolean hasInventory = new AtomicBoolean(false);
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
 		{

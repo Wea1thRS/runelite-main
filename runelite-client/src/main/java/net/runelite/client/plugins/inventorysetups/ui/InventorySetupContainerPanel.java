@@ -7,9 +7,11 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.inventorysetups.InventorySetupConfig;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
+import net.runelite.client.plugins.loottracker.LootTrackerPlugin;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.http.api.loottracker.GameItem;
 
+import javax.inject.Inject;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -20,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public abstract class InventorySetupContainerPanel extends JPanel
 {
-
 	protected ItemManager itemManager;
 
 	JPanel containerPanel;
@@ -69,7 +70,7 @@ public abstract class InventorySetupContainerPanel extends JPanel
 	{
 		if (index >= items.size() || items.get(index).getId() == -1)
 		{
-			containerSlot.setImageLabel(null, null);
+			containerSlot.setImageLabel(null, itemManager.getImage(-1));
 			return;
 		}
 
