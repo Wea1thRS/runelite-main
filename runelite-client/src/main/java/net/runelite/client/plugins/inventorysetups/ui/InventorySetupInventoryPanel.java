@@ -4,9 +4,9 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
+import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.http.api.loottracker.GameItem;
 
 import javax.swing.JPanel;
 import java.awt.GridLayout;
@@ -45,7 +45,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	public void setInventorySetupSlots(final InventorySetup setup)
 	{
-		ArrayList<GameItem> inventory = setup.getInventory();
+		ArrayList<InventorySetupItem> inventory = setup.getInventory();
 
 		final AtomicBoolean hasInventory = new AtomicBoolean(false);
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
@@ -68,7 +68,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 			items = currInventory.getItems();
 		}
 
-		final ArrayList<GameItem> inventoryToCheck = inventorySetup.getInventory();
+		final ArrayList<InventorySetupItem> inventoryToCheck = inventorySetup.getInventory();
 
 		// check to see if the inventory is all empty
 		boolean allEmpty = inventoryToCheck.isEmpty() || inventoryToCheck.stream().allMatch(item -> item.getId() == -1);

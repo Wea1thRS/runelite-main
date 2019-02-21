@@ -2,60 +2,54 @@ package net.runelite.client.plugins.inventorysetups;
 
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
-import net.runelite.http.api.loottracker.GameItem;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.game.ItemManager;
 
 import java.util.ArrayList;
 
 public class InventorySetup {
 
-	// TODO use GameItem
-    private ArrayList<GameItem> inventoryIds;
-    private ArrayList<GameItem> equipmentIds;
+    private ArrayList<InventorySetupItem> inventory;
+    private ArrayList<InventorySetupItem> equipment;
 
-    public InventorySetup(final ItemContainer inventory, final ItemContainer equipment)
+    public InventorySetup(final ItemContainer inventoryToAdd, final ItemContainer equipmentToAdd, final ItemManager itemManager, final ClientThread clientThread)
     {
-    	Item[] invIds = null;
-    	if (inventory != null)
-	    {
-	    	invIds = inventory.getItems();
-	    }
-
-	    Item[] equipIds = null;
-    	if (equipment != null)
-	    {
-	    	equipIds = equipment.getItems();
-	    }
-
-        inventoryIds = new ArrayList<>();
-        equipmentIds = new ArrayList<>();
-
-        if (invIds != null)
-        {
-            for (int i = 0; i < invIds.length; i++)
-            {
-                final Item item  = invIds[i];
-                inventoryIds.add(new GameItem(item.getId(), item.getQuantity()));
-            }
-        }
-
-        if (equipIds != null)
-        {
-            for (int i = 0; i < equipIds.length; i++)
-            {
-                final Item item = equipIds[i];
-                equipmentIds.add(new GameItem(item.getId(), item.getQuantity()));
-            }
-        }
+    	this.inventory = new ArrayList<>();
+    	this.equipment = new ArrayList<>();
+    	populateContainer(inventoryToAdd, inventory, clientThread, itemManager);
+    	populateContainer(equipmentToAdd, equipment, clientThread, itemManager);
     }
 
-    public final ArrayList<GameItem> getInventory()
+    public final ArrayList<InventorySetupItem> getInventory()
     {
-    	return inventoryIds;
+    	return inventory;
     }
 
-    public final ArrayList<GameItem> getEquipment()
+    public final ArrayList<InventorySetupItem> getEquipment()
     {
-    	return equipmentIds;
+    	return equipment;
+    }
+
+    private void populateContainer(final ItemContainer container, final ArrayList<InventorySetupItem> containerToPopulate, ClientThread clientThread, final ItemManager itemManager)
+    {
+    	Item[] items = null;
+    	if (container != null)
+	    {
+	    	items = container.getItems();
+	    }
+
+    	if (items != null)
+	    {
+		    for (int i = 0; i < items.length; i++)
+		    {
+			    final Item item = items[i];
+			    final StringBuilder nameBuilder = new StringBuilder();
+
+			    // get the item name from the client thread
+			    clientThread.invoke(() ->  nameBuilder.append(itemManager.getItemComposition(item.getId()).getName()));
+			    containerToPopulate.add(new InventorySetupItem(item.getId(), nameBuilder.toString(), item.getQuantity()));
+		    }
+	    }
     }
 
 }

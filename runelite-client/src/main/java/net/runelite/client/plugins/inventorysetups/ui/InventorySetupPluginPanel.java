@@ -3,6 +3,7 @@ package net.runelite.client.plugins.inventorysetups.ui;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
@@ -54,6 +55,8 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	private final ItemManager itemManager;
 
+	private final ClientThread clientThread;
+
 	static
 	{
 		final BufferedImage addIcon = ImageUtil.getResourceStreamFromClass(InventorySetupPlugin.class, "add_icon.png");
@@ -65,17 +68,19 @@ public class InventorySetupPluginPanel extends PluginPanel
 		REMOVE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.53f));
 	}
 
-	public InventorySetupPluginPanel(InventorySetupPlugin plugin, ItemManager itemManager)
+	public InventorySetupPluginPanel(final InventorySetupPlugin plugin, final ItemManager itemManager, final ClientThread clientThread)
 	{
 		super(false);
 		this.plugin = plugin;
 		this.itemManager = itemManager;
+		this.clientThread = clientThread;
 		this.removeMarker = new JLabel(REMOVE_ICON);
 		this.invPanel = new InventorySetupInventoryPanel(itemManager, plugin);
 		this.eqpPanel = new InventorySetupEquipmentPanel(itemManager, plugin);
 		this.noSetupsPanel = new JPanel();
 		this.invEqPanel = new JPanel();
 		this.setupComboBox = new JComboBox<>();
+
 
 		// setup the title
 		final JLabel addMarker = new JLabel(ADD_ICON);
@@ -88,15 +93,20 @@ public class InventorySetupPluginPanel extends PluginPanel
 		addMarker.addMouseListener(new MouseAdapter()
 		{
 			@Override
-			public void mouseClicked(MouseEvent e) { plugin.addInventorySetup(); }
+			public void mouseClicked(MouseEvent e)
+			{
+				plugin.addInventorySetup();
+			}
 
 			@Override
-			public void mouseEntered(MouseEvent e) {
+			public void mouseEntered(MouseEvent e)
+			{
 				addMarker.setIcon(ADD_HOVER_ICON);
 			}
 
 			@Override
-			public void mouseExited(MouseEvent e) {
+			public void mouseExited(MouseEvent e)
+			{
 				addMarker.setIcon(ADD_ICON);
 			}
 		});
@@ -122,7 +132,10 @@ public class InventorySetupPluginPanel extends PluginPanel
 			}
 
 			@Override
-			public void mouseExited(MouseEvent e) { removeMarker.setIcon(REMOVE_ICON); }
+			public void mouseExited(MouseEvent e)
+			{
+				removeMarker.setIcon(REMOVE_ICON);
+			}
 		});
 
 		// setup the combo box for selection switching
@@ -137,22 +150,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 				if (e.getStateChange() == ItemEvent.SELECTED)
 				{
 					String selection = (String)e.getItem();
-
-					// empty selection
-					if (selection.isEmpty())
-					{
-						removeMarker.setEnabled(false);
-						noSetupsPanel.setVisible(true);
-						invEqPanel.setVisible(false);
-					}
-					else
-					{
-						removeMarker.setEnabled(true);
-						noSetupsPanel.setVisible(false);
-						invEqPanel.setVisible(true);
-					}
-
-					plugin.changeCurrentInventorySetup(selection);
+					setCurrentInventorySetup(selection);
 				}
 			}
 		});
@@ -223,8 +221,27 @@ public class InventorySetupPluginPanel extends PluginPanel
 		invEqPanel.setVisible(false);
 	}
 
-	public void setCurrentInventorySetup(final InventorySetup inventorySetup)
+	public void showHasSetupPanel(final String name)
 	{
+		setupComboBox.setSelectedItem(name);
+		removeMarker.setEnabled(true);
+		noSetupsPanel.setVisible(false);
+		invEqPanel.setVisible(true);
+	}
+
+	public void setCurrentInventorySetup(final String name)
+	{
+
+		if (name.isEmpty())
+		{
+			showNoSetupsPanel();
+			return;
+		}
+
+		showHasSetupPanel(name);
+
+		final InventorySetup inventorySetup = plugin.getInventorySetuo(name);
+
 		invPanel.setInventorySetupSlots(inventorySetup);
 		eqpPanel.setEquipmentSetupSlots(inventorySetup);
 
@@ -245,19 +262,9 @@ public class InventorySetupPluginPanel extends PluginPanel
 		repaint();
 	}
 
-	public void addInventorySetup(final String name, final InventorySetup setup, boolean setToCurrent)
+	public void addInventorySetup(final String name)
 	{
 		setupComboBox.addItem(name);
-		setupComboBox.setSelectedItem(name);
-		removeMarker.setEnabled(true);
-		noSetupsPanel.setVisible(false);
-		invEqPanel.setVisible(true);
-
-		// set this inventory setup to be the current one
-		if (setToCurrent)
-		{
-			setCurrentInventorySetup(setup);
-		}
 	}
 
 	public void removeInventorySetup(final String name)

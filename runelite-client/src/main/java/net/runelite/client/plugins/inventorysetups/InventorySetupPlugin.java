@@ -8,6 +8,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
+import net.runelite.api.ItemID;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
@@ -71,7 +72,7 @@ public class InventorySetupPlugin extends Plugin
 	public void startUp()
 	{
 
-		panel = new InventorySetupPluginPanel(this, itemManager);
+		panel = new InventorySetupPluginPanel(this, itemManager, clientThread);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "inventorysetups_icon.png");
 
@@ -146,10 +147,11 @@ public class InventorySetupPlugin extends Plugin
 		ItemContainer equipment = client.getItemContainer(InventoryID.EQUIPMENT);
 		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
 
-		final InventorySetup invSetup = new InventorySetup(inventory, equipment);
+		final InventorySetup invSetup = new InventorySetup(inventory, equipment, itemManager, clientThread);
 
 		inventorySetups.put(name, invSetup);
-		panel.addInventorySetup(name, invSetup, true);
+		panel.addInventorySetup(name);
+		panel.setCurrentInventorySetup(name);
 
 		updateConfig();
 
@@ -179,12 +181,9 @@ public class InventorySetupPlugin extends Plugin
 		}
 	}
 
-	public void changeCurrentInventorySetup(final String name)
+	public final InventorySetup getInventorySetuo(final String name)
 	{
-		if (inventorySetups.containsKey(name))
-		{
-			panel.setCurrentInventorySetup(inventorySetups.get(name));
-		}
+		return inventorySetups.get(name);
 	}
 
 	@Provides
@@ -203,7 +202,7 @@ public class InventorySetupPlugin extends Plugin
 			final String setupName = panel.getSelectedInventorySetup();
 			if (!setupName.isEmpty())
 			{
-				panel.setCurrentInventorySetup(inventorySetups.get(setupName));
+				panel.setCurrentInventorySetup(setupName);
 			}
 		}
 	}
@@ -223,6 +222,7 @@ public class InventorySetupPlugin extends Plugin
 
 	private void loadConfig()
 	{
+		// serialize the internal data structure from the json in the configuration
 		final String json = configManager.getConfiguration(CONFIG_GROUP, CONFIG_KEY);
 		if (json == null || json.isEmpty())
 		{
@@ -230,6 +230,7 @@ public class InventorySetupPlugin extends Plugin
 		}
 		else
 		{
+			// TODO add last resort?, serialize exception just make empty map
 			final Gson gson = new Gson();
 			Type type = new TypeToken<HashMap<String, InventorySetup>>(){}.getType();
 			inventorySetups = gson.fromJson(json, type);
@@ -237,7 +238,7 @@ public class InventorySetupPlugin extends Plugin
 
 		for (final String key : inventorySetups.keySet())
 		{
-			panel.addInventorySetup(key, inventorySetups.get(key), false);
+			panel.addInventorySetup(key);
 		}
 
 		highlightDifference = false;
@@ -252,8 +253,6 @@ public class InventorySetupPlugin extends Plugin
 		{
 			return;
 		}
-
-		boolean test = config.getVariationDifference();
 
 		// check to see that the container is the equipment or inventory
 		ItemContainer container = event.getItemContainer();
@@ -288,7 +287,7 @@ public class InventorySetupPlugin extends Plugin
 		final String setupName = panel.getSelectedInventorySetup();
 		if (!setupName.isEmpty())
 		{
-			panel.setCurrentInventorySetup(inventorySetups.get(setupName));
+			panel.setCurrentInventorySetup(setupName);
 		}
 	}
 
