@@ -6,6 +6,7 @@ import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
+import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.plugins.screenmarkers.ScreenMarkerPlugin;
 import net.runelite.client.ui.PluginPanel;
@@ -21,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
@@ -32,6 +34,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class InventorySetupPluginPanel extends PluginPanel
 {
@@ -53,10 +56,6 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	private final InventorySetupPlugin plugin;
 
-	private final ItemManager itemManager;
-
-	private final ClientThread clientThread;
-
 	static
 	{
 		final BufferedImage addIcon = ImageUtil.getResourceStreamFromClass(InventorySetupPlugin.class, "add_icon.png");
@@ -72,15 +71,12 @@ public class InventorySetupPluginPanel extends PluginPanel
 	{
 		super(false);
 		this.plugin = plugin;
-		this.itemManager = itemManager;
-		this.clientThread = clientThread;
 		this.removeMarker = new JLabel(REMOVE_ICON);
 		this.invPanel = new InventorySetupInventoryPanel(itemManager, plugin);
 		this.eqpPanel = new InventorySetupEquipmentPanel(itemManager, plugin);
 		this.noSetupsPanel = new JPanel();
 		this.invEqPanel = new JPanel();
 		this.setupComboBox = new JComboBox<>();
-
 
 		// setup the title
 		final JLabel addMarker = new JLabel(ADD_ICON);
@@ -221,7 +217,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 		invEqPanel.setVisible(false);
 	}
 
-	public void showHasSetupPanel(final String name)
+	private void showHasSetupPanel(final String name)
 	{
 		setupComboBox.setSelectedItem(name);
 		removeMarker.setEnabled(true);
@@ -231,7 +227,6 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	public void setCurrentInventorySetup(final String name)
 	{
-
 		if (name.isEmpty())
 		{
 			showNoSetupsPanel();
@@ -240,17 +235,18 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 		showHasSetupPanel(name);
 
-		final InventorySetup inventorySetup = plugin.getInventorySetuo(name);
+		final InventorySetup inventorySetup = plugin.getInventorySetup(name);
 
 		invPanel.setInventorySetupSlots(inventorySetup);
 		eqpPanel.setEquipmentSetupSlots(inventorySetup);
 
 		if (plugin.getHighlightDifference())
 		{
-			final ItemContainer inv = plugin.getCurrentPlayerContainer(InventoryID.INVENTORY);
-			final ItemContainer eqp = plugin.getCurrentPlayerContainer(InventoryID.EQUIPMENT);
-			highlightDifferences(inv, inventorySetup, InventoryID.INVENTORY);
-			highlightDifferences(eqp, inventorySetup, InventoryID.EQUIPMENT);
+			final ArrayList<InventorySetupItem> normInv = plugin.getNormalizedContainer(InventoryID.INVENTORY);
+			final ArrayList<InventorySetupItem> normEqp = plugin.getNormalizedContainer(InventoryID.EQUIPMENT);
+
+			highlightDifferences(normInv, inventorySetup, InventoryID.INVENTORY);
+			highlightDifferences(normEqp, inventorySetup, InventoryID.EQUIPMENT);
 		}
 		else
 		{
@@ -279,17 +275,19 @@ public class InventorySetupPluginPanel extends PluginPanel
 		repaint();
 	}
 
-	public void highlightDifferences(final ItemContainer container,
+	public void highlightDifferences(final ArrayList<InventorySetupItem> container,
 	                                 final InventorySetup setupToCheck,
 	                                 final InventoryID type)
 	{
-		if (type == InventoryID.INVENTORY)
+		switch (type)
 		{
-			invPanel.highlightDifferentSlots(container, setupToCheck);
-		}
-		else if (type == InventoryID.EQUIPMENT)
-		{
-			eqpPanel.highlightDifferences(container, setupToCheck);
+			case INVENTORY:
+				invPanel.highlightDifferentSlots(container, setupToCheck);
+				break;
+
+			case EQUIPMENT:
+				eqpPanel.highlightDifferences(container, setupToCheck);
+				break;
 		}
 	}
 

@@ -61,28 +61,25 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void highlightDifferentSlots(final ItemContainer currInventory, final InventorySetup inventorySetup) {
-
-		Item[] items = null;
-		if (currInventory != null) {
-			items = currInventory.getItems();
-		}
+	public void highlightDifferentSlots(final ArrayList<InventorySetupItem> currInventory, final InventorySetup inventorySetup) {
 
 		final ArrayList<InventorySetupItem> inventoryToCheck = inventorySetup.getInventory();
 
+		assert currInventory.size() == inventoryToCheck.size() : "size mismatch";
+
 		// check to see if the inventory is all empty
-		boolean allEmpty = inventoryToCheck.isEmpty() || inventoryToCheck.stream().allMatch(item -> item.getId() == -1);
+		boolean allEmpty = inventoryToCheck.stream().allMatch(item -> item.getId() == -1);
 
 		// inventory setup is empty but the current inventory is not, make the text red
-		if (allEmpty && items != null && items.length > 0)
+		if (allEmpty)
 		{
-			super.modifyNoContainerCaption(inventoryToCheck, items);
+			super.modifyNoContainerCaption(currInventory);
 			return;
 		}
 
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
 		{
-			super.highlightDifferentSlotColor(inventoryToCheck, items, inventorySlots.get(i), i);
+			super.highlightDifferentSlotColor(inventoryToCheck.get(i), currInventory.get(i), inventorySlots.get(i));
 		}
 	}
 

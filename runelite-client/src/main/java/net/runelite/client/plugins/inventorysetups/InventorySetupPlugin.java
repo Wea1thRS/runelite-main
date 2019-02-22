@@ -18,6 +18,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.inventorysetups.ui.InventorySetupEquipmentPanel;
 import net.runelite.client.plugins.inventorysetups.ui.InventorySetupPluginPanel;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
@@ -25,8 +26,10 @@ import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 @PluginDescriptor(
@@ -41,24 +44,26 @@ public class InventorySetupPlugin extends Plugin
 
 	private static final String CONFIG_GROUP = "inventorysetups";
 	private static final String CONFIG_KEY = "setups";
-
-	@Inject
-	private ClientToolbar clientToolbar;
+	private static final int NUM_INVENTORY_ITEMS = 28;
+	private static final int NUM_EQUIPMENT_ITEMS = 14;
 
 	@Inject
 	private Client client;
-
-	@Inject
-	private InventorySetupConfig config;
-
-	@Inject
-	private ConfigManager configManager;
 
 	@Inject
 	private ItemManager itemManager;
 
 	@Inject
 	private ClientThread clientThread;
+
+	@Inject
+	private ClientToolbar clientToolbar;
+
+	@Inject
+	private InventorySetupConfig config;
+
+	@Inject
+	private ConfigManager configManager;
 
 	private InventorySetupPluginPanel panel;
 
@@ -71,7 +76,6 @@ public class InventorySetupPlugin extends Plugin
 	@Override
 	public void startUp()
 	{
-
 		panel = new InventorySetupPluginPanel(this, itemManager, clientThread);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "inventorysetups_icon.png");
@@ -102,7 +106,6 @@ public class InventorySetupPlugin extends Plugin
 
 	public void addInventorySetup()
 	{
-
 		final String name = JOptionPane.showInputDialog(panel,
 				"Enter the name of this setup.",
 				"Add New Setup",
@@ -144,16 +147,21 @@ public class InventorySetupPlugin extends Plugin
 			removeInventorySetup(name, false);
 		}
 
-		ItemContainer equipment = client.getItemContainer(InventoryID.EQUIPMENT);
-		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
+		clientThread.invoke(() ->
+		{
+			ArrayList<InventorySetupItem> inv = getNormalizedContainer(InventoryID.INVENTORY);
+			ArrayList<InventorySetupItem> eqp = getNormalizedContainer(InventoryID.EQUIPMENT);
 
-		final InventorySetup invSetup = new InventorySetup(inventory, equipment, itemManager, clientThread);
+			final InventorySetup invSetup = new InventorySetup(inv, eqp);
+			SwingUtilities.invokeLater(() ->
+			{
+				inventorySetups.put(name, invSetup);
+				panel.addInventorySetup(name);
+				panel.setCurrentInventorySetup(name);
 
-		inventorySetups.put(name, invSetup);
-		panel.addInventorySetup(name);
-		panel.setCurrentInventorySetup(name);
-
-		updateConfig();
+				updateConfig();
+			});
+		});
 
 	}
 
@@ -181,7 +189,7 @@ public class InventorySetupPlugin extends Plugin
 		}
 	}
 
-	public final InventorySetup getInventorySetuo(final String name)
+	public final InventorySetup getInventorySetup(final String name)
 	{
 		return inventorySetups.get(name);
 	}
@@ -247,6 +255,11 @@ public class InventorySetupPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
+		if (!config.getHighlightDifferences())
+		{
+			return;
+		}
+
 		// empty entry, no need to compare anything
 		final String selectedInventorySetup = panel.getSelectedInventorySetup();
 		if (selectedInventorySetup.isEmpty())
@@ -258,13 +271,15 @@ public class InventorySetupPlugin extends Plugin
 		ItemContainer container = event.getItemContainer();
 		if (container == client.getItemContainer(InventoryID.INVENTORY))
 		{
+			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.INVENTORY);
 			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
-			panel.highlightDifferences(container, setup, InventoryID.INVENTORY);
+			panel.highlightDifferences(normContainer, setup, InventoryID.INVENTORY);
 		}
 		else if (container == client.getItemContainer(InventoryID.EQUIPMENT))
 		{
+			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.EQUIPMENT);
 			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
-			panel.highlightDifferences(container, setup, InventoryID.EQUIPMENT);
+			panel.highlightDifferences(normContainer, setup, InventoryID.EQUIPMENT);
 		}
 
 	}
@@ -291,9 +306,41 @@ public class InventorySetupPlugin extends Plugin
 		}
 	}
 
-	public final ItemContainer getCurrentPlayerContainer(final InventoryID type)
+	public ArrayList<InventorySetupItem> getNormalizedContainer(final InventoryID id)
 	{
-		return client.getItemContainer(type);
+		assert id == InventoryID.INVENTORY || id == InventoryID.EQUIPMENT : "invalid inventory ID";
+
+		final ItemContainer container = client.getItemContainer(id);
+
+		ArrayList<InventorySetupItem> newContainer = new ArrayList<>();
+
+		Item[] items = null;
+		if (container != null)
+		{
+			items = container.getItems();
+		}
+
+		int size = id == InventoryID.INVENTORY ? NUM_INVENTORY_ITEMS : NUM_EQUIPMENT_ITEMS;
+
+		for (int i = 0; i < size; i++)
+		{
+			if (items == null || i >= items.length)
+			{
+				newContainer.add(new InventorySetupItem(-1, "", 0));
+			}
+			else
+			{
+				final Item item = items[i];
+				String itemName = "";
+				if (client.isClientThread())
+				{
+					itemName = itemManager.getItemComposition(item.getId()).getName();
+				}
+				newContainer.add(new InventorySetupItem(item.getId(), itemName, item.getQuantity()));
+			}
+		}
+
+		return newContainer;
 	}
 
 	public final InventorySetupConfig getConfig()

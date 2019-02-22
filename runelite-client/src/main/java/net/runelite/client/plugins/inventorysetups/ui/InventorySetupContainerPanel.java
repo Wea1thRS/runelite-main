@@ -86,14 +86,13 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerSlot.setImageLabel(toolTip, itemImg);
 	}
 
-	protected void modifyNoContainerCaption(final ArrayList<InventorySetupItem> containerToCheck,
-	                                           final Item[] currContainer)
+	protected void modifyNoContainerCaption(final ArrayList<InventorySetupItem> currContainer)
 	{
-		// inventory setup is empty but the current inventory is not, make the text red
+		// inventory setup is empty but the current inventory is not, make the text change color
 		boolean hasDifference = false;
-		for  (int i = 0; i < currContainer.length; i++)
+		for  (int i = 0; i < currContainer.size(); i++)
 		{
-			if (currContainer[i].getId() != -1)
+			if (currContainer.get(i).getId() != -1)
 			{
 				hasDifference = true;
 				break;
@@ -112,57 +111,29 @@ public abstract class InventorySetupContainerPanel extends JPanel
 
 	}
 
-	protected void highlightDifferentSlotColor(final ArrayList<InventorySetupItem> containerToCheck,
-	                                     final Item[] currContainer,
-	                                     final InventorySetupSlot containerSlot,
-	                                     int index)
+	protected void highlightDifferentSlotColor(InventorySetupItem savedItem,
+	                                           InventorySetupItem currItem,
+	                                           final InventorySetupSlot containerSlot)
 	{
+		// important note: do not use item names for comparisons
+		// they are all empty to avoid clientThread usage when highlighting
+
 		final InventorySetupConfig config = plugin.getConfig();
 		final Color highlightColor = config.getHighlightColor();
-		// both inventories are smaller than the current iteration, no need to change
-		if (index >= containerToCheck.size() && (currContainer == null || index >= currContainer.length))
+
+		if (config.getStackDifference() && currItem.getQuantity() != savedItem.getQuantity())
 		{
-			containerSlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			containerSlot.setBackground(highlightColor);
 			return;
 		}
 
-		// the current inventory is smaller in size than the inventory to check
-		if ((currContainer == null || index >= currContainer.length) && index < containerToCheck.size())
-		{
-			if (containerToCheck.get(index).getId() != -1)
-			{
-				containerSlot.setBackground(highlightColor);
-			}
-			return;
-		}
-
-		// the inventory to check is smaller than the current inventory
-		if (index >= containerToCheck.size() && (currContainer != null && index < currContainer.length))
-		{
-			if (currContainer[index].getId() != -1)
-			{
-				containerSlot.setBackground(highlightColor);
-			}
-			else
-			{
-				containerSlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-			}
-			return;
-		}
-
-		int currId = currContainer[index].getId();
-		int checkId = containerToCheck.get(index).getId();
+		int currId = currItem.getId();
+		int checkId = savedItem.getId();
 
 		if (!config.getVariationDifference())
 		{
 			currId = ItemVariationMapping.map(currId);
 			checkId = ItemVariationMapping.map(checkId);
-		}
-
-		if (config.getStackDifference() && currContainer[index].getQuantity() != containerToCheck.get(index).getQuantity())
-		{
-			containerSlot.setBackground(highlightColor);
-			return;
 		}
 
 		if (currId != checkId)

@@ -74,23 +74,17 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void highlightDifferences(final ItemContainer currEquipment, final InventorySetup inventorySetup)
+	public void highlightDifferences(final ArrayList<InventorySetupItem> currEquipment, final InventorySetup inventorySetup)
 	{
-		Item[] items = null;
-		if (currEquipment != null)
-		{
-			items = currEquipment.getItems();
-		}
-
 		final ArrayList<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
 		// check to see if the inventory is all empty
-		boolean allEmpty = equipToCheck.isEmpty() || equipToCheck.stream().allMatch(item -> item.getId() == -1);
+		boolean allEmpty = equipToCheck.stream().allMatch(item -> item.getId() == -1);
 
 		// equipment setup is empty but the current equipment is not, make the text red
-		if (allEmpty && items != null && items.length > 0)
+		if (allEmpty)
 		{
-			super.modifyNoContainerCaption(equipToCheck, items);
+			super.modifyNoContainerCaption(currEquipment);
 			return;
 		}
 
@@ -98,7 +92,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		{
 
 			int slotIdx = slot.getSlotIdx();
-			super.highlightDifferentSlotColor(equipToCheck, items, equipmentSlots.get(slot), slotIdx);
+			super.highlightDifferentSlotColor(equipToCheck.get(slotIdx), currEquipment.get(slotIdx), equipmentSlots.get(slot));
 		}
 	}
 
