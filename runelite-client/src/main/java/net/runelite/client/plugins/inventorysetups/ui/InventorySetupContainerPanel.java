@@ -24,12 +24,6 @@ public abstract class InventorySetupContainerPanel extends JPanel
 
 	protected JPanel containerPanel;
 
-	protected JPanel emptyContainerPanel;
-
-	protected JLabel emptyContainerLabel;
-
-	protected final Color originalLabelColor;
-
 	private final InventorySetupPlugin plugin;
 
 	public InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
@@ -37,11 +31,6 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		this.itemManager = itemManager;
 		this.plugin = plugin;
 		this.containerPanel = new JPanel();
-		this.emptyContainerPanel = new JPanel();
-		this.emptyContainerLabel = new JLabel(emptyContainerText);
-		this.originalLabelColor = emptyContainerLabel.getForeground();
-
-		emptyContainerPanel.add(emptyContainerLabel);
 
 		final JPanel containerSlotsPanel = new JPanel();
 
@@ -59,20 +48,19 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerPanel.setLayout(new BorderLayout());
 		containerPanel.add(captionPanel, BorderLayout.NORTH);
 		containerPanel.add(containerSlotsPanel, BorderLayout.CENTER);
+
+		add(containerPanel);
 	}
 
 	protected void setContainerSlot(int index,
 	                             final InventorySetupSlot containerSlot,
-	                             final ArrayList<InventorySetupItem> items,
-                                 final AtomicBoolean hasItems)
+	                             final ArrayList<InventorySetupItem> items)
 	{
 		if (index >= items.size() || items.get(index).getId() == -1)
 		{
 			containerSlot.setImageLabel(null, null);
 			return;
 		}
-
-		hasItems.set(true);
 
 		int itemId = items.get(index).getId();
 		int quantity = items.get(index).getQuantity();
@@ -84,31 +72,6 @@ public abstract class InventorySetupContainerPanel extends JPanel
 			toolTip += " (" + String.valueOf(quantity) + ")";
 		}
 		containerSlot.setImageLabel(toolTip, itemImg);
-	}
-
-	protected void modifyNoContainerCaption(final ArrayList<InventorySetupItem> currContainer)
-	{
-		// inventory setup is empty but the current inventory is not, make the text change color
-		boolean hasDifference = false;
-		for  (int i = 0; i < currContainer.size(); i++)
-		{
-			if (currContainer.get(i).getId() != -1)
-			{
-				hasDifference = true;
-				break;
-			}
-		}
-
-		if (hasDifference)
-		{
-			final Color highlightColor = plugin.getConfig().getHighlightColor();
-			emptyContainerLabel.setForeground(highlightColor);
-		}
-		else
-		{
-			emptyContainerLabel.setForeground(this.originalLabelColor);
-		}
-
 	}
 
 	protected void highlightDifferentSlotColor(InventorySetupItem savedItem,

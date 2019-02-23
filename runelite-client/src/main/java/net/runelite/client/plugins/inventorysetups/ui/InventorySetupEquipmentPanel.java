@@ -4,12 +4,15 @@ import net.runelite.api.EquipmentInventorySlot;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 
+import net.runelite.api.ItemID;
+import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import java.util.ArrayList;
@@ -53,21 +56,18 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.GLOVES));
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.BOOTS));
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.RING));
+
 	}
 
 	public void setEquipmentSetupSlots(final InventorySetup setup)
 	{
 		final ArrayList<InventorySetupItem> equipment = setup.getEquipment();
 
-		final AtomicBoolean hasEquipment = new AtomicBoolean(false);
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
 			int i = slot.getSlotIdx();
-			super.setContainerSlot(i, equipmentSlots.get(slot), equipment, hasEquipment);
+			super.setContainerSlot(i, equipmentSlots.get(slot), equipment);
 		}
-
-		removeAll();
-		add(hasEquipment.get() ? containerPanel : emptyContainerPanel);
 
 		validate();
 		repaint();
@@ -78,15 +78,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 	{
 		final ArrayList<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
-		// check to see if the inventory is all empty
-		boolean allEmpty = equipToCheck.stream().allMatch(item -> item.getId() == -1);
-
-		// equipment setup is empty but the current equipment is not, make the text red
-		if (allEmpty)
-		{
-			super.modifyNoContainerCaption(currEquipment);
-			return;
-		}
+		assert currEquipment.size() == equipToCheck.size() : "size mismatch";
 
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
@@ -102,8 +94,6 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		{
 			equipmentSlots.get(slot).setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
-
-		emptyContainerLabel.setForeground(originalLabelColor);
 	}
 
 }

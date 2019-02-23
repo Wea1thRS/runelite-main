@@ -208,7 +208,7 @@ public class InventorySetupPlugin extends Plugin
 			// only allow highlighting if the config is enabled and the player is logged in
 			highlightDifference = config.getHighlightDifferences() && client.getGameState() == GameState.LOGGED_IN;
 			final String setupName = panel.getSelectedInventorySetup();
-			if (!setupName.isEmpty())
+			if (highlightDifference && !setupName.isEmpty())
 			{
 				panel.setCurrentInventorySetup(setupName);
 			}
@@ -255,7 +255,8 @@ public class InventorySetupPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (!config.getHighlightDifferences())
+
+		if (!highlightDifference || client.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
 		}
@@ -269,6 +270,7 @@ public class InventorySetupPlugin extends Plugin
 
 		// check to see that the container is the equipment or inventory
 		ItemContainer container = event.getItemContainer();
+
 		if (container == client.getItemContainer(InventoryID.INVENTORY))
 		{
 			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.INVENTORY);
@@ -289,21 +291,23 @@ public class InventorySetupPlugin extends Plugin
 	{
 		switch (event.getGameState())
 		{
+
+			// set the highlighting off if login screen shows up
+			case LOGIN_SCREEN:
+				highlightDifference = false;
+				final String setupName = panel.getSelectedInventorySetup();
+				if (!setupName.isEmpty())
+				{
+					panel.setCurrentInventorySetup(setupName);
+				}
+				break;
+
+			// set highlighting
 			case LOGGED_IN:
 				highlightDifference = config.getHighlightDifferences();
 				break;
-
-			default:
-				highlightDifference = false;
-				break;
 		}
 
-		// reset the current inventory setup
-		final String setupName = panel.getSelectedInventorySetup();
-		if (!setupName.isEmpty())
-		{
-			panel.setCurrentInventorySetup(setupName);
-		}
 	}
 
 	public ArrayList<InventorySetupItem> getNormalizedContainer(final InventoryID id)

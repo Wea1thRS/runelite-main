@@ -6,6 +6,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import java.awt.Color;
+import java.awt.Dimension;
 
 public class InventorySetupSlot extends JPanel
 {
@@ -16,9 +17,10 @@ public class InventorySetupSlot extends JPanel
 	{
 		imageLabel = new JLabel();
 		imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-
+		setPreferredSize(new Dimension(46, 42));
 		setBackground(color);
 		add(imageLabel);
+
 	}
 
 	public void setImageLabel(String toolTip, AsyncBufferedImage itemImage)
@@ -36,7 +38,6 @@ public class InventorySetupSlot extends JPanel
 
 		validate();
 		repaint();
-
 	}
 
 

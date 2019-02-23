@@ -47,14 +47,10 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 	{
 		ArrayList<InventorySetupItem> inventory = setup.getInventory();
 
-		final AtomicBoolean hasInventory = new AtomicBoolean(false);
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
 		{
-			super.setContainerSlot(i, inventorySlots.get(i), inventory, hasInventory);
+			super.setContainerSlot(i, inventorySlots.get(i), inventory);
 		}
-
-		removeAll();
-		add(hasInventory.get() ? containerPanel : emptyContainerPanel);
 
 		validate();
 		repaint();
@@ -66,16 +62,6 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		final ArrayList<InventorySetupItem> inventoryToCheck = inventorySetup.getInventory();
 
 		assert currInventory.size() == inventoryToCheck.size() : "size mismatch";
-
-		// check to see if the inventory is all empty
-		boolean allEmpty = inventoryToCheck.stream().allMatch(item -> item.getId() == -1);
-
-		// inventory setup is empty but the current inventory is not, make the text red
-		if (allEmpty)
-		{
-			super.modifyNoContainerCaption(currInventory);
-			return;
-		}
 
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
 		{
@@ -89,8 +75,6 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		{
 			inventorySlots.get(i).setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
-
-		emptyContainerLabel.setForeground(originalLabelColor);
 	}
 
 }
