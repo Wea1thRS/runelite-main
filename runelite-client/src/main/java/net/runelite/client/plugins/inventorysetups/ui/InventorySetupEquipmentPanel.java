@@ -1,31 +1,25 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
 import net.runelite.api.EquipmentInventorySlot;
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
 
-import net.runelite.api.ItemID;
-import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 {
 	private HashMap<EquipmentInventorySlot, InventorySetupSlot> equipmentSlots;
 
-	public InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
+	InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
 	{
-		super(itemManager, plugin, "Equipment", "No equipment for this setup.");
+		super(itemManager, plugin, "Equipment");
 	}
 
 	@Override
@@ -59,7 +53,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void setEquipmentSetupSlots(final InventorySetup setup)
+	void setEquipmentSetupSlots(final InventorySetup setup)
 	{
 		final ArrayList<InventorySetupItem> equipment = setup.getEquipment();
 
@@ -74,7 +68,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void highlightDifferences(final ArrayList<InventorySetupItem> currEquipment, final InventorySetup inventorySetup)
+	void highlightDifferences(final ArrayList<InventorySetupItem> currEquipment, final InventorySetup inventorySetup)
 	{
 		final ArrayList<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
@@ -88,12 +82,11 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	public void resetEquipmentSlotsColor()
+	void resetEquipmentSlotsColor()
 	{
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
 			equipmentSlots.get(slot).setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
 	}
-
 }

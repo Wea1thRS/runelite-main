@@ -1,7 +1,5 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
@@ -11,7 +9,6 @@ import net.runelite.client.ui.ColorScheme;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 {
@@ -21,8 +18,9 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	private ArrayList<InventorySetupSlot> inventorySlots;
 
-	public InventorySetupInventoryPanel(final ItemManager itemManager, final InventorySetupPlugin plugin) {
-		super(itemManager, plugin, "Inventory", "No inventory specified for this setup");
+	InventorySetupInventoryPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
+	{
+		super(itemManager, plugin, "Inventory");
 	}
 
 
@@ -43,7 +41,7 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	public void setInventorySetupSlots(final InventorySetup setup)
+	void setInventorySetupSlots(final InventorySetup setup)
 	{
 		ArrayList<InventorySetupItem> inventory = setup.getInventory();
 
@@ -57,7 +55,8 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	}
 
-	public void highlightDifferentSlots(final ArrayList<InventorySetupItem> currInventory, final InventorySetup inventorySetup) {
+	void highlightDifferentSlots(final ArrayList<InventorySetupItem> currInventory, final InventorySetup inventorySetup)
+	{
 
 		final ArrayList<InventorySetupItem> inventoryToCheck = inventorySetup.getInventory();
 
@@ -69,12 +68,11 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	public void resetInventorySlotsColor()
+	void resetInventorySlotsColor()
 	{
-		for (int i = 0; i < inventorySlots.size(); i++)
+		for (InventorySetupSlot inventorySlot : inventorySlots)
 		{
-			inventorySlots.get(i).setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			inventorySlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
 	}
-
 }

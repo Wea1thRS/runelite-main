@@ -1,14 +1,15 @@
 package net.runelite.client.plugins.inventorysetups;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
+import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.ItemID;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
@@ -16,12 +17,13 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.inventorysetups.ui.InventorySetupEquipmentPanel;
 import net.runelite.client.plugins.inventorysetups.ui.InventorySetupPluginPanel;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
@@ -39,6 +41,7 @@ import java.util.HashMap;
 		enabledByDefault = false
 )
 
+@Slf4j
 public class InventorySetupPlugin extends Plugin
 {
 
@@ -54,13 +57,19 @@ public class InventorySetupPlugin extends Plugin
 	private ItemManager itemManager;
 
 	@Inject
-	private ClientThread clientThread;
+	private InventorySetupBankOverlay overlay;
 
 	@Inject
 	private ClientToolbar clientToolbar;
 
 	@Inject
 	private InventorySetupConfig config;
+
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Inject
 	private ConfigManager configManager;
@@ -76,7 +85,9 @@ public class InventorySetupPlugin extends Plugin
 	@Override
 	public void startUp()
 	{
-		panel = new InventorySetupPluginPanel(this, itemManager, clientThread);
+		overlayManager.add(overlay);
+
+		panel = new InventorySetupPluginPanel(this, itemManager);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "inventorysetups_icon.png");
 
@@ -128,11 +139,10 @@ public class InventorySetupPlugin extends Plugin
 
 		if (inventorySetups.containsKey(name))
 		{
-			final StringBuilder builder = new StringBuilder();
-			builder.append("The setup ").append(name).append(" already exists. ")
-					.append("Would you like to replace it with the current setup?");
+			String builder = "The setup " + name + " already exists. " +
+					"Would you like to replace it with the current setup?";
 			int confirm = JOptionPane.showConfirmDialog(panel,
-					builder.toString(),
+					builder,
 					"Warning",
 					JOptionPane.OK_CANCEL_OPTION,
 					JOptionPane.PLAIN_MESSAGE);
@@ -162,7 +172,6 @@ public class InventorySetupPlugin extends Plugin
 				updateConfig();
 			});
 		});
-
 	}
 
 	public void removeInventorySetup(final String name, boolean askForConfirmation)
@@ -171,7 +180,8 @@ public class InventorySetupPlugin extends Plugin
 		{
 			int confirm = JOptionPane.YES_OPTION;
 
-			if (askForConfirmation) {
+			if (askForConfirmation)
+			{
 				confirm = JOptionPane.showConfirmDialog(panel,
 						"Are you sure you want to remove this setup?",
 						"Warning",
@@ -240,7 +250,10 @@ public class InventorySetupPlugin extends Plugin
 		{
 			// TODO add last resort?, serialize exception just make empty map
 			final Gson gson = new Gson();
-			Type type = new TypeToken<HashMap<String, InventorySetup>>(){}.getType();
+			Type type = new TypeToken<HashMap<String, InventorySetup>>()
+			{
+
+			}.getType();
 			inventorySetups = gson.fromJson(json, type);
 		}
 
@@ -291,7 +304,6 @@ public class InventorySetupPlugin extends Plugin
 	{
 		switch (event.getGameState())
 		{
-
 			// set the highlighting off if login screen shows up
 			case LOGIN_SCREEN:
 				highlightDifference = false;
@@ -307,7 +319,6 @@ public class InventorySetupPlugin extends Plugin
 				highlightDifference = config.getHighlightDifferences();
 				break;
 		}
-
 	}
 
 	public ArrayList<InventorySetupItem> getNormalizedContainer(final InventoryID id)
@@ -360,7 +371,32 @@ public class InventorySetupPlugin extends Plugin
 	@Override
 	public void shutDown()
 	{
+		overlayManager.remove(overlay);
 		clientToolbar.removeNavigation(navButton);
 	}
 
+	final int[] getCurrentInventorySetupIds()
+	{
+		InventorySetup setup = inventorySetups.get(panel.getSelectedInventorySetup());
+		if (setup == null)
+		{
+			return null;
+		}
+		ArrayList<InventorySetupItem> items = new ArrayList<>();
+		items.addAll(setup.getEquipment());
+		items.addAll(setup.getInventory());
+		ArrayList<Integer> itemIds = new ArrayList<>();
+		for (InventorySetupItem item : items)
+		{
+			int id = item.getId();
+			ItemComposition itemComposition = itemManager.getItemComposition(id);
+			if (id > 0)
+			{
+				itemIds.add(ItemVariationMapping.map(id));
+				itemIds.add(itemComposition.getPlaceholderId());
+			}
+
+		}
+		return itemIds.stream().mapToInt(i -> i).toArray();
+	}
 }

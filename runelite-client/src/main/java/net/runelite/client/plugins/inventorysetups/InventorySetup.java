@@ -6,7 +6,8 @@ import lombok.Getter;
 import java.util.ArrayList;
 
 @AllArgsConstructor
-public class InventorySetup {
+public class InventorySetup
+{
 	@Getter
 	private ArrayList<InventorySetupItem> inventory;
 	@Getter

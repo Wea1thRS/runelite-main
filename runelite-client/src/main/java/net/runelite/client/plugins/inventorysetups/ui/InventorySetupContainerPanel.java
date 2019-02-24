@@ -1,6 +1,5 @@
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import net.runelite.api.Item;
 import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
@@ -8,29 +7,25 @@ import net.runelite.client.plugins.inventorysetups.InventorySetupConfig;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.http.api.loottracker.GameItem;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class InventorySetupContainerPanel extends JPanel
 {
 
 	protected ItemManager itemManager;
 
-	protected JPanel containerPanel;
-
 	private final InventorySetupPlugin plugin;
 
-	public InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
+	InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText)
 	{
 		this.itemManager = itemManager;
 		this.plugin = plugin;
-		this.containerPanel = new JPanel();
+		JPanel containerPanel = new JPanel();
 
 		final JPanel containerSlotsPanel = new JPanel();
 
@@ -52,9 +47,9 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		add(containerPanel);
 	}
 
-	protected void setContainerSlot(int index,
-	                             final InventorySetupSlot containerSlot,
-	                             final ArrayList<InventorySetupItem> items)
+	void setContainerSlot(int index,
+			final InventorySetupSlot containerSlot,
+			final ArrayList<InventorySetupItem> items)
 	{
 		if (index >= items.size() || items.get(index).getId() == -1)
 		{
@@ -69,14 +64,14 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		String toolTip = itemName;
 		if (quantity > 1)
 		{
-			toolTip += " (" + String.valueOf(quantity) + ")";
+			toolTip += " (" + quantity + ")";
 		}
 		containerSlot.setImageLabel(toolTip, itemImg);
 	}
 
-	protected void highlightDifferentSlotColor(InventorySetupItem savedItem,
-	                                           InventorySetupItem currItem,
-	                                           final InventorySetupSlot containerSlot)
+	void highlightDifferentSlotColor(InventorySetupItem savedItem,
+			InventorySetupItem currItem,
+			final InventorySetupSlot containerSlot)
 	{
 		// important note: do not use item names for comparisons
 		// they are all empty to avoid clientThread usage when highlighting
