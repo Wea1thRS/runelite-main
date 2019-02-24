@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
- * Copyright (c) 2018, Ron Young <https://github.com/raiyni>
+ * Copyright (c) 2018, Hydrox6 <ikada@protonmail.ch>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,37 +22,39 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.banktags.tabs;
+package net.runelite.client.plugins.itemcharges;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import net.runelite.api.widgets.Widget;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import lombok.Getter;
+import net.runelite.api.EquipmentInventorySlot;
+import net.runelite.client.ui.overlay.infobox.Counter;
 
-@Data
-@EqualsAndHashCode(of = "tag")
-class TagTab
+@Getter
+class ItemChargeInfobox extends Counter
 {
-	private String tag;
-	private int iconItemId;
-	private Widget background;
-	private Widget icon;
+	private final ItemChargePlugin plugin;
+	private final ItemWithSlot item;
+	private final EquipmentInventorySlot slot;
 
-	TagTab(int iconItemId, String tag)
+	ItemChargeInfobox(
+		ItemChargePlugin plugin,
+		BufferedImage image,
+		String name,
+		int charges,
+		ItemWithSlot item,
+		EquipmentInventorySlot slot)
 	{
-		this.iconItemId = iconItemId;
-		this.tag = tag;
+		super(image, plugin, charges);
+		setTooltip(name);
+		this.plugin = plugin;
+		this.item = item;
+		this.slot = slot;
 	}
 
-	void setHidden(boolean hide)
+	@Override
+	public Color getTextColor()
 	{
-		if (background != null)
-		{
-			background.setHidden(hide);
-		}
-
-		if (icon != null)
-		{
-			icon.setHidden(hide);
-		}
+		return getPlugin().getColor(getCount());
 	}
 }

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
- * Copyright (c) 2018, Ron Young <https://github.com/raiyni>
+ * Copyright (c) 2018, TheStonedTurtle <https://github.com/TheStonedTurtle>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,37 +22,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.banktags.tabs;
+package net.runelite.client.plugins.chathistory;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import net.runelite.api.widgets.Widget;
+import net.runelite.client.config.Config;
+import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
 
-@Data
-@EqualsAndHashCode(of = "tag")
-class TagTab
+@ConfigGroup("chathistory")
+public interface ChatHistoryConfig extends Config
 {
-	private String tag;
-	private int iconItemId;
-	private Widget background;
-	private Widget icon;
-
-	TagTab(int iconItemId, String tag)
+	@ConfigItem(
+		keyName = "retainChatHistory",
+		name = "Retain Chat History",
+		description = "Retains chat history when logging in/out or world hopping",
+		position = 0
+	)
+	default boolean retainChatHistory()
 	{
-		this.iconItemId = iconItemId;
-		this.tag = tag;
+		return true;
 	}
 
-	void setHidden(boolean hide)
+	@ConfigItem(
+		keyName = "pmTargetCycling",
+		name = "PM Target Cycling",
+		description = "Pressing Tab while sending a PM will cycle the target username based on PM history",
+		position = 1
+	)
+	default boolean pmTargetCycling()
 	{
-		if (background != null)
-		{
-			background.setHidden(hide);
-		}
-
-		if (icon != null)
-		{
-			icon.setHidden(hide);
-		}
+		return true;
 	}
 }

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
- * Copyright (c) 2018, Ron Young <https://github.com/raiyni>
+ * Copyright (c) 2019, Tomas Slusny <slusnucky@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,37 +22,26 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.banktags.tabs;
+package net.runelite.client.plugins.itemcharges;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import net.runelite.api.widgets.Widget;
+import com.google.common.collect.Sets;
+import java.util.Set;
+import lombok.Getter;
+import net.runelite.api.EquipmentInventorySlot;
 
-@Data
-@EqualsAndHashCode(of = "tag")
-class TagTab
+@Getter
+enum ItemWithSlot
 {
-	private String tag;
-	private int iconItemId;
-	private Widget background;
-	private Widget icon;
+	ABYSSAL_BRACELET(ItemChargeType.ABYSSAL_BRACELET, EquipmentInventorySlot.GLOVES),
+	DODGY_NECKLACE(ItemChargeType.DODGY_NECKLACE, EquipmentInventorySlot.AMULET),
+	TELEPORT(ItemChargeType.TELEPORT, EquipmentInventorySlot.WEAPON, EquipmentInventorySlot.AMULET, EquipmentInventorySlot.GLOVES, EquipmentInventorySlot.RING);
 
-	TagTab(int iconItemId, String tag)
+	private final ItemChargeType type;
+	private final Set<EquipmentInventorySlot> slots;
+
+	ItemWithSlot(final ItemChargeType type, final EquipmentInventorySlot... slots)
 	{
-		this.iconItemId = iconItemId;
-		this.tag = tag;
-	}
-
-	void setHidden(boolean hide)
-	{
-		if (background != null)
-		{
-			background.setHidden(hide);
-		}
-
-		if (icon != null)
-		{
-			icon.setHidden(hide);
-		}
+		this.type = type;
+		this.slots = Sets.newHashSet(slots);
 	}
 }
