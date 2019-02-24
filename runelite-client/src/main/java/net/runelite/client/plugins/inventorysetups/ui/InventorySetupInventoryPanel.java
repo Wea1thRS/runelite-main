@@ -95,5 +95,4 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 		emptyContainerLabel.setForeground(originalLabelColor);
 	}
-
 }

@@ -1,10 +1,12 @@
 package net.runelite.client.plugins.inventorysetups;
 
 import net.runelite.api.Client;
+import net.runelite.api.Item;
 import net.runelite.api.Query;
 import net.runelite.api.SpritePixels;
 import net.runelite.api.queries.BankItemQuery;
 import net.runelite.api.widgets.WidgetItem;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -17,6 +19,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class InventorySetupBankOverlay extends Overlay
 {
@@ -47,16 +51,15 @@ public class InventorySetupBankOverlay extends Overlay
 			{
 				return null;
 			}
+			ids = Arrays.stream(ids)
+					.filter(Objects::nonNull)
+					.filter(id -> id != -1)
+					.toArray();
 			final Query query = new BankItemQuery().idEquals(ids);
 			final WidgetItem[] widgetItems = queryRunner.runQuery(query);
 
 			for (final WidgetItem item : widgetItems)
 			{
-				if (item.getId() == -1)
-				{
-					return null;
-				}
-
 				final Color color = config.getBankHighlightColor();
 
 				if (color != null)
@@ -65,16 +68,25 @@ public class InventorySetupBankOverlay extends Overlay
 					graphics.drawImage(outline, item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 1, null);
 					if (item.getQuantity() > 1)
 					{
-						graphics.setColor(Color.BLACK);
-						graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX()+ 2, item.getCanvasLocation().getY() + 11);
-						graphics.setColor(Color.YELLOW);
-						graphics.setFont(FontManager.getRunescapeSmallFont());
-						graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX()+ 1, item.getCanvasLocation().getY() + 10);
+						drawQuantity(graphics, item, Color.YELLOW);
+					}
+					else if (item.getQuantity() == 0)
+					{
+						drawQuantity(graphics, item, Color.YELLOW.darker());
 					}
 				}
 			}
 		}
 		return null;
+	}
+
+	private void drawQuantity(Graphics2D graphics, WidgetItem item, Color darker)
+	{
+		graphics.setColor(Color.BLACK);
+		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX()+ 2, item.getCanvasLocation().getY() + 11);
+		graphics.setColor(darker);
+		graphics.setFont(FontManager.getRunescapeSmallFont());
+		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX()+ 1, item.getCanvasLocation().getY() + 10);
 	}
 
 	private BufferedImage loadItemOutline(final int itemId, final int itemQuantity, final Color outlineColor)

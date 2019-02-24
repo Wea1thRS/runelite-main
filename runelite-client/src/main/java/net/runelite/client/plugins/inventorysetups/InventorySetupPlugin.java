@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
+import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.GameStateChanged;
@@ -15,6 +16,7 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.inventorysetups.ui.InventorySetupPluginPanel;
@@ -333,11 +335,17 @@ public class InventorySetupPlugin extends Plugin
 		ArrayList<InventorySetupItem> items = new ArrayList<>();
 		items.addAll(setup.getEquipment());
 		items.addAll(setup.getInventory());
-
 		ArrayList<Integer> itemIds = new ArrayList<>();
 		for (InventorySetupItem item : items)
 		{
-			itemIds.add(item.getId());
+			int id = item.getId();
+			ItemComposition itemComposition = itemManager.getItemComposition(id);
+			if(id > 0)
+			{
+				itemIds.add(ItemVariationMapping.map(id));
+				itemIds.add(itemComposition.getPlaceholderId());
+			}
+
 		}
 		return itemIds.stream().mapToInt(i -> i).toArray();
 	}
