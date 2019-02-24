@@ -218,10 +218,7 @@ public class InventorySetupPlugin extends Plugin
 			// only allow highlighting if the config is enabled and the player is logged in
 			highlightDifference = config.getHighlightDifferences() && client.getGameState() == GameState.LOGGED_IN;
 			final String setupName = panel.getSelectedInventorySetup();
-			if (highlightDifference && !setupName.isEmpty())
-			{
-				panel.setCurrentInventorySetup(setupName);
-			}
+			panel.setCurrentInventorySetup(setupName);
 		}
 	}
 
@@ -308,10 +305,7 @@ public class InventorySetupPlugin extends Plugin
 			case LOGIN_SCREEN:
 				highlightDifference = false;
 				final String setupName = panel.getSelectedInventorySetup();
-				if (!setupName.isEmpty())
-				{
-					panel.setCurrentInventorySetup(setupName);
-				}
+				panel.setCurrentInventorySetup(setupName);
 				break;
 
 			// set highlighting
