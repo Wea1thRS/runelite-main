@@ -1,9 +1,13 @@
 package net.runelite.client.plugins.inventorysetups;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.Point;
 import net.runelite.api.Query;
 import net.runelite.api.SpritePixels;
 import net.runelite.api.queries.BankItemQuery;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
@@ -16,10 +20,12 @@ import javax.inject.Inject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Objects;
 
+@Slf4j
 public class InventorySetupBankOverlay extends Overlay
 {
 	private final Client client;
@@ -55,22 +61,34 @@ public class InventorySetupBankOverlay extends Overlay
 					.toArray();
 			final Query query = new BankItemQuery().idEquals(ids);
 			final WidgetItem[] widgetItems = queryRunner.runQuery(query);
-
+			final Widget bankContainer = client.getWidget(WidgetInfo.BANK_CONTAINER);
 			for (final WidgetItem item : widgetItems)
 			{
-				final Color color = config.getBankHighlightColor();
+				Point canvasLocation = item.getCanvasLocation();
+				Rectangle canvasBounds = item.getCanvasBounds();
+				Point windowLocation = bankContainer.getCanvasLocation();
 
-				if (color != null)
+				if (canvasLocation == null || windowLocation == null)
 				{
-					final BufferedImage outline = loadItemOutline(item.getId(), item.getQuantity(), color);
-					graphics.drawImage(outline, item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 1, null);
-					if (item.getQuantity() > 1)
+					return null;
+				}
+
+				if (!(canvasLocation.getY() + 60 >= windowLocation.getY() + bankContainer.getHeight()) && !(canvasLocation.getY() + canvasBounds.getHeight() <= windowLocation.getY() + 90))
+				{
+					final Color color = config.getBankHighlightColor();
+
+					if (color != null)
 					{
-						drawQuantity(graphics, item, Color.YELLOW);
-					}
-					else if (item.getQuantity() == 0)
-					{
-						drawQuantity(graphics, item, Color.YELLOW.darker());
+						final BufferedImage outline = loadItemOutline(item.getId(), item.getQuantity(), color);
+						graphics.drawImage(outline, item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 1, null);
+						if (item.getQuantity() > 1)
+						{
+							drawQuantity(graphics, item, Color.YELLOW);
+						}
+						else if (item.getQuantity() == 0)
+						{
+							drawQuantity(graphics, item, Color.YELLOW.darker());
+						}
 					}
 				}
 			}
