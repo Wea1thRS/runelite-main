@@ -789,6 +789,13 @@ public interface Client extends GameEngine
 	int getSkillExperience(Skill skill);
 
 	/**
+	 * Get the total experience of the player
+	 *
+	 * @return
+	 */
+	long getOverallExperience();
+
+	/**
 	 * Gets the game drawing mode.
 	 *
 	 * @return the game drawing mode
@@ -1060,6 +1067,20 @@ public interface Client extends GameEngine
 	 * @return the clan chat members, null if not in a clan
 	 */
 	ClanMember[] getClanMembers();
+
+	/**
+	 * Gets the clan owner of the currently joined clan chat
+	 *
+	 * @return
+	 */
+	String getClanOwner();
+
+	/**
+	 * Gets the clan chat name of the currently joined clan chat
+	 *
+	 * @return
+	 */
+	String getClanChatName();
 
 	/**
 	 * Gets an array of players in the friends list.
@@ -1582,7 +1603,9 @@ public interface Client extends GameEngine
 	void setSpellSelected(boolean selected);
 
 	/**
-     * Returns client item composition cache
+	 * Returns client item composition cache
 	 */
 	NodeCache getItemCompositionCache();
+
+	EnumComposition getEnum(int id);
 }

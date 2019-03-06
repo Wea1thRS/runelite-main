@@ -60,9 +60,8 @@ import net.runelite.api.SpriteID;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.SessionClose;
-import net.runelite.api.events.SessionOpen;
+import net.runelite.client.events.SessionClose;
+import net.runelite.client.events.SessionOpen;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.account.AccountSession;
@@ -223,7 +222,7 @@ public class LootTrackerPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		ignoredItems = Text.fromCSV(config.getIgnoredItems());
-		panel = new LootTrackerPanel(this, itemManager);
+		panel = new LootTrackerPanel(this, itemManager, config);
 		spriteManager.getSpriteAsync(SpriteID.TAB_INVENTORY, 0, panel::loadHeaderIcon);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "panel_icon.png");
@@ -255,9 +254,8 @@ public class LootTrackerPlugin extends Plugin
 				{
 					Collection<LootRecord> lootRecords;
 
-					if (!config.saveLoot())
+					if (!config.syncPanel())
 					{
-						// don't load loot if we're not saving loot
 						return;
 					}
 
