@@ -91,7 +91,6 @@ public class LootTrackerClient
 
 		Request request = new Request.Builder()
 			.header(RuneLiteAPI.RUNELITE_AUTH, uuid.toString())
-			.get()
 			.url(url)
 			.build();
 

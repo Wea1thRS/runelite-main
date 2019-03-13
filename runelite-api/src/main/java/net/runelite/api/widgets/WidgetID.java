@@ -374,6 +374,7 @@ public class WidgetID
 		static final int ROOT_INTERFACE_CONTAINER = 62;
 		static final int BANK_CONTAINER = 64;
 		static final int INTERFACE_CONTAINER = 65;
+		static final int INVENTORY_CONTAINER = 69;
 	}
 
 	static class ResizableViewport
@@ -409,6 +410,7 @@ public class WidgetID
 		static final int PRAYER_ICON = 63;
 		static final int MAGIC_ICON = 64;
 		static final int INTERFACE_CONTAINER = 65;
+		static final int INVENTORY_CONTAINER = 71;
 	}
 
 	static class ResizableViewportBottomLine
@@ -441,6 +443,7 @@ public class WidgetID
 		static final int MUSIC_TAB = 40;
 		static final int MUSIC_ICON = 46;
 		static final int MAGIC_ICON = 63;
+		static final int INVENTORY_CONTAINER = 71;
 	}
 
 	static class Chatbox
