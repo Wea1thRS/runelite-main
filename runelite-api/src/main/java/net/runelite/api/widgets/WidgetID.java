@@ -718,7 +718,7 @@ public class WidgetID
 
 	static class Minigames
 	{
-		static final int TELEPORT_BUTTON = 31;
+		static final int TELEPORT_BUTTON = 26;
 	}
 
 	static class StandardSpellBook
@@ -794,9 +794,9 @@ public class WidgetID
 	
 	static class QuestList
 	{
-		static final int FREE_CONTAINER = 9;
-		static final int MEMBERS_CONTAINER = 10;
-		static final int MINIQUEST_CONTAINER = 11;
+		static final int FREE_CONTAINER = 6;
+		static final int MEMBERS_CONTAINER = 7;
+		static final int MINIQUEST_CONTAINER = 8;
 	}
 }
 
