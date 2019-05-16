@@ -50,21 +50,10 @@ public interface NpcAggroAreaConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "ignoreLevels",
-			name = "Ignore Combat Levels",
-			description = "Always show this plugins overlays despite combat level differences.",
-			position = 2
-	)
-	default boolean ignoreCombatLevels()
-	{
-		return false;
-	}
-
-	@ConfigItem(
 		keyName = "npcUnaggroNames",
 		name = "NPC names",
 		description = "Enter names of NPCs where you wish to use this plugin",
-		position = 3
+		position = 2
 	)
 	default String npcNamePatterns()
 	{
@@ -75,7 +64,7 @@ public interface NpcAggroAreaConfig extends Config
 		keyName = "npcUnaggroShowTimer",
 		name = "Show timer",
 		description = "Display a timer until NPCs become unaggressive",
-		position = 4
+		position = 3
 	)
 	default boolean showTimer()
 	{
@@ -86,7 +75,7 @@ public interface NpcAggroAreaConfig extends Config
 		keyName = "npcUnaggroShowAreaLines",
 		name = "Show area lines",
 		description = "Display lines, when walked past, the unaggressive timer resets",
-		position = 5
+		position = 4
 	)
 	default boolean showAreaLines()
 	{
@@ -97,10 +86,21 @@ public interface NpcAggroAreaConfig extends Config
 		keyName = "npcUnaggroAreaColor",
 		name = "Area lines colour",
 		description = "Choose colour to use for marking NPC unaggressive area",
-		position = 6
+		position = 5
 	)
 	default Color aggroAreaColor()
 	{
 		return Color.YELLOW;
+	}
+
+	@ConfigItem(
+		keyName = "npcUnaggroShowNotWorkingOverlay",
+		name = "Hide overlay hint",
+		description = "Hide overlay hint if plugin is enabled in unsupported area",
+		position = 6
+	)
+	default boolean hideOverlayHint()
+	{
+		return false;
 	}
 }

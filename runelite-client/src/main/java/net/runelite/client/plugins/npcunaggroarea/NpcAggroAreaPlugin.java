@@ -44,10 +44,7 @@ import net.runelite.api.Constants;
 import net.runelite.api.ItemID;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
-import net.runelite.api.ObjectComposition;
 import net.runelite.api.Perspective;
-import net.runelite.api.Tile;
-import net.runelite.api.WallObject;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldArea;
 import net.runelite.api.coords.WorldPoint;
@@ -64,14 +61,12 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.WildcardMatcher;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.text.StrMatcher;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Unaggressive NPC timer",
+	name = "NPC Aggression Timer",
 	description = "Highlights the unaggressive area of NPCs nearby and timer until it becomes active",
-	tags = {"highlight", "lines", "unaggro", "aggro", "aggressive", "npcs", "area", "timer", "slayer"},
+	tags = {"highlight", "lines", "unaggro", "aggro", "aggressive", "npcs", "area", "slayer"},
 	enabledByDefault = false
 )
 public class NpcAggroAreaPlugin extends Plugin
@@ -130,7 +125,6 @@ public class NpcAggroAreaPlugin extends Plugin
 	private AggressionTimer currentTimer;
 
 	private WorldPoint lastPlayerLocation;
-	private int currentPlane;
 	private WorldPoint previousUnknownCenter;
 	private boolean loggingIn;
 	private List<String> npcNamePatterns;
@@ -147,6 +141,7 @@ public class NpcAggroAreaPlugin extends Plugin
 		overlayManager.add(overlay);
 		overlayManager.add(notWorkingOverlay);
 		npcNamePatterns = NAME_SPLITTER.splitToList(config.npcNamePatterns());
+		recheckActive();
 	}
 
 	@Override
@@ -187,84 +182,6 @@ public class NpcAggroAreaPlugin extends Plugin
 		return area;
 	}
 
-	private boolean isOpenableAt(WorldPoint wp)
-	{
-		int sceneX = wp.getX() - client.getBaseX();
-		int sceneY = wp.getY() - client.getBaseY();
-
-		Tile tile = client.getScene().getTiles()[wp.getPlane()][sceneX][sceneY];
-		if (tile == null)
-		{
-			return false;
-		}
-
-		WallObject wallObject = tile.getWallObject();
-		if (wallObject == null)
-		{
-			return false;
-		}
-
-		ObjectComposition objectComposition = client.getObjectDefinition(wallObject.getId());
-		if (objectComposition == null)
-		{
-			return false;
-		}
-
-		return ArrayUtils.contains(objectComposition.getActions(), "Open");
-	}
-
-	private boolean walkableTileFilter(float[] p1, float[] p2)
-	{
-		int x1 = Math.round(p1[0]);
-		int y1 = Math.round(p1[1]);
-		int x2 = Math.round(p2[0]);
-		int y2 = Math.round(p2[1]);
-
-		if (x1 > x2)
-		{
-			int temp = x1;
-			x1 = x2;
-			x2 = temp;
-		}
-
-		if (y1 > y2)
-		{
-			int temp = y1;
-			y1 = y2;
-			y2 = temp;
-		}
-
-		int dx = x2 - x1;
-		int dy = y2 - y1;
-
-		WorldArea wa1 = new WorldArea(new WorldPoint(x1, y1, currentPlane), 1, 1);
-		WorldArea wa2 = new WorldArea(new WorldPoint(x1 - dy, y1 - dx, currentPlane), 1, 1);
-
-		Tile[][][] tiles = client.getScene().getTiles();
-		Tile t1 = tiles[wa1.getPlane()][wa1.getX() - client.getBaseX()][wa1.getY() - client.getBaseY()];
-		Tile t2 = tiles[wa2.getPlane()][wa2.getX() - client.getBaseX()][wa2.getY() - client.getBaseY()];
-		if (t1 == null || t2 == null ||
-			(t1.getSceneTilePaint() == null && t1.getSceneTileModel() == null) ||
-			(t2.getSceneTilePaint() == null && t2.getSceneTileModel() == null))
-		{
-			// Tiles which aren't drawn are typically not walkable.
-			return false;
-		}
-
-		if (isOpenableAt(wa1.toWorldPoint()) || isOpenableAt(wa2.toWorldPoint()))
-		{
-			// When there's something with the open option (e.g. a door) on the tile,
-			// we assume it can be opened and walked through afterwards. Without this
-			// check, the line for that tile wouldn't render with collision detection
-			// because the collision check isn't done if collision data changes.
-			return true;
-		}
-
-		boolean b1 = wa1.canTravelInDirection(client, -dy, -dx);
-		boolean b2 = wa2.canTravelInDirection(client, dy, dx);
-		return b1 && b2;
-	}
-
 	private void transformWorldToLocal(float[] coords)
 	{
 		final LocalPoint lp = LocalPoint.fromWorld(client, (int)coords[0], (int)coords[1]);
@@ -296,12 +213,9 @@ public class NpcAggroAreaPlugin extends Plugin
 
 		for (int i = 0; i < linesToDisplay.length; i++)
 		{
-			currentPlane = i;
-
 			GeneralPath lines = new GeneralPath(generateSafeArea());
 			lines = Geometry.clipPath(lines, sceneRect);
 			lines = Geometry.splitIntoSegments(lines, 1);
-			lines = Geometry.filterPath(lines, this::walkableTileFilter);
 			lines = Geometry.transformPath(lines, this::transformWorldToLocal);
 			linesToDisplay[i] = lines;
 		}
@@ -349,9 +263,8 @@ public class NpcAggroAreaPlugin extends Plugin
 		int playerLvl = client.getLocalPlayer().getCombatLevel();
 		int npcLvl = composition.getCombatLevel();
 		String npcName = composition.getName().toLowerCase();
-		if (npcLvl > 0 && playerLvl > npcLvl * 2 && !isInWilderness(npc.getWorldLocation()) && !config.ignoreCombatLevels())
+		if (npcLvl > 0 && playerLvl > npcLvl * 2 && !isInWilderness(npc.getWorldLocation()))
 		{
-			log.debug("return");
 			return false;
 		}
 
@@ -359,7 +272,6 @@ public class NpcAggroAreaPlugin extends Plugin
 		{
 			if (WildcardMatcher.matches(pattern, npcName))
 			{
-				log.debug("Pattern: {}\tNPC: {}", pattern, npcName);
 				return true;
 			}
 		}
@@ -470,7 +382,6 @@ public class NpcAggroAreaPlugin extends Plugin
 				break;
 			case "npcUnaggroNames":
 				npcNamePatterns = NAME_SPLITTER.splitToList(config.npcNamePatterns());
-				log.debug(Integer.toString(npcNamePatterns.size()));
 				recheckActive();
 				break;
 		}
@@ -483,7 +394,7 @@ public class NpcAggroAreaPlugin extends Plugin
 		lastPlayerLocation = configManager.getConfiguration(NpcAggroAreaConfig.CONFIG_GROUP, NpcAggroAreaConfig.CONFIG_LOCATION, WorldPoint.class);
 
 		Duration timeLeft = configManager.getConfiguration(NpcAggroAreaConfig.CONFIG_GROUP, NpcAggroAreaConfig.CONFIG_DURATION, Duration.class);
-		if (timeLeft != null)
+		if (timeLeft != null && !timeLeft.isNegative())
 		{
 			createTimer(timeLeft);
 		}

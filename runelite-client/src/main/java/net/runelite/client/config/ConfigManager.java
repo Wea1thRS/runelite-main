@@ -641,12 +641,12 @@ public class ConfigManager
 		}
 		if (object instanceof WorldPoint)
 		{
-			WorldPoint wp = (WorldPoint)object;
+			WorldPoint wp = (WorldPoint) object;
 			return wp.getX() + ":" + wp.getY() + ":" + wp.getPlane();
 		}
 		if (object instanceof Duration)
 		{
-			return Long.toString(((Duration)object).toMillis());
+			return Long.toString(((Duration) object).toMillis());
 		}
 		return object.toString();
 	}

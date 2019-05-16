@@ -25,6 +25,10 @@
  */
 package net.runelite.client.plugins.loottracker;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import com.google.inject.Provides;
 import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
 import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
@@ -38,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
@@ -60,9 +65,7 @@ import net.runelite.api.SpriteID;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.client.events.SessionClose;
-import net.runelite.client.events.SessionOpen;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.account.AccountSession;
@@ -72,6 +75,8 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.NpcLootReceived;
 import net.runelite.client.events.PlayerLootReceived;
+import net.runelite.client.events.SessionClose;
+import net.runelite.client.events.SessionOpen;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemStack;
 import net.runelite.client.game.SpriteManager;
@@ -116,6 +121,17 @@ public class LootTrackerPlugin extends Plugin
 	private static final Pattern CLUE_SCROLL_PATTERN = Pattern.compile("You have completed [0-9]+ ([a-z]+) Treasure Trails.");
 	private static final int THEATRE_OF_BLOOD_REGION = 12867;
 
+	// Herbiboar loot handling
+	private static final String HERBIBOAR_LOOTED_MESSAGE = "You harvest herbs from the herbiboar, whereupon it escapes.";
+	private static final String HERBIBOR_EVENT = "Herbiboar";
+
+	// Chest loot handling
+	private static final String CHEST_LOOTED_MESSAGE = "You find some treasure in the chest!";
+	private static final Map<Integer, String> CHEST_EVENT_TYPES = ImmutableMap.of(
+		5179, "Brimstone Chest",
+		11573, "Crystal Chest"
+	);
+
 	@Inject
 	private ClientToolbar clientToolbar;
 
@@ -156,6 +172,8 @@ public class LootTrackerPlugin extends Plugin
 	TemmieWebhook temmie = new TemmieWebhook("https://discordapp.com/api/webhooks/478488367093514280/CmaXv7dof2psRgV07lGPkYw9cYzwO2wVAM8s1easN9afwotbuA0cKLsAlDd3BBpQCREJ");
 
 	private List<String> ignoredItems = new ArrayList<>();
+
+	private Multiset<Integer> inventorySnapshot;
 
 	@Getter(AccessLevel.PACKAGE)
 	private LootTrackerClient lootTrackerClient;
@@ -405,18 +423,45 @@ public class LootTrackerPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
-		if (event.getType() != ChatMessageType.SERVER && event.getType() != ChatMessageType.FILTERED)
+		if (event.getType() != ChatMessageType.GAMEMESSAGE && event.getType() != ChatMessageType.SPAM)
 		{
 			return;
 		}
 
+		final String message = event.getMessage();
+
+		if (message.equals(CHEST_LOOTED_MESSAGE))
+		{
+			final int regionID = client.getLocalPlayer().getWorldLocation().getRegionID();
+			if (!CHEST_EVENT_TYPES.containsKey(regionID))
+			{
+				return;
+			}
+
+			eventType = CHEST_EVENT_TYPES.get(regionID);
+			takeInventorySnapshot();
+
+			return;
+		}
+
+		if (message.equals(HERBIBOAR_LOOTED_MESSAGE))
+		{
+			eventType = HERBIBOR_EVENT;
+			takeInventorySnapshot();
+
+			return;
+		}
+
 		// Check if message is for a clue scroll reward
-		final Matcher m = CLUE_SCROLL_PATTERN.matcher(Text.removeTags(event.getMessage()));
+		final Matcher m = CLUE_SCROLL_PATTERN.matcher(Text.removeTags(message));
 		if (m.find())
 		{
 			final String type = m.group(1).toLowerCase();
 			switch (type)
 			{
+				case "beginner":
+					eventType = "Clue Scroll (Beginner)";
+					break;
 				case "easy":
 					eventType = "Clue Scroll (Easy)";
 					break;
@@ -433,6 +478,59 @@ public class LootTrackerPlugin extends Plugin
 					eventType = "Clue Scroll (Master)";
 					break;
 			}
+		}
+	}
+
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		if (eventType != null && (CHEST_EVENT_TYPES.containsValue(eventType) || HERBIBOR_EVENT.equals(eventType)))
+		{
+			if (event.getItemContainer() != client.getItemContainer(InventoryID.INVENTORY))
+			{
+				return;
+			}
+
+			processChestLoot(eventType, event.getItemContainer());
+			eventType = null;
+		}
+	}
+
+	private void takeInventorySnapshot()
+	{
+		final ItemContainer itemContainer = client.getItemContainer(InventoryID.INVENTORY);
+		if (itemContainer != null)
+		{
+			inventorySnapshot = HashMultiset.create();
+			Arrays.stream(itemContainer.getItems())
+					.forEach(item -> inventorySnapshot.add(item.getId(), item.getQuantity()));
+		}
+	}
+
+	private void processChestLoot(String chestType, ItemContainer inventoryContainer)
+	{
+		if (inventorySnapshot != null)
+		{
+			Multiset<Integer> currentInventory = HashMultiset.create();
+			Arrays.stream(inventoryContainer.getItems())
+				.forEach(item -> currentInventory.add(item.getId(), item.getQuantity()));
+
+			final Multiset<Integer> diff = Multisets.difference(currentInventory, inventorySnapshot);
+
+			List<ItemStack> items = diff.entrySet().stream()
+				.map(e -> new ItemStack(e.getElement(), e.getCount(), client.getLocalPlayer().getLocalLocation()))
+				.collect(Collectors.toList());
+
+			final LootTrackerItem[] entries = buildEntries(stack(items));
+			SwingUtilities.invokeLater(() -> panel.add(chestType, -1, entries));
+
+			if (lootTrackerClient != null && config.saveLoot())
+			{
+				LootRecord lootRecord = new LootRecord(chestType, LootRecordType.EVENT, toGameItems(items), Instant.now());
+				lootTrackerClient.submit(lootRecord);
+			}
+
+			inventorySnapshot = null;
 		}
 	}
 
