@@ -118,6 +118,7 @@ public class ChatLogPlugin extends Plugin
 					last = line;
 				}
 
+				assert last != null;
 				if (last.equals(messageFormat))
 				{
 					return;
@@ -135,51 +136,26 @@ public class ChatLogPlugin extends Plugin
 
 	private boolean saveMessage(ChatMessageType type)
 	{
-		if (type.equals(ChatMessageType.PUBLIC))
+		if (type.equals(ChatMessageType.PUBLICCHAT))
 		{
-			if (!config.savePublicChat())
-			{
-				return false;
-			}
-
-			return true;
+			return config.savePublicChat();
 		}
 
-		if (type.equals(ChatMessageType.PRIVATE_MESSAGE_RECEIVED) || type.equals(ChatMessageType.PRIVATE_MESSAGE_RECEIVED_MOD) || type.equals(ChatMessageType.PRIVATE_MESSAGE_SENT))
+		if (type.equals(ChatMessageType.PRIVATECHAT) || type.equals(ChatMessageType.MODPRIVATECHAT) || type.equals(ChatMessageType.PRIVATECHATOUT))
 		{
-			if (!config.savePrivateChat())
-			{
-				return false;
-			}
-
-			return true;
+			return config.savePrivateChat();
 		}
 
-		if (type.equals(ChatMessageType.CLANCHAT))
+		if (type.equals(ChatMessageType.FRIENDSCHAT))
 		{
-			if (!config.saveClanChat())
-			{
-				return false;
-			}
-
-			return true;
+			return config.saveClanChat();
 		}
 
-		if (type.equals(ChatMessageType.AUTOCHAT))
+		if (type.equals(ChatMessageType.AUTOTYPER) || type.equals(ChatMessageType.MODAUTOTYPER))
 		{
-			if (!config.saveAutoChat())
-			{
-				return false;
-			}
-
-			return true;
+			return config.saveAutoChat();
 		}
 
-		if (!config.saveGameInfo())
-		{
-			return false;
-		}
-
-		return true;
+		return config.saveGameInfo();
 	}
 }

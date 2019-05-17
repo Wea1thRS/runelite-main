@@ -624,38 +624,4 @@ public class LootTrackerPlugin extends Plugin
 
 		return trackerRecords;
 	}
-
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged c)
-	{
-		// Check for players in-game name every time they login
-		if (c.getGameState().equals(GameState.LOGGING_IN))
-		{
-			clientThread.invokeLater(() ->
-			{
-				switch (client.getGameState())
-				{
-					case LOGGED_IN:
-						break;
-					case LOGGING_IN:
-					case LOADING:
-						return false;
-					default:
-						// Quit running if any other state
-						return true;
-				}
-
-				String name = client.getLocalPlayer().getName();
-				if (name != null)
-				{
-					writer.setPlayerUsername(name);
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
-		}
-	}
 }

@@ -306,7 +306,7 @@ public class PerformanceTrackerPlugin extends Plugin
 		if (current != null)
 		{
 			chatMessageManager.queue(QueuedMessage.builder()
-				.type(ChatMessageType.GAME)
+				.type(ChatMessageType.CONSOLE)
 				.runeLiteFormattedMessage(createPerformanceMessage(current))
 				.build());
 			current = null;
