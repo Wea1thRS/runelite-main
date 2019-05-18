@@ -82,6 +82,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginInstantiationException;
 import net.runelite.client.plugins.PluginManager;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.PluginPanel;
@@ -106,13 +107,12 @@ public class ConfigPanel extends PluginPanel
 	private static final String PINNED_PLUGINS_CONFIG_KEY = "pinnedPlugins";
 	private static final String RUNELITE_PLUGIN = "RuneLite";
 	private static final String CHAT_COLOR_PLUGIN = "Chat Color";
-
 	private final PluginManager pluginManager;
 	private final ConfigManager configManager;
 	private final ScheduledExecutorService executorService;
 	private final RuneLiteConfig runeLiteConfig;
 	private final ChatColorConfig chatColorConfig;
-	private final List<PluginListItem> pluginList = new ArrayList<>();
+	public static List<PluginListItem> pluginList = new ArrayList<>();
 
 	private final IconTextField searchBar = new IconTextField();
 	private final JPanel topPanel;
@@ -130,7 +130,7 @@ public class ConfigPanel extends PluginPanel
 	}
 
 	ConfigPanel(PluginManager pluginManager, ConfigManager configManager, ScheduledExecutorService executorService,
-		RuneLiteConfig runeLiteConfig, ChatColorConfig chatColorConfig)
+				RuneLiteConfig runeLiteConfig, ChatColorConfig chatColorConfig)
 	{
 		super(false);
 		this.pluginManager = pluginManager;
@@ -187,40 +187,137 @@ public class ConfigPanel extends PluginPanel
 
 		initializePluginList();
 		refreshPluginList();
+
 	}
 
 	private void initializePluginList()
 	{
 		final List<String> pinnedPlugins = getPinnedPluginNames();
 
-		// populate pluginList with all non-hidden plugins
+		// set RuneLite config on top, as it should always have been
+		final PluginListItem runeLite = new PluginListItem(this, configManager, runeLiteConfig,
+			configManager.getConfigDescriptor(runeLiteConfig),
+			RUNELITE_PLUGIN, "RuneLite client settings", "client");
+		runeLite.setPinned(pinnedPlugins.contains(RUNELITE_PLUGIN));
+		runeLite.nameLabel.setForeground(Color.WHITE);
+		pluginList.add(runeLite);
+
+		List<PluginListItem> externalPlugins = new ArrayList<>();
+		// populate pluginList with all external Plugins
 		pluginManager.getPlugins().stream()
-			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).hidden())
+			.filter(plugin -> plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.EXTERNAL))
 			.forEach(plugin ->
 			{
 				final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
 				final Config config = pluginManager.getPluginConfigProxy(plugin);
 				final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
 
-				final PluginListItem listItem = new PluginListItem(this, plugin, descriptor, config, configDescriptor);
+				final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
 				listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
-				pluginList.add(listItem);
+				externalPlugins.add(listItem);
 			});
 
-		// add special entries for core client configurations
-		final PluginListItem runeLite = new PluginListItem(this, runeLiteConfig,
-			configManager.getConfigDescriptor(runeLiteConfig),
-			RUNELITE_PLUGIN, "RuneLite client settings", "client");
-		runeLite.setPinned(pinnedPlugins.contains(RUNELITE_PLUGIN));
-		pluginList.add(runeLite);
+		externalPlugins.sort(Comparator.comparing(PluginListItem::getName));
+		pluginList.addAll(externalPlugins);
 
-		final PluginListItem chatColor = new PluginListItem(this, chatColorConfig,
+		List<PluginListItem> pvmPlugins = new ArrayList<>();
+
+		// populate pluginList with all non-hidden plugins
+		pluginManager.getPlugins().stream()
+			.filter(plugin -> plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.PVM))
+			.forEach(plugin ->
+			{
+				final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+				final Config config = pluginManager.getPluginConfigProxy(plugin);
+				final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+				final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+				listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
+				pvmPlugins.add(listItem);
+			});
+
+		pvmPlugins.sort(Comparator.comparing(PluginListItem::getName));
+		pluginList.addAll(pvmPlugins);
+
+		List<PluginListItem> pvpPlugins = new ArrayList<>();
+		// populate pluginList with all PVP Plugins
+		pluginManager.getPlugins().stream()
+			.filter(plugin -> plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.PVP))
+			.forEach(plugin ->
+			{
+				final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+				final Config config = pluginManager.getPluginConfigProxy(plugin);
+				final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+				final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+				listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
+				pvpPlugins.add(listItem);
+			});
+
+		pvpPlugins.sort(Comparator.comparing(PluginListItem::getName));
+		pluginList.addAll(pvpPlugins);
+
+		List<PluginListItem> utilPlugins = new ArrayList<>();
+		// populate pluginList with all PVP Plugins
+		pluginManager.getPlugins().stream()
+			.filter(plugin -> plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.UTILITY))
+			.forEach(plugin ->
+			{
+				final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+				final Config config = pluginManager.getPluginConfigProxy(plugin);
+				final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+				final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+				listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
+				utilPlugins.add(listItem);
+			});
+
+		utilPlugins.sort(Comparator.comparing(PluginListItem::getName));
+		pluginList.addAll(utilPlugins);
+
+		// populate pluginList with all vanilla RL plugins
+		List<PluginListItem> vanillaPlugins = new ArrayList<>();
+		pluginManager.getPlugins().stream()
+			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).hidden())
+			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.PVM))
+			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.PVP))
+			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.UTILITY))
+			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.PLUGIN_ORGANIZER))
+			.filter(plugin -> !plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.EXTERNAL))
+			.forEach(plugin ->
+				{
+					final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+					final Config config = pluginManager.getPluginConfigProxy(plugin);
+					final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+					final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+					listItem.setPinned(pinnedPlugins.contains(listItem.getName()));
+					vanillaPlugins.add(listItem);
+				}
+			);
+
+		final PluginListItem chatColor = new PluginListItem(this, configManager, chatColorConfig,
 			configManager.getConfigDescriptor(chatColorConfig),
 			CHAT_COLOR_PLUGIN, "Recolor chat text", "colour", "messages");
 		chatColor.setPinned(pinnedPlugins.contains(CHAT_COLOR_PLUGIN));
-		pluginList.add(chatColor);
+		chatColor.nameLabel.setForeground(Color.WHITE);
+		vanillaPlugins.add(chatColor);
 
-		pluginList.sort(Comparator.comparing(PluginListItem::getName));
+		vanillaPlugins.sort(Comparator.comparing(PluginListItem::getName));
+		pluginList.addAll(vanillaPlugins);
+
+		// Add plugin sorter to bottom
+		pluginManager.getPlugins().stream()
+			.filter(plugin -> plugin.getClass().getAnnotation(PluginDescriptor.class).type().equals(PluginType.PLUGIN_ORGANIZER))
+			.forEach(plugin ->
+			{
+				final PluginDescriptor descriptor = plugin.getClass().getAnnotation(PluginDescriptor.class);
+				final Config config = pluginManager.getPluginConfigProxy(plugin);
+				final ConfigDescriptor configDescriptor = config == null ? null : configManager.getConfigDescriptor(config);
+
+				final PluginListItem listItem = new PluginListItem(this, configManager, plugin, descriptor, config, configDescriptor);
+				pluginList.add(listItem);
+			});
 	}
 
 	void refreshPluginList()
@@ -305,7 +402,10 @@ public class ConfigPanel extends PluginPanel
 		topPanelBackButton.setToolTipText("Back");
 		topPanel.add(topPanelBackButton, BorderLayout.WEST);
 
-		topPanel.add(listItem.createToggleButton(), BorderLayout.EAST);
+		if (!listItem.getName().equals("RuneLitePlus"))
+		{
+			topPanel.add(listItem.createToggleButton(), BorderLayout.EAST);
+		}
 
 		String name = listItem.getName();
 		JLabel title = new JLabel(name);

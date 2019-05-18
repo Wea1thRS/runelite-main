@@ -225,6 +225,11 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>net.runelite</groupId>
+			<artifactId>extended-mixins</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
@@ -274,6 +279,11 @@
             <artifactId>http-request</artifactId>
             <version>6.0</version>
         </dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-all</artifactId>
+			<version>6.0_BETA</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -317,7 +327,6 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<minimizeJar>true</minimizeJar>
 
 							<shadedArtifactAttached>true</shadedArtifactAttached>
 							<shadedClassifierName>shaded</shadedClassifierName>

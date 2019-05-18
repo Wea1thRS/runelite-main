@@ -49,4 +49,5 @@ public class GraphicID
 	public static final int POT_SHARE = 733;
 	public static final int BAKE_PIE = 746;
 	public static final int MAIDEN_BLOOD_POOL = 1579;
+	public static final int XERIC_TELEPORT = 1612;
 }
