@@ -1610,4 +1610,8 @@ public interface Client extends GameEngine
 	void draw2010Menu();
 
 	NodeCache getHealthBarCache();
+
+	MouseRecorder getMouseRecorder();
+
+	void setPrintMenuActions(boolean b);
 }

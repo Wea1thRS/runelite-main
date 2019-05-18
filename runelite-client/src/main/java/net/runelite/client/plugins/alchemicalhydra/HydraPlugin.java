@@ -47,12 +47,14 @@ import net.runelite.api.events.ProjectileMoved;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
 	name = "Alchemical Hydra",
 	description = "Show what to pray against hydra",
-	tags = {"Hydra", "Lazy", "4 headed asshole"}
+	tags = {"Hydra", "Lazy", "4 headed asshole"},
+	type = PluginType.PVM
 )
 @Slf4j
 public class HydraPlugin extends Plugin
