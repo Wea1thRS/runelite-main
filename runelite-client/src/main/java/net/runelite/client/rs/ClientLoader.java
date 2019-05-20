@@ -33,19 +33,22 @@ import com.google.gson.Gson;
 import io.sigpipe.jbsdiff.InvalidHeaderException;
 import io.sigpipe.jbsdiff.Patch;
 import java.applet.Applet;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -69,8 +72,8 @@ public class ClientLoader
 
 	@Inject
 	private ClientLoader(
-		@Named("updateCheckMode") final ClientUpdateCheckMode updateCheckMode,
-		final ClientConfigLoader clientConfigLoader)
+			@Named("updateCheckMode") final ClientUpdateCheckMode updateCheckMode,
+			final ClientConfigLoader clientConfigLoader)
 	{
 		this.updateCheckMode = updateCheckMode;
 		this.clientConfigLoader = clientConfigLoader;
@@ -91,12 +94,13 @@ public class ClientLoader
 
 			Map<String, byte[]> zipFile = new HashMap<>();
 			{
+				Certificate[] jagexCertificateChain = getJagexCertificateChain();
 				String codebase = config.getCodeBase();
 				String initialJar = config.getInitialJar();
 				URL url = new URL(codebase + initialJar);
 				Request request = new Request.Builder()
-					.url(url)
-					.build();
+						.url(url)
+						.build();
 
 				try (Response response = RuneLiteAPI.CLIENT.newCall(request).execute())
 				{
@@ -122,6 +126,20 @@ public class ClientLoader
 								break;
 							}
 							buffer.write(tmp, 0, n);
+						}
+
+						if (!Arrays.equals(metadata.getCertificates(), jagexCertificateChain))
+						{
+							if (metadata.getName().startsWith("META-INF/"))
+							{
+								// META-INF/JAGEXLTD.SF and META-INF/JAGEXLTD.RSA are not signed, but we don't need
+								// anything in META-INF anyway.
+								continue;
+							}
+							else
+							{
+								throw new VerificationException("Unable to verify jar entry: " + metadata.getName());
+							}
 						}
 
 						zipFile.put(metadata.getName(), buffer.toByteArray());
@@ -152,7 +170,7 @@ public class ClientLoader
 					if (!file.getValue().equals(ourHash))
 					{
 						log.info("{} had a hash mismatch; falling back to vanilla. {} != {}", file.getKey(),
-							file.getValue(), ourHash);
+								file.getValue(), ourHash);
 						log.info("Client is outdated!");
 						updateCheckMode = VANILLA;
 						break;
@@ -240,13 +258,13 @@ public class ClientLoader
 			rs.setStub(new RSAppletStub(config));
 			return rs;
 		}
-		catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | CompressorException | InvalidHeaderException | SecurityException | NoSuchMethodException | InvocationTargetException e)
+		catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | CompressorException | InvalidHeaderException | SecurityException | NoSuchMethodException | InvocationTargetException | CertificateException | VerificationException e)
 		{
 			if (e instanceof ClassNotFoundException)
 			{
 				log.error("Unable to load client - class not found. This means you"
-					+ " are not running RuneLite with Maven as the client patch"
-					+ " is not in your classpath.");
+						+ " are not running RuneLite with Maven as the client patch"
+						+ " is not in your classpath.");
 			}
 
 			log.error("Error loading RS!", e);
@@ -254,22 +272,10 @@ public class ClientLoader
 		}
 	}
 
-	private void add(byte[] bytes, String entryName, JarOutputStream target) throws IOException
+	private static Certificate[] getJagexCertificateChain() throws CertificateException
 	{
-		BufferedInputStream in = null;
-		try
-		{
-			JarEntry entry = new JarEntry(entryName);
-			target.putNextEntry(entry);
-			target.write(bytes);
-			target.closeEntry();
-		}
-		finally
-		{
-			if (in != null)
-			{
-				in.close();
-			}
-		}
+		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+		Collection<? extends Certificate> certificates = certificateFactory.generateCertificates(ClientLoader.class.getResourceAsStream("jagex.crt"));
+		return certificates.toArray(new Certificate[0]);
 	}
 }
