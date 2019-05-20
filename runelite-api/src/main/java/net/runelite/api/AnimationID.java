@@ -164,13 +164,6 @@ public final class AnimationID
 	public static final int BLOCK_SWORD = 388;
 	public static final int BLOCK_UNARMED = 424;
 
-	//block animations for players and perhaps npcs as well?
-	public static final int BLOCK_DEFENDER = 4177;
-	public static final int BLOCK_NO_SHIELD = 420;
-	public static final int BLOCK_SHIELD = 1156;
-	public static final int BLOCK_SWORD = 388;
-	public static final int BLOCK_UNARMED = 424;
-
 	// NPC animations
 	public static final int TZTOK_JAD_MAGIC_ATTACK = 2656;
 	public static final int TZTOK_JAD_RANGE_ATTACK = 2652;
