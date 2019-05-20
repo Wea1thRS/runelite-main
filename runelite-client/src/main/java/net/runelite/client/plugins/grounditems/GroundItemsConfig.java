@@ -371,12 +371,34 @@ public interface GroundItemsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "sortByGEPrice",
+		name = "Sort by GE price",
+		description = "Sorts ground items by GE price, instead of alch value",
+		position = 29
+	)
+	default boolean sortByGEPrice()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "toggleOutline",
 		name = "Text Outline",
 		description = "Use an outline around text instead of a text shadow",
 		position = 29
 	)
 	default boolean toggleOutline()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "rightClickHidden",
+		name = "Right click hidden items",
+		description = "Places hidden items below the 'Walk here' option, making it so that you need to right click to pick them up",
+		position = 29
+	)
+	default boolean rightClickHidden()
 	{
 		return false;
 	}
