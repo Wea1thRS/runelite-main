@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Plinko60
+ * Copyright (c) 2019, Alan Baumgartner <https://github.com/alanbaumgartner>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,39 +22,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.shiftwalker;
+package net.runelite.client.plugins.easyscape.util;
 
-import java.awt.event.KeyEvent;
-import javax.inject.Inject;
-import net.runelite.client.input.KeyListener;
-
-public class ShiftWalkerInputListener implements KeyListener
+public enum DuelingRingMode
 {
+	DUEL_ARENA("Duel Arena"),
+	CASTLE_WARS("Castle Wars"),
+	CLAN_WARS("Clan Wars");
 
-	@Inject
-	private ShiftWalkerPlugin plugin;
+	private final String name;
 
-	@Override
-	public void keyTyped(KeyEvent event)
+	DuelingRingMode(String name)
 	{
-
+		this.name = name;
 	}
 
 	@Override
-	public void keyPressed(KeyEvent event)
+	public String toString()
 	{
-		if (event.getKeyCode() == KeyEvent.VK_SHIFT)
-		{
-			plugin.startPrioritizing();
-		}
-	}
-
-	@Override
-	public void keyReleased(KeyEvent event)
-	{
-		if (event.getKeyCode() == KeyEvent.VK_SHIFT)
-		{
-			plugin.stopPrioritizing();
-		}
+		return name;
 	}
 }

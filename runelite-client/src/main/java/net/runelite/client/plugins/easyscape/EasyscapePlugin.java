@@ -1,5 +1,8 @@
 /*
+ * Copyright (c) 2018, Alan Baumgartner <https://github.com/alanbaumgartner>
  * Copyright (c) 2018, https://runelitepl.us
+ * Copyright (c) 2018, Kyle <https://github.com/kyleeld>
+ * Copyright (c) 2018, Owain van Brakel <https://github.com/Owain94>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,9 +27,9 @@
  */
 package net.runelite.client.plugins.easyscape;
 
+import com.google.common.base.Strings;
 import com.google.inject.Provides;
 import javax.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.MenuAction;
@@ -34,10 +37,9 @@ import static net.runelite.api.MenuAction.MENU_ACTION_DEPRIORITIZE_OFFSET;
 import static net.runelite.api.MenuAction.WALK;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.Player;
+import static net.runelite.api.Varbits.BUILDING_MODE;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -50,18 +52,11 @@ import org.apache.commons.lang3.ArrayUtils;
 
 @PluginDescriptor(
 	name = "Easyscape",
-	description = "Easyscape.",
-	tags = {"Easyscape"},
-	enabledByDefault = false,
 	type = PluginType.UTILITY
 )
-
-@Slf4j
 public class EasyscapePlugin extends Plugin
 {
-
 	private static final int PURO_PURO_REGION_ID = 10307;
-	private static final int HOUSE_REGION_ID = 7513;
 
 	private MenuEntry[] entries;
 
@@ -69,67 +64,203 @@ public class EasyscapePlugin extends Plugin
 	private Client client;
 
 	@Inject
-	private EasyscapePluginConfig config;
+	private EasyscapeConfig config;
 
 	@Provides
-	EasyscapePluginConfig provideConfig(ConfigManager configManager)
+	EasyscapeConfig provideConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(EasyscapePluginConfig.class);
+		return configManager.getConfig(EasyscapeConfig.class);
 	}
 
 	@Override
 	public void startUp()
 	{
-		log.debug("Easyscape Started.");
 	}
 
 	@Override
 	public void shutDown()
 	{
-		log.debug("Easyscape Stopped.");
 	}
 
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-
 		if (client.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
 		}
 
-		Widget loginScreenOne = client.getWidget(WidgetInfo.LOGIN_CLICK_TO_PLAY_SCREEN);
-		Widget loginScreenTwo = client.getWidget(WidgetInfo.LOGIN_CLICK_TO_PLAY_SCREEN_MESSAGE_OF_THE_DAY);
-
-		if (loginScreenOne != null || loginScreenTwo != null)
-		{
-			return;
-		}
-
-		final String option = Text.removeTags(event.getOption()).toLowerCase();
-		final String target = Text.removeTags(event.getTarget()).toLowerCase();
+		final String option = Text.standardize(event.getOption());
+		final String target = Text.standardize(event.getTarget());
 
 		entries = client.getMenuEntries();
 
-		if (config.getRemoveExamine())
+		if (option.contains("withdraw") || option.contains("deposit"))
 		{
-			for (int i = entries.length - 1; i >= 0; i--)
+			if (config.getWithdrawOne())
 			{
-				if (entries[i].getOption().equals("Examine"))
+				for (String item : Text.fromCSV(config.getWithdrawOneItems()))
 				{
-					entries = ArrayUtils.remove(entries, i);
-					i--;
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Withdraw-1", option, target);
+						swap(client, "Deposit-1", option, target);
+					}
 				}
 			}
-			client.setMenuEntries(entries);
+
+			if (config.getWithdrawFive())
+			{
+				for (String item : Text.fromCSV(config.getWithdrawFiveItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Withdraw-5", option, target);
+						swap(client, "Deposit-5", option, target);
+					}
+				}
+			}
+
+			if (config.getWithdrawTen())
+			{
+				for (String item : Text.fromCSV(config.getWithdrawTenItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Withdraw-10", option, target);
+						swap(client, "Deposit-10", option, target);
+					}
+				}
+			}
+
+			if (config.getWithdrawX())
+			{
+				for (String item : Text.fromCSV(config.getWithdrawXItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Withdraw-" + config.getWithdrawXAmount(), option, target);
+						swap(client, "Deposit-" + config.getWithdrawXAmount(), option, target);
+					}
+				}
+			}
+
+			if (config.getWithdrawAll())
+			{
+				for (String item : Text.fromCSV(config.getWithdrawAllItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Withdraw-All", option, target);
+						swap(client, "Deposit-All", option, target);
+					}
+				}
+			}
+		}
+
+		if (option.contains("buy"))
+		{
+			if (config.getSwapBuyOne() && !config.getBuyOneItems().equals(""))
+			{
+				for (String item : Text.fromCSV(config.getBuyOneItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Buy 1", option, target);
+					}
+				}
+			}
+
+			if (config.getSwapBuyFive() && !config.getBuyFiveItems().equals(""))
+			{
+				for (String item : Text.fromCSV(config.getBuyFiveItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Buy 5", option, target);
+					}
+				}
+			}
+
+			if (config.getSwapBuyTen() && !config.getBuyTenItems().equals(""))
+			{
+				for (String item : Text.fromCSV(config.getBuyTenItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Buy 10", option, target);
+					}
+				}
+			}
+
+			if (config.getSwapBuyFifty() && !config.getBuyFiftyItems().equals(""))
+			{
+				for (String item : Text.fromCSV(config.getBuyFiftyItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Buy 50", option, target);
+					}
+				}
+			}
+		}
+		else if (option.contains("sell"))
+		{
+			if (config.getSwapSellOne() && !config.getSellOneItems().equals(""))
+			{
+				for (String item : Text.fromCSV(config.getSellOneItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Sell 1", option, target);
+					}
+				}
+			}
+
+			if (config.getSwapSellFive() && !Strings.isNullOrEmpty(config.getSellFiveItems()))
+			{
+				for (String item : Text.fromCSV(config.getSellFiveItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Sell 5", option, target);
+					}
+				}
+			}
+
+			if (config.getSwapSellTen() && !Strings.isNullOrEmpty(config.getSellTenItems()))
+			{
+				for (String item : Text.fromCSV(config.getSellTenItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Sell 10", option, target);
+					}
+				}
+			}
+
+			if (config.getSwapSellFifty() && !Strings.isNullOrEmpty(config.getSellFiftyItems()))
+			{
+				for (String item : Text.fromCSV(config.getSellFiftyItems()))
+				{
+					if (target.equals(Text.standardize(item)))
+					{
+						swap(client, "Sell 50", option, target);
+					}
+				}
+			}
 		}
 
 		if (config.getRemoveObjects() && !config.getRemovedObjects().equals(""))
 		{
-			for (String removed : config.getRemovedObjects().split(","))
+			for (String removed : Text.fromCSV(config.getRemovedObjects()))
 			{
-				removed = removed.trim();
-				if (target.contains("->"))
+				removed = Text.standardize(removed);
+				if (target.contains("(") && target.split(" \\(")[0].equals(removed))
+				{
+					delete(event.getIdentifier());
+				}
+				else if (target.contains("->"))
 				{
 					String trimmed = target.split("->")[1].trim();
 					if (trimmed.length() >= removed.length() && trimmed.substring(0, removed.length()).equalsIgnoreCase(removed))
@@ -138,7 +269,7 @@ public class EasyscapePlugin extends Plugin
 						break;
 					}
 				}
-				if (target.length() >= removed.length() && target.substring(0, removed.length()).equalsIgnoreCase(removed))
+				else if (target.length() >= removed.length() && target.substring(0, removed.length()).equalsIgnoreCase(removed))
 				{
 					delete(event.getIdentifier());
 					break;
@@ -152,7 +283,6 @@ public class EasyscapePlugin extends Plugin
 			{
 				MenuEntry menuEntry = entries[entries.length - 1];
 				menuEntry.setType(MenuAction.WALK.getId() + MENU_ACTION_DEPRIORITIZE_OFFSET);
-				client.setMenuEntries(entries);
 			}
 			else if (option.equalsIgnoreCase("examine"))
 			{
@@ -164,22 +294,21 @@ public class EasyscapePlugin extends Plugin
 			}
 		}
 
-		if (config.getEasyConstruction() && !config.getConstructionItems().equals(""))
+		if (config.getEasyConstruction() && client.getVar(BUILDING_MODE) == 1 && !Strings.isNullOrEmpty(config.getConstructionItems()))
 		{
 			if (event.getType() == WALK.getId())
 			{
 				MenuEntry menuEntry = entries[entries.length - 1];
 				menuEntry.setType(MenuAction.WALK.getId() + MENU_ACTION_DEPRIORITIZE_OFFSET);
-				client.setMenuEntries(entries);
 			}
 
 			swap(client, "Build", option, target);
 
 			for (int i = entries.length - 1; i >= 0; i--)
 			{
-				for (String item : config.getConstructionItems().split(","))
+				for (String item : Text.fromCSV(config.getConstructionItems()))
 				{
-					if (item.trim().equalsIgnoreCase(Text.removeTags(entries[i].getTarget())))
+					if (item.equalsIgnoreCase(Text.removeTags(entries[i].getTarget())))
 					{
 						if (!entries[i].getOption().equalsIgnoreCase("remove"))
 						{
@@ -193,18 +322,7 @@ public class EasyscapePlugin extends Plugin
 			client.setMenuEntries(entries);
 		}
 
-		if (config.getSwapShop() && !config.getSwappedItems().equals(""))
-		{
-			for (String item : config.getSwappedItems().split(","))
-			{
-				if (target.equalsIgnoreCase(item.trim()))
-				{
-					swap(client, "Buy 50", option, target);
-				}
-			}
-		}
-
-		if (config.getSwapSmithing())
+		if (config.getSwapSmithing() && option.contains("smith"))
 		{
 			if (option.equalsIgnoreCase("Smith 1"))
 			{
@@ -216,182 +334,106 @@ public class EasyscapePlugin extends Plugin
 			}
 		}
 
-		if (config.getSwapTanning() && option.equalsIgnoreCase("Tan 1"))
+		else if (config.getSwapTanning() && option.equalsIgnoreCase("Tan 1"))
 		{
 			swap(client, "Tan All", option, target);
 		}
 
-		if (config.getSwapCrafting() && option.equalsIgnoreCase("Make-1"))
-		{
-			swap(client, "Make-All", option, target);
-		}
-
-		if (config.getSwapSawmill() && target.equalsIgnoreCase("Sawmill operator"))
+		else if (config.getSwapSawmill() && target.equalsIgnoreCase("Sawmill operator"))
 		{
 			swap(client, "Buy-plank", option, target);
 		}
 
-		if (config.getSwapSawmillPlanks() && option.equalsIgnoreCase("Buy 1"))
+		else if (config.getSwapSawmillPlanks() && option.equalsIgnoreCase("Buy 1"))
 		{
 			swap(client, "Buy All", option, target);
 		}
 
-		if (config.getSwapStairs() && option.equalsIgnoreCase("Climb Stairs"))
-		{
-			swap(client, "Climb Up Stairs", option, target);
-		}
-
-		if (option.equalsIgnoreCase("Clear-All") && target.equalsIgnoreCase("Bank Filler"))
+		else if (option.equalsIgnoreCase("Clear-All") && target.equalsIgnoreCase("Bank Filler"))
 		{
 			swap(client, "Clear", option, target);
 		}
 
-		if (target.toLowerCase().contains("ardougne cloak") && config.getSwapArdougneCape())
+		else if (target.contains("ardougne cloak") && config.getSwapArdougneCape())
 		{
 			swap(client, "Kandarin Monastery", option, target);
 			swap(client, "Monastery Teleport", option, target);
 		}
-
-		if (config.getSwapEssencePouch())
-		{
-			if (isEssencePouch(target))
-			{
-				Widget widgetBankTitleBar = client.getWidget(WidgetInfo.BANK_TITLE_BAR);
-				switch (config.getEssenceMode())
-				{
-					case RUNECRAFTING:
-						if (widgetBankTitleBar == null || widgetBankTitleBar.isHidden())
-						{
-							swap(client, "Empty", option, target);
-						}
-						else
-						{
-							swap(client, "Fill", option, target);
-						}
-						break;
-					case ESSENCE_MINING:
-						if (widgetBankTitleBar == null || widgetBankTitleBar.isHidden())
-						{
-							swap(client, "Fill", option, target);
-						}
-						else
-						{
-							swap(client, "Empty", option, target);
-						}
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		if (config.getGamesNecklace())
-		{
-			if (target.toLowerCase().contains("games necklace"))
-			{
-				switch (config.getGamesNecklaceMode())
-				{
-					case BURTHORPE:
-						swap(client, GamesNecklaceMode.BURTHORPE.toString(), option, target);
-						break;
-					case BARBARIAN_OUTPOST:
-						swap(client, GamesNecklaceMode.BARBARIAN_OUTPOST.toString(), option, target);
-						break;
-					case CORPOREAL_BEAST:
-						swap(client, GamesNecklaceMode.CORPOREAL_BEAST.toString(), option, target);
-						break;
-					case TEARS_OF_GUTHIX:
-						swap(client, GamesNecklaceMode.TEARS_OF_GUTHIX.toString(), option, target);
-						break;
-					case WINTERTODT:
-						swap(client, GamesNecklaceMode.WINTERTODT.toString(), option, target);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		if (config.getDuelingRing())
-		{
-			if (target.toLowerCase().contains("ring of dueling"))
-			{
-				switch (config.getDuelingRingMode())
-				{
-					case DUEL_ARENA:
-						swap(client, DuelingRingMode.DUEL_ARENA.toString(), option, target);
-						break;
-					case CASTLE_WARS:
-						swap(client, DuelingRingMode.CASTLE_WARS.toString(), option, target);
-						break;
-					case CLAN_WARS:
-						swap(client, DuelingRingMode.CLAN_WARS.toString(), option, target);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		if (config.getWealthRing())
-		{
-			if (target.toLowerCase().contains("ring of wealth"))
-			{
-				switch (config.getWealthRingMode())
-				{
-					case MISCELLANIA:
-						swap(client, WealthRingMode.MISCELLANIA.toString(), option, target);
-						break;
-					case GRAND_EXCHANGE:
-						swap(client, WealthRingMode.GRAND_EXCHANGE.toString(), option, target);
-						break;
-					case FALADOR:
-						swap(client, WealthRingMode.FALADOR.toString(), option, target);
-						break;
-					case DONDAKAN:
-						swap(client, WealthRingMode.DONDAKAN.toString(), option, target);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		if (config.getGlory())
-		{
-			if (target.toLowerCase().contains("amulet of glory") || target.toLowerCase().contains("amulet of eternal glory"))
-			{
-				switch (config.getGloryMode())
-				{
-					case EDGEVILLE:
-						swap(client, GloryMode.EDGEVILLE.toString(), option, target);
-						break;
-					case KARAMJA:
-						swap(client, GloryMode.KARAMJA.toString(), option, target);
-						break;
-					case DRAYNOR_VILLAGE:
-						swap(client, GloryMode.DRAYNOR_VILLAGE.toString(), option, target);
-						break;
-					case AL_KHARID:
-						swap(client, GloryMode.AL_KHARID.toString(), option, target);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		if (target.toLowerCase().contains("crafting cape") && config.getSwapCraftingCape())
+		
+		else if (target.contains("crafting cape") && config.getSwapCraftingCape())
 		{
 			swap(client, "Teleport", option, target);
-
 		}
 
-		if (target.toLowerCase().contains("construct. cape") && config.getSwapConstructionCape())
+		else if (target.contains("construct. cape") && config.getSwapConstructionCape())
 		{
 			swap(client, "Tele to poh", option, target);
-
 		}
+
+		else if (target.contains("magic cape") && config.getSwapMagicCape())
+		{
+			swap(client, "Spellbook", option, target);
+		}
+
+		else if (target.contains("explorer's ring") && config.getSwapExplorersRing())
+		{
+			swap(client, "Teleport", option, target);
+		}
+
+		else if (config.getGamesNecklace() && target.contains("games necklace"))
+		{
+			swap(client, config.getGamesNecklaceMode().toString(), option, target);
+		}
+
+		else if (config.getDuelingRing() && target.contains("ring of dueling"))
+		{
+			swap(client, config.getDuelingRingMode().toString(), option, target);
+		}
+
+		else if (config.getGlory() && (target.contains("amulet of glory") || target.contains("amulet of eternal glory")))
+		{
+			swap(client, config.getGloryMode().toString(), option, target);
+		}
+
+		else if (config.getSkillsNecklace() && target.contains("skills necklace"))
+			{
+				swap(client, config.getSkillsNecklaceMode().toString(), option, target);
+			}
+		
+		else if (config.getNecklaceofPassage() && target.contains("necklace of passage"))
+			{
+				swap(client, config.getNecklaceofPassageMode().toString(), option, target);
+			}
+
+		else if (config.getDigsitePendant() && target.contains("digsite pendant"))
+			{
+				swap(client, config.getDigsitePendantMode().toString(), option, target);
+			}
+
+		else if (config.getCombatBracelet() && target.contains("combat bracelet"))
+			{
+				swap(client, config.getCombatBraceletMode().toString(), option, target);
+			}
+
+		else if (config.getSlayerRing() && target.contains("slayer ring"))
+			{
+				swap(client, config.getSlayerRingMode().toString(), option, target);
+			}
+
+		else if (config.getBurningAmulet() && target.contains("burning amulet"))
+			{
+				swap(client, config.getBurningAmuletMode().toString(), option, target);
+			}
+
+		else if (config.getXericsTalisman() && target.contains("xeric's talisman"))
+			{
+				swap(client, config.getXericsTalismanMode().toString(), option, target);
+			}
+
+		else if (config.getRingofWealth() && target.contains("ring of wealth"))
+			{
+				swap(client, config.getRingofWealthMode().toString(), option, target);
+			}
 	}
 
 	private void delete(int target)
@@ -405,16 +447,6 @@ public class EasyscapePlugin extends Plugin
 			}
 		}
 		client.setMenuEntries(entries);
-	}
-
-	private boolean isEssencePouch(String target)
-	{
-		return (target.equalsIgnoreCase("Small Pouch") || target.equalsIgnoreCase("Medium Pouch") || target.equalsIgnoreCase("Large Pouch") || target.equalsIgnoreCase("Giant Pouch"));
-	}
-
-	private boolean isHouse()
-	{
-		return client.getMapRegions()[0] == HOUSE_REGION_ID;
 	}
 
 	private boolean isPuroPuro()
@@ -431,5 +463,4 @@ public class EasyscapePlugin extends Plugin
 			return location.getRegionID() == PURO_PURO_REGION_ID;
 		}
 	}
-
 }
