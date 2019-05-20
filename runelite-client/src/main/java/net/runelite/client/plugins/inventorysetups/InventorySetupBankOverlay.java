@@ -1,35 +1,53 @@
+/*
+ * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
+ * Copyright (c) 2018, https://runelitepl.us
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package net.runelite.client.plugins.inventorysetups;
 
-import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
-import net.runelite.api.Point;
-import net.runelite.api.SpritePixels;
-import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
-import net.runelite.api.widgets.WidgetItem;
-import net.runelite.client.ui.FontManager;
-import net.runelite.client.ui.overlay.WidgetItemOverlay;
-
-import javax.inject.Inject;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.stream.IntStream;
+import javax.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.widgets.WidgetItem;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.ui.FontManager;
+import net.runelite.client.ui.overlay.WidgetItemOverlay;
 
 @Slf4j
 public class InventorySetupBankOverlay extends WidgetItemOverlay
 {
-	private final Client client;
+	private final ItemManager itemManager;
 	private final InventorySetupPlugin plugin;
 	private final InventorySetupConfig config;
 
 	@Inject
-	public InventorySetupBankOverlay(Client client, InventorySetupPlugin plugin, InventorySetupConfig config)
+	public InventorySetupBankOverlay(ItemManager itemManager, InventorySetupPlugin plugin, InventorySetupConfig config)
 	{
-		this.client = client;
+		this.itemManager = itemManager;
 		this.plugin = plugin;
 		this.config = config;
 		showOnBank();
@@ -45,57 +63,39 @@ public class InventorySetupBankOverlay extends WidgetItemOverlay
 			{
 				return;
 			}
-			ids = Arrays.stream(ids)
-					.filter(Objects::nonNull)
-					.filter(id -> id != -1)
-					.toArray();
-			if (IntStream.of(ids).noneMatch(x -> x == itemWidget.getId()))
-			{
-				return;
-			}
-			final Widget bankContainer = client.getWidget(WidgetInfo.BANK_CONTAINER);
-			Point canvasLocation = itemWidget.getCanvasLocation();
-			Rectangle canvasBounds = itemWidget.getCanvasBounds();
-			Point windowLocation = bankContainer.getCanvasLocation();
 
-			if (canvasLocation == null || windowLocation == null)
+			if (IntStream.of(ids).noneMatch(x -> x == itemId))
 			{
 				return;
 			}
 
-			if (!(canvasLocation.getY() + 60 >= windowLocation.getY() + bankContainer.getHeight()) && !(canvasLocation.getY() + canvasBounds.getHeight() <= windowLocation.getY() + 90))
-			{
-				final Color color = config.getBankHighlightColor();
 
-				if (color != null)
+			final Color color = config.getBankHighlightColor();
+
+			if (color != null)
+			{
+				Rectangle bounds = itemWidget.getCanvasBounds();
+				final BufferedImage outline = itemManager.getItemOutline(itemId, itemWidget.getQuantity(), color);
+				graphics.drawImage(outline, (int) bounds.getX() + 1, (int) bounds.getY() + 1, null);
+
+				if (itemWidget.getQuantity() > 1)
 				{
-					final BufferedImage outline = loadItemOutline(itemWidget.getId(), itemWidget.getQuantity(), color);
-					graphics.drawImage(outline, itemWidget.getCanvasLocation().getX() + 1, itemWidget.getCanvasLocation().getY() + 1, null);
-					if (itemWidget.getQuantity() > 1)
-					{
-						drawQuantity(graphics, itemWidget, Color.YELLOW);
-					}
-					else if (itemWidget.getQuantity() == 0)
-					{
-						drawQuantity(graphics, itemWidget, Color.YELLOW.darker());
-					}
+					drawQuantity(graphics, itemWidget, Color.YELLOW);
+				}
+				else if (itemWidget.getQuantity() == 0)
+				{
+					drawQuantity(graphics, itemWidget, Color.YELLOW.darker());
 				}
 			}
 		}
 	}
 
-	private void drawQuantity(Graphics2D graphics, WidgetItem itemWidget, Color darker)
+	private void drawQuantity(Graphics2D graphics, WidgetItem item, Color darker)
 	{
 		graphics.setColor(Color.BLACK);
-		graphics.drawString(String.valueOf(itemWidget.getQuantity()), itemWidget.getCanvasLocation().getX() + 1, itemWidget.getCanvasLocation().getY() + 10);
+		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX() + 2, item.getCanvasLocation().getY() + 11);
 		graphics.setColor(darker);
 		graphics.setFont(FontManager.getRunescapeSmallFont());
-		graphics.drawString(String.valueOf(itemWidget.getQuantity()), itemWidget.getCanvasLocation().getX(), itemWidget.getCanvasLocation().getY() + 9);
-	}
-
-	private BufferedImage loadItemOutline(final int itemId, final int itemQuantity, final Color outlineColor)
-	{
-		final SpritePixels itemSprite = client.createItemSprite(itemId, itemQuantity, 2, 0, 0, true, 710);
-		return itemSprite.toBufferedOutline(outlineColor);
+		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 10);
 	}
 }

@@ -25,26 +25,30 @@
 package net.runelite.client.plugins.shiftwalker;
 
 import com.google.inject.Provides;
+import javax.inject.Inject;
 import lombok.Setter;
-import net.runelite.api.*;
-import net.runelite.api.events.*;
+import net.runelite.api.Client;
+import net.runelite.api.GameState;
+import net.runelite.api.MenuEntry;
+import net.runelite.api.events.FocusChanged;
+import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.util.Text;
-
-import javax.inject.Inject;
 
 /**
  * Shift Walker Plugin. Credit to MenuEntrySwapperPlugin for code some code structure used here.
  */
 @PluginDescriptor(
-	name = "Shift To Walk Here",
+	name = "Shift To Walk",
 	description = "Use Shift to toggle the Walk Here menu option. While pressed you will Walk rather than interact with objects.",
 	tags = {"npcs", "items", "objects"},
-	enabledByDefault = false
+	enabledByDefault = false,
+	type = PluginType.UTILITY
 )
 public class ShiftWalkerPlugin extends Plugin
 {
@@ -99,6 +103,7 @@ public class ShiftWalkerPlugin extends Plugin
 
 	/**
 	 * Event when a new menu entry was added.
+	 *
 	 * @param event {@link MenuEntryAdded}.
 	 */
 	@Subscribe
@@ -121,24 +126,51 @@ public class ShiftWalkerPlugin extends Plugin
 
 		if (config.shiftWalkEverything())
 		{
-			swap(pOptionToReplace); //Swap everything with walk here
+			//swap(pOptionToReplace); //Swap everything with walk here
+			stripEntries();
 		}
 		else if (config.shiftWalkBoxTraps() && ShiftWalkerGroups.BOX_TRAP_TARGETS.contains(target)
-				&& ShiftWalkerGroups.BOX_TRAP_KEYWORDS.contains(pOptionToReplace))
+			&& ShiftWalkerGroups.BOX_TRAP_KEYWORDS.contains(pOptionToReplace))
 		{
-			swap(pOptionToReplace); //Swap only on box traps
+			//swap(pOptionToReplace); //Swap only on box traps
+			stripEntries();
 		}
 		else if (config.shiftWalkAttackOption() && ShiftWalkerGroups.ATTACK_OPTIONS_KEYWORDS.contains(pOptionToReplace))
 		{
-			swap(pOptionToReplace); //Swap on everything that has an attack keyword as the first option
+			//swap(pOptionToReplace); //Swap on everything that has an attack keyword as the first option
+			stripEntries();
+		}
+	}
+
+	/**
+	 * Strip everything except "Walk here"
+	 * Other way was unconventional because if there was multiple targets in the menu entry it wouldn't swap correctly
+	 */
+	private void stripEntries()
+	{
+		MenuEntry walkkHereEntry = null;
+
+		for (MenuEntry entry : client.getMenuEntries())
+		{
+			if ("Walk here".equals(entry.getOption()))
+			{
+				walkkHereEntry = entry;
+			}
+		}
+		if (walkkHereEntry != null)
+		{
+			MenuEntry[] newEntries = new MenuEntry[1];
+			newEntries[0] = walkkHereEntry;
+			client.setMenuEntries(newEntries);
 		}
 	}
 
 	/**
 	 * Swaps menu entries if the entries could be found. This places Walk Here where the top level menu option was.
+	 *
 	 * @param pOptionToReplace The String containing the Menu Option that needs to be replaced. IE: "Attack", "Chop Down".
 	 */
-	private void swap(String pOptionToReplace)
+	private void swap(String pOptionToReplace) // Swap isn't currently used, and I don't know what's going on here so leaving for now
 	{
 		MenuEntry[] entries = client.getMenuEntries();
 
@@ -158,7 +190,8 @@ public class ShiftWalkerPlugin extends Plugin
 
 	/**
 	 * Finds the index of the menu that contains the verbiage we are looking for.
-	 * @param pMenuEntries The list of {@link MenuEntry}s.
+	 *
+	 * @param pMenuEntries          The list of {@link MenuEntry}s.
 	 * @param pMenuEntryToSearchFor The Option in the menu to search for.
 	 * @return The index location or null if it was not found.
 	 */

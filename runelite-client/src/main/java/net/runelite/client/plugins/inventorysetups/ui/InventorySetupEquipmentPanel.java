@@ -1,20 +1,40 @@
+/*
+ * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
+ * Copyright (c) 2018, https://runelitepl.us
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package net.runelite.client.plugins.inventorysetups.ui;
 
+import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import javax.swing.JPanel;
 import net.runelite.api.EquipmentInventorySlot;
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
-
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-
-import javax.swing.JPanel;
-import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 {
@@ -22,7 +42,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	InventorySetupEquipmentPanel(final ItemManager itemManager, final InventorySetupPlugin plugin)
 	{
-		super(itemManager, plugin, "Equipment", "No equipment for this setup.");
+		super(itemManager, plugin, "Equipment");
 	}
 
 	@Override
@@ -53,52 +73,35 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.GLOVES));
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.BOOTS));
 		containerSlotsPanel.add(equipmentSlots.get(EquipmentInventorySlot.RING));
+
 	}
 
 	void setEquipmentSetupSlots(final InventorySetup setup)
 	{
 		final ArrayList<InventorySetupItem> equipment = setup.getEquipment();
 
-		final AtomicBoolean hasEquipment = new AtomicBoolean(false);
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
 			int i = slot.getSlotIdx();
-			super.setContainerSlot(i, equipmentSlots.get(slot), equipment, hasEquipment);
+			super.setContainerSlot(i, equipmentSlots.get(slot), equipment);
 		}
-
-		removeAll();
-		add(hasEquipment.get() ? containerPanel : emptyContainerPanel);
 
 		validate();
 		repaint();
 
 	}
 
-	void highlightDifferences(final ItemContainer currEquipment, final InventorySetup inventorySetup)
+	void highlightDifferences(final ArrayList<InventorySetupItem> currEquipment, final InventorySetup inventorySetup)
 	{
-		Item[] items = null;
-		if (currEquipment != null)
-		{
-			items = currEquipment.getItems();
-		}
-
 		final ArrayList<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
-		// check to see if the inventory is all empty
-		boolean allEmpty = equipToCheck.isEmpty() || equipToCheck.stream().allMatch(item -> item.getId() == -1);
-
-		// equipment setup is empty but the current equipment is not, make the text red
-		if (allEmpty && items != null && items.length > 0)
-		{
-			super.modifyNoContainerCaption(items);
-			return;
-		}
+		assert currEquipment.size() == equipToCheck.size() : "size mismatch";
 
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
 
 			int slotIdx = slot.getSlotIdx();
-			super.highlightDifferentSlotColor(equipToCheck, items, equipmentSlots.get(slot), slotIdx);
+			super.highlightDifferentSlotColor(equipToCheck.get(slotIdx), currEquipment.get(slotIdx), equipmentSlots.get(slot));
 		}
 	}
 
@@ -108,8 +111,5 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 		{
 			equipmentSlots.get(slot).setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		}
-
-		emptyContainerLabel.setForeground(originalLabelColor);
 	}
-
 }

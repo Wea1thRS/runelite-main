@@ -39,7 +39,6 @@ import net.runelite.client.plugins.Plugin;
 public class Timer extends InfoBox
 {
 	private final Instant startTime;
-	@Getter
 	private final Instant endTime;
 	private final Duration duration;
 

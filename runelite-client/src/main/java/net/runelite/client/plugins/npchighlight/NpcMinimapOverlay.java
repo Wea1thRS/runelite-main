@@ -69,10 +69,7 @@ public class NpcMinimapOverlay extends Overlay
 		Point minimapLocation = actor.getMinimapLocation();
 		if (minimapLocation != null)
 		{
-			if (config.drawMinimapDots())
-			{
-				OverlayUtil.renderMinimapLocation(graphics, minimapLocation, color.darker());
-			}
+			OverlayUtil.renderMinimapLocation(graphics, minimapLocation, color.darker());
 
 			if (config.drawMinimapNames())
 			{

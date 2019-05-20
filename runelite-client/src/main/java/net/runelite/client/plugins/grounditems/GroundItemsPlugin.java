@@ -34,7 +34,6 @@ import static java.lang.Boolean.TRUE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,7 +67,6 @@ import net.runelite.api.events.ItemQuantityChanged;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.client.Notifier;
-import net.runelite.api.events.MenuOpened;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.NpcLootReceived;
@@ -160,7 +158,7 @@ public class GroundItemsPlugin extends Plugin
 	private Notifier notifier;
 
 	@Getter
-	private final Map<GroundItem.GroundItemKey, GroundItem> collectedGroundItems = new LinkedHashMap<>();
+	public static final Map<GroundItem.GroundItemKey, GroundItem> collectedGroundItems = new LinkedHashMap<>();
 	private final Map<Integer, Color> priceChecks = new LinkedHashMap<>();
 	private LoadingCache<String, Boolean> highlightedItems;
 	private LoadingCache<String, Boolean> hiddenItems;
@@ -511,50 +509,38 @@ public class GroundItemsPlugin extends Plugin
 				lastEntry.setTarget(lastEntry.getTarget() + " (" + quantity + ")");
 			}
 
+			if (config.removeIgnored() && event.getOption().equals("Take") && hiddenItemList.contains(Text.removeTags(event.getTarget())))
+			{
+				menuEntries = removeOption(event.getOption(), event.getTarget());
+			}
+
 			client.setMenuEntries(menuEntries);
 		}
 	}
 
-	@Subscribe
-	public void onMenuOpened(MenuOpened event)
+	private MenuEntry[] removeOption(String option, String target)
 	{
-		if (!config.isMenuGroupingEnabled())
+		MenuEntry[] entries = client.getMenuEntries();
+		int j = 0;
+		if (entries.length > 1)
 		{
-			return;
+			MenuEntry[] newEntries = new MenuEntry[entries.length - 1];
+			for (int i = 0; i < entries.length; ++i)
+			{
+				if (!(entries[i].getOption().equals(option) && entries[i].getTarget().equals(target)))
+				{
+					newEntries[j++] = entries[i];
+				}
+			}
+
+			return newEntries;
+		}
+		else
+		{
+			return entries;
 		}
 
-		HashMap<String, HashMap<String, MenuGroupingEntry>> repeated = new HashMap<>();
 
-		int count = 0;
-		for (MenuEntry menuEntry : event.getMenuEntries())
-		{
-			if (!repeated.containsKey(menuEntry.getTarget()))
-			{
-				repeated.put(menuEntry.getTarget(), new HashMap<>());
-			}
-
-			if (!repeated.get(menuEntry.getTarget()).containsKey(menuEntry.getOption()))
-			{
-				repeated.get(menuEntry.getTarget()).put(menuEntry.getOption(), new MenuGroupingEntry(menuEntry, count, 0));
-				count++;
-			}
-
-			int curCount = repeated.get(menuEntry.getTarget()).get(menuEntry.getOption()).getCount();
-			repeated.get(menuEntry.getTarget()).get(menuEntry.getOption()).setCount(curCount + 1);
-		}
-
-		MenuEntry[] toShow = new MenuEntry[count];
-
-		repeated.forEach((target, options) -> options.forEach((option, menuGroupingEntry) ->
-		{
-			MenuEntry showEntry = menuGroupingEntry.getOriginalEntry();
-			if (menuGroupingEntry.getCount() > 1)
-			{
-				showEntry.setTarget(showEntry.getTarget() + " x" + menuGroupingEntry.getCount());
-			}
-			toShow[menuGroupingEntry.getPosition()] = showEntry;
-		}));
-		client.setMenuEntries(toShow);
 	}
 
 	void updateList(String item, boolean hiddenList)

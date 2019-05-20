@@ -1,12 +1,46 @@
+/*
+ * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
+ * Copyright (c) 2018, https://runelitepl.us
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package net.runelite.client.plugins.inventorysetups;
 
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
+import java.awt.image.BufferedImage;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
+import javax.inject.Inject;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.events.ConfigChanged;
@@ -19,57 +53,52 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.plugins.inventorysetups.ui.InventorySetupPluginPanel;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 
-import javax.inject.Inject;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import java.awt.image.BufferedImage;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 @PluginDescriptor(
-		name = "Inventory Setups",
-		description = "Save inventory setups",
-		tags = { "items", "inventory", "setups"},
-		enabledByDefault = false
+	name = "Inventory Setups",
+	description = "Save inventory setups",
+	tags = {"items", "inventory", "setups"},
+	enabledByDefault = false,
+	type = PluginType.UTILITY
 )
 
 @Slf4j
 public class InventorySetupPlugin extends Plugin
 {
-
 	private static final String CONFIG_GROUP = "inventorysetups";
 	private static final String CONFIG_KEY = "setups";
-
-	@Inject
-	private ClientToolbar clientToolbar;
+	private static final int NUM_INVENTORY_ITEMS = 28;
+	private static final int NUM_EQUIPMENT_ITEMS = 14;
 
 	@Inject
 	private Client client;
 
 	@Inject
-	private InventorySetupConfig config;
+	private ItemManager itemManager;
 
 	@Inject
 	private InventorySetupBankOverlay overlay;
 
 	@Inject
-	private ConfigManager configManager;
+	private ClientToolbar clientToolbar;
 
 	@Inject
-	private ItemManager itemManager;
+	private InventorySetupConfig config;
 
 	@Inject
 	private OverlayManager overlayManager;
 
 	@Inject
 	private ClientThread clientThread;
+
+	@Inject
+	private ConfigManager configManager;
 
 	private InventorySetupPluginPanel panel;
 
@@ -84,16 +113,16 @@ public class InventorySetupPlugin extends Plugin
 	{
 		overlayManager.add(overlay);
 
-		panel = new InventorySetupPluginPanel(this, itemManager, clientThread);
+		panel = new InventorySetupPluginPanel(this, itemManager);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "inventorysetups_icon.png");
 
 		navButton = NavigationButton.builder()
-				.tooltip("Inventory Setups")
-				.icon(icon)
-				.priority(9)
-				.panel(panel)
-				.build();
+			.tooltip("Inventory Setups")
+			.icon(icon)
+			.priority(9)
+			.panel(panel)
+			.build();
 
 		clientToolbar.addNavigation(navButton);
 
@@ -115,9 +144,9 @@ public class InventorySetupPlugin extends Plugin
 	public void addInventorySetup()
 	{
 		final String name = JOptionPane.showInputDialog(panel,
-				"Enter the name of this setup.",
-				"Add New Setup",
-				JOptionPane.PLAIN_MESSAGE);
+			"Enter the name of this setup.",
+			"Add New Setup",
+			JOptionPane.PLAIN_MESSAGE);
 
 		// cancel button was clicked
 		if (name == null)
@@ -128,21 +157,21 @@ public class InventorySetupPlugin extends Plugin
 		if (name.isEmpty())
 		{
 			JOptionPane.showMessageDialog(panel,
-					"Invalid Setup Name",
-					"Names must not be empty.",
-					JOptionPane.PLAIN_MESSAGE);
+				"Invalid Setup Name",
+				"Names must not be empty.",
+				JOptionPane.PLAIN_MESSAGE);
 			return;
 		}
 
 		if (inventorySetups.containsKey(name))
 		{
 			String builder = "The setup " + name + " already exists. " +
-					"Would you like to replace it with the current setup?";
+				"Would you like to replace it with the current setup?";
 			int confirm = JOptionPane.showConfirmDialog(panel,
-					builder,
-					"Warning",
-					JOptionPane.OK_CANCEL_OPTION,
-					JOptionPane.PLAIN_MESSAGE);
+				builder,
+				"Warning",
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE);
 
 			if (confirm == JOptionPane.CANCEL_OPTION)
 			{
@@ -156,10 +185,10 @@ public class InventorySetupPlugin extends Plugin
 
 		clientThread.invoke(() ->
 		{
-			ItemContainer equipment = client.getItemContainer(InventoryID.EQUIPMENT);
-			ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
+			ArrayList<InventorySetupItem> inv = getNormalizedContainer(InventoryID.INVENTORY);
+			ArrayList<InventorySetupItem> eqp = getNormalizedContainer(InventoryID.EQUIPMENT);
 
-			final InventorySetup invSetup = new InventorySetup(inventory, equipment, itemManager);
+			final InventorySetup invSetup = new InventorySetup(inv, eqp);
 			SwingUtilities.invokeLater(() ->
 			{
 				inventorySetups.put(name, invSetup);
@@ -177,12 +206,13 @@ public class InventorySetupPlugin extends Plugin
 		{
 			int confirm = JOptionPane.YES_OPTION;
 
-			if (askForConfirmation) {
+			if (askForConfirmation)
+			{
 				confirm = JOptionPane.showConfirmDialog(panel,
-						"Are you sure you want to remove this setup?",
-						"Warning",
-						JOptionPane.YES_NO_OPTION,
-						JOptionPane.PLAIN_MESSAGE);
+					"Are you sure you want to remove this setup?",
+					"Warning",
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.PLAIN_MESSAGE);
 			}
 
 			if (confirm == JOptionPane.YES_OPTION)
@@ -214,7 +244,7 @@ public class InventorySetupPlugin extends Plugin
 			// only allow highlighting if the config is enabled and the player is logged in
 			highlightDifference = config.getHighlightDifferences() && client.getGameState() == GameState.LOGGED_IN;
 			final String setupName = panel.getSelectedInventorySetup();
-			if (!setupName.isEmpty())
+			if (highlightDifference && !setupName.isEmpty())
 			{
 				panel.setCurrentInventorySetup(setupName);
 			}
@@ -246,7 +276,10 @@ public class InventorySetupPlugin extends Plugin
 		{
 			// TODO add last resort?, serialize exception just make empty map
 			final Gson gson = new Gson();
-			Type type = new TypeToken<HashMap<String, InventorySetup>>(){}.getType();
+			Type type = new TypeToken<HashMap<String, InventorySetup>>()
+			{
+
+			}.getType();
 			inventorySetups = gson.fromJson(json, type);
 		}
 
@@ -261,6 +294,12 @@ public class InventorySetupPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
+
+		if (!highlightDifference || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+
 		// empty entry, no need to compare anything
 		final String selectedInventorySetup = panel.getSelectedInventorySetup();
 		if (selectedInventorySetup.isEmpty())
@@ -270,15 +309,18 @@ public class InventorySetupPlugin extends Plugin
 
 		// check to see that the container is the equipment or inventory
 		ItemContainer container = event.getItemContainer();
+
 		if (container == client.getItemContainer(InventoryID.INVENTORY))
 		{
+			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.INVENTORY);
 			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
-			panel.highlightDifferences(container, setup, InventoryID.INVENTORY);
+			panel.highlightDifferences(normContainer, setup, InventoryID.INVENTORY);
 		}
 		else if (container == client.getItemContainer(InventoryID.EQUIPMENT))
 		{
+			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.EQUIPMENT);
 			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
-			panel.highlightDifferences(container, setup, InventoryID.EQUIPMENT);
+			panel.highlightDifferences(normContainer, setup, InventoryID.EQUIPMENT);
 		}
 
 	}
@@ -286,26 +328,60 @@ public class InventorySetupPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
-		if (event.getGameState() == GameState.LOGGED_IN)
+		switch (event.getGameState())
 		{
-			highlightDifference = config.getHighlightDifferences();
-		}
-		else
-		{
-			highlightDifference = false;
-		}
+			// set the highlighting off if login screen shows up
+			case LOGIN_SCREEN:
+				highlightDifference = false;
+				final String setupName = panel.getSelectedInventorySetup();
+				if (!setupName.isEmpty())
+				{
+					panel.setCurrentInventorySetup(setupName);
+				}
+				break;
 
-		// reset the current inventory setup
-		final String setupName = panel.getSelectedInventorySetup();
-		if (!setupName.isEmpty())
-		{
-			panel.setCurrentInventorySetup(setupName);
+			// set highlighting
+			case LOGGED_IN:
+				highlightDifference = config.getHighlightDifferences();
+				break;
 		}
 	}
 
-	public final ItemContainer getCurrentPlayerContainer(final InventoryID type)
+	public ArrayList<InventorySetupItem> getNormalizedContainer(final InventoryID id)
 	{
-		return client.getItemContainer(type);
+		assert id == InventoryID.INVENTORY || id == InventoryID.EQUIPMENT : "invalid inventory ID";
+
+		final ItemContainer container = client.getItemContainer(id);
+
+		ArrayList<InventorySetupItem> newContainer = new ArrayList<>();
+
+		Item[] items = null;
+		if (container != null)
+		{
+			items = container.getItems();
+		}
+
+		int size = id == InventoryID.INVENTORY ? NUM_INVENTORY_ITEMS : NUM_EQUIPMENT_ITEMS;
+
+		for (int i = 0; i < size; i++)
+		{
+			if (items == null || i >= items.length)
+			{
+				newContainer.add(new InventorySetupItem(-1, "", 0));
+			}
+			else
+			{
+				final Item item = items[i];
+				String itemName = "";
+				if (client.isClientThread())
+				{
+					itemName = itemManager.getItemComposition(item.getId()).getName();
+				}
+				newContainer.add(new InventorySetupItem(item.getId(), itemName, item.getQuantity()));
+			}
+		}
+
+		return newContainer;
 	}
 
 	public final InventorySetupConfig getConfig()
@@ -340,13 +416,17 @@ public class InventorySetupPlugin extends Plugin
 		{
 			int id = item.getId();
 			ItemComposition itemComposition = itemManager.getItemComposition(id);
-			if(id > 0)
+			if (id > 0)
 			{
 				itemIds.add(ItemVariationMapping.map(id));
 				itemIds.add(itemComposition.getPlaceholderId());
 			}
 
 		}
-		return itemIds.stream().mapToInt(i -> i).toArray();
+		return itemIds.stream()
+			.mapToInt(i -> i)
+			.filter(Objects::nonNull)
+			.filter(id -> id != -1)
+			.toArray();
 	}
 }

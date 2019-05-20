@@ -1,23 +1,30 @@
+/*
+ * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
+ * Copyright (c) 2018, https://runelitepl.us
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import net.runelite.api.InventoryID;
-import net.runelite.api.ItemContainer;
-import net.runelite.client.callback.ClientThread;
-import net.runelite.client.game.ItemManager;
-import net.runelite.client.plugins.inventorysetups.InventorySetup;
-import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
-import net.runelite.client.ui.PluginPanel;
-import net.runelite.client.ui.components.PluginErrorPanel;
-import net.runelite.client.util.ImageUtil;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,10 +33,26 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+import net.runelite.api.InventoryID;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.plugins.inventorysetups.InventorySetup;
+import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
+import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
+import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.PluginErrorPanel;
+import net.runelite.client.util.ImageUtil;
 
 public class InventorySetupPluginPanel extends PluginPanel
 {
-
 	private static ImageIcon ADD_ICON;
 	private static ImageIcon ADD_HOVER_ICON;
 	private static ImageIcon REMOVE_ICON;
@@ -47,10 +70,6 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	private final InventorySetupPlugin plugin;
 
-	private final ItemManager itemManager;
-
-	private final ClientThread clientThread;
-
 	static
 	{
 		final BufferedImage addIcon = ImageUtil.getResourceStreamFromClass(InventorySetupPlugin.class, "add_icon.png");
@@ -62,19 +81,16 @@ public class InventorySetupPluginPanel extends PluginPanel
 		REMOVE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(removeIcon, 0.53f));
 	}
 
-	public InventorySetupPluginPanel(final InventorySetupPlugin plugin, final ItemManager itemManager, final ClientThread clientThread)
+	public InventorySetupPluginPanel(final InventorySetupPlugin plugin, final ItemManager itemManager)
 	{
 		super(false);
 		this.plugin = plugin;
-		this.itemManager = itemManager;
-		this.clientThread = clientThread;
 		this.removeMarker = new JLabel(REMOVE_ICON);
 		this.invPanel = new InventorySetupInventoryPanel(itemManager, plugin);
 		this.eqpPanel = new InventorySetupEquipmentPanel(itemManager, plugin);
 		this.noSetupsPanel = new JPanel();
 		this.invEqPanel = new JPanel();
 		this.setupComboBox = new JComboBox<>();
-
 
 		// setup the title
 		final JLabel addMarker = new JLabel(ADD_ICON);
@@ -112,7 +128,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
-				final String name = (String)setupComboBox.getSelectedItem();
+				final String name = (String) setupComboBox.getSelectedItem();
 				plugin.removeInventorySetup(name, true);
 			}
 
@@ -140,7 +156,7 @@ public class InventorySetupPluginPanel extends PluginPanel
 		{
 			if (e.getStateChange() == ItemEvent.SELECTED)
 			{
-				String selection = (String)e.getItem();
+				String selection = (String) e.getItem();
 				setCurrentInventorySetup(selection);
 			}
 		});
@@ -221,7 +237,6 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 	public void setCurrentInventorySetup(final String name)
 	{
-
 		if (name.isEmpty())
 		{
 			showNoSetupsPanel();
@@ -237,10 +252,11 @@ public class InventorySetupPluginPanel extends PluginPanel
 
 		if (plugin.getHighlightDifference())
 		{
-			final ItemContainer inv = plugin.getCurrentPlayerContainer(InventoryID.INVENTORY);
-			final ItemContainer eqp = plugin.getCurrentPlayerContainer(InventoryID.EQUIPMENT);
-			highlightDifferences(inv, inventorySetup, InventoryID.INVENTORY);
-			highlightDifferences(eqp, inventorySetup, InventoryID.EQUIPMENT);
+			final ArrayList<InventorySetupItem> normInv = plugin.getNormalizedContainer(InventoryID.INVENTORY);
+			final ArrayList<InventorySetupItem> normEqp = plugin.getNormalizedContainer(InventoryID.EQUIPMENT);
+
+			highlightDifferences(normInv, inventorySetup, InventoryID.INVENTORY);
+			highlightDifferences(normEqp, inventorySetup, InventoryID.EQUIPMENT);
 		}
 		else
 		{
@@ -269,24 +285,24 @@ public class InventorySetupPluginPanel extends PluginPanel
 		repaint();
 	}
 
-	public void highlightDifferences(final ItemContainer container,
-	                                 final InventorySetup setupToCheck,
-	                                 final InventoryID type)
+	public void highlightDifferences(final ArrayList<InventorySetupItem> container,
+									final InventorySetup setupToCheck,
+									final InventoryID type)
 	{
-		if (type == InventoryID.INVENTORY)
+		switch (type)
 		{
-			invPanel.highlightDifferentSlots(container, setupToCheck);
-		}
-		else if (type == InventoryID.EQUIPMENT)
-		{
-			eqpPanel.highlightDifferences(container, setupToCheck);
+			case INVENTORY:
+				invPanel.highlightDifferentSlots(container, setupToCheck);
+				break;
+
+			case EQUIPMENT:
+				eqpPanel.highlightDifferences(container, setupToCheck);
+				break;
 		}
 	}
 
 	public final String getSelectedInventorySetup()
 	{
-		return (String)setupComboBox.getSelectedItem();
+		return (String) setupComboBox.getSelectedItem();
 	}
-
-
 }

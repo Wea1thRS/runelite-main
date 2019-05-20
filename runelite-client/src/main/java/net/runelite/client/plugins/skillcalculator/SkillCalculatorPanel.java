@@ -41,6 +41,7 @@ import javax.swing.border.EmptyBorder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.Skill;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.game.SpriteManager;
@@ -61,7 +62,7 @@ class SkillCalculatorPanel extends PluginPanel
 	private final MaterialTabGroup skillGroup;
 	private final MaterialTabGroup tabGroup;
 	private String currentTab;
-	private	ArrayList<String> tabs = new ArrayList<>();
+	private ArrayList<String> tabs = new ArrayList<>();
 	@Getter
 	private Map<Integer, Integer> bankMap = new HashMap<>();
 	private GridBagConstraints c;
@@ -233,5 +234,10 @@ class SkillCalculatorPanel extends PluginPanel
 		{
 			bankedCalculator.updateBankMap(bankMap);
 		}
+	}
+
+	void updateSkillCalculator(Skill skill)
+	{
+		uiCalculator.updateSkillCalculator(skill);
 	}
 }

@@ -67,7 +67,6 @@ import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.Text;
 import net.runelite.client.util.WildcardMatcher;
 
@@ -250,6 +249,8 @@ public class NpcIndicatorsPlugin extends Plugin
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
+		MenuEntry[] menuEntries = client.getMenuEntries();
+		String target = event.getTarget();
 		int type = event.getType();
 
 		if (type >= MENU_ACTION_DEPRIORITIZE_OFFSET)
@@ -261,16 +262,13 @@ public class NpcIndicatorsPlugin extends Plugin
 			NPC_MENU_ACTIONS.contains(MenuAction.of(type)) &&
 			highlightedNpcs.stream().anyMatch(npc -> npc.getIndex() == event.getIdentifier()))
 		{
-			MenuEntry[] menuEntries = client.getMenuEntries();
 			final MenuEntry menuEntry = menuEntries[menuEntries.length - 1];
-			final String target = ColorUtil.prependColorTag(Text.removeTags(event.getTarget()), config.getHighlightColor());
 			menuEntry.setTarget(target);
 			client.setMenuEntries(menuEntries);
 		}
 		else if (hotKeyPressed && type == MenuAction.EXAMINE_NPC.getId())
 		{
 			// Add tag option
-			MenuEntry[] menuEntries = client.getMenuEntries();
 			menuEntries = Arrays.copyOf(menuEntries, menuEntries.length + 1);
 			final MenuEntry tagEntry = menuEntries[menuEntries.length - 1] = new MenuEntry();
 			tagEntry.setOption(TAG);

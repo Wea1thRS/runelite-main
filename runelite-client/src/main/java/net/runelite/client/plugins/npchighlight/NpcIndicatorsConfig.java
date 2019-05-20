@@ -40,7 +40,7 @@ public interface NpcIndicatorsConfig extends Config
 	)
 	default RenderStyle renderStyle()
 	{
-		return RenderStyle.HULL;
+		return RenderStyle.THIN_OUTLINE;
 	}
 
 	@ConfigItem(
@@ -88,18 +88,7 @@ public interface NpcIndicatorsConfig extends Config
 	}
 
 	@ConfigItem(
-			position = 5,
-			keyName = "drawMinimapDots",
-			name = "Draw dots on minimap",
-			description = "Configures whether or not NPC dots should be drawn on the minimap"
-	)
-	default boolean drawMinimapDots()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 6,
+		position = 5,
 		keyName = "highlightMenuNames",
 		name = "Highlight menu names",
 		description = "Highlight NPC names in right click menu"
@@ -110,7 +99,7 @@ public interface NpcIndicatorsConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 7,
+		position = 6,
 		keyName = "showRespawnTimer",
 		name = "Show respawn timer",
 		description = "Show respawn timer of tagged NPCs")

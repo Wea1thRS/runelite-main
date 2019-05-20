@@ -99,7 +99,7 @@ public interface MenuEntrySwapperConfig extends Config
 	)
 	default boolean swapContract()
 	{
-		return true; 
+		return true;
 	}
 
 	@ConfigItem(
@@ -122,7 +122,7 @@ public interface MenuEntrySwapperConfig extends Config
 		return true;
 	}
 
-	@ConfigItem(		
+	@ConfigItem(
 		keyName = "swapDarkMage",
 		name = "Repairs",
 		description = "Swap Talk-to with Repairs for Dark Mage"
@@ -283,52 +283,22 @@ public interface MenuEntrySwapperConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "swapWithdrawXInt",
-			name = "X:",
-			description = "Swap Withdraw-?."
+		keyName = "rockCake",
+		name = "Rock Cake Guzzle",
+		description = "Enables Left Click Guzzle to Rock Cake"
 	)
-	default int swapWithdrawXInt()
-	{
-		return 14;
-	}
-
-	@ConfigItem(
-			keyName = "swapSmithAll",
-			name = "Smith-All",
-			description = "Swap Smith-All."
-	)
-	default boolean swapSmithAll()
+	default boolean rockCake()
 	{
 		return false;
 	}
 
 	@ConfigItem(
-			keyName = "swapBuild",
-			name = "Build.",
-			description = "Swap Build."
+		keyName = "swapRogueschests",
+		name = "Rogueschests",
+		description = "Swap Rogueschests from open to Search for traps"
 	)
-	default boolean swapBuild()
+	default boolean swapRogueschests()
 	{
-		return false;
-	}
-
-	@ConfigItem(
-			keyName = "removeWalkHere",
-			name = "Remove Walk here.",
-			description = "Removes walk here."
-	)
-	default boolean removeWalkHere()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			keyName = "swapRemove",
-			name = "Remove.",
-			description = "Swap remove."
-	)
-	default boolean swapRemove()
-	{
-		return false;
+		return true;
 	}
 }

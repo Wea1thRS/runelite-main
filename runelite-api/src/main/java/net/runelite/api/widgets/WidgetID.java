@@ -172,6 +172,7 @@ public class WidgetID
 	static class PestControlBoat
 	{
 		static final int INFO = 3;
+
 		static final int NEXT_DEPARTURE = 4;
 		static final int PLAYERS_READY = 5;
 		static final int POINTS = 6;
@@ -351,7 +352,7 @@ public class WidgetID
 	{
 		static final int MINIMAP = 3;
 		static final int MINIMAP_DRAW_AREA = 8;
-		static final int MULTI_COMBAT = 20;
+		static final int MULTICOMBAT_INDICATOR = 20;
 		static final int CLAN_CHAT_TAB = 31;
 		static final int FRIENDS_TAB = 33;
 		static final int IGNORES_TAB = 32;
@@ -779,7 +780,7 @@ public class WidgetID
 		static final int TELEPORT_BUTTON = 26;
 	}
 
-static class SpellBook
+	static class SpellBook
 	{
 		static final int FILTERED_SPELLS_BOUNDS = 3;
 
@@ -968,7 +969,7 @@ static class SpellBook
 	{
 		static final int ROOT = 25;
 	}
-	
+
 	static class QuestList
 	{
 		static final int BOX = 0;
@@ -1062,4 +1063,3 @@ static class SpellBook
 		public static final int WINNINGS = 40;
 	}
 }
-

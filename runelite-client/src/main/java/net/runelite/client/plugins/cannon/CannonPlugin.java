@@ -118,6 +118,8 @@ public class CannonPlugin extends Plugin
 	@Inject
 	private ClientThread clientThread;
 
+	private boolean lock;
+
 	@Provides
 	CannonConfig provideConfig(ConfigManager configManager)
 	{
@@ -129,6 +131,7 @@ public class CannonPlugin extends Plugin
 	{
 		overlayManager.add(cannonOverlay);
 		overlayManager.add(cannonSpotOverlay);
+		lock = false;
 	}
 
 	@Override
@@ -139,6 +142,7 @@ public class CannonPlugin extends Plugin
 		overlayManager.remove(cannonSpotOverlay);
 		cannonPlaced = false;
 		cannonPosition = null;
+		lock = false;
 		cballsLeft = 0;
 		removeCounter();
 		skipProjectileCheckThisTick = false;
@@ -295,8 +299,7 @@ public class CannonPlugin extends Plugin
 			cballsLeft = 0;
 		}
 
-		if (event.getMessage().contains("You pick up the cannon")
-			|| event.getMessage().contains("Your cannon has decayed. Speak to Nulodion to get a new one!"))
+		if (event.getMessage().contains("You pick up the cannon"))
 		{
 			cannonPlaced = false;
 			cballsLeft = 0;
@@ -374,11 +377,20 @@ public class CannonPlugin extends Plugin
 	{
 		if (cballsLeft > 15)
 		{
+			lock = false;
 			return Color.green;
 		}
 		else if (cballsLeft > 5)
 		{
 			return Color.orange;
+		}
+		else if (cballsLeft <= config.ammoAmount())
+		{
+			if (config.notifyAmmoLeft() && !lock)
+			{
+				notifier.notify("Your cannon has " + config.ammoAmount() + " balls left!");
+				lock = true;
+			}
 		}
 
 		return Color.red;

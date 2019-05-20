@@ -49,15 +49,15 @@ class BankCalculation
 {
 	private static final float HIGH_ALCHEMY_CONSTANT = 0.6f;
 	private static final ImmutableList<Varbits> TAB_VARBITS = ImmutableList.of(
-			Varbits.BANK_TAB_ONE_COUNT,
-			Varbits.BANK_TAB_TWO_COUNT,
-			Varbits.BANK_TAB_THREE_COUNT,
-			Varbits.BANK_TAB_FOUR_COUNT,
-			Varbits.BANK_TAB_FIVE_COUNT,
-			Varbits.BANK_TAB_SIX_COUNT,
-			Varbits.BANK_TAB_SEVEN_COUNT,
-			Varbits.BANK_TAB_EIGHT_COUNT,
-			Varbits.BANK_TAB_NINE_COUNT
+		Varbits.BANK_TAB_ONE_COUNT,
+		Varbits.BANK_TAB_TWO_COUNT,
+		Varbits.BANK_TAB_THREE_COUNT,
+		Varbits.BANK_TAB_FOUR_COUNT,
+		Varbits.BANK_TAB_FIVE_COUNT,
+		Varbits.BANK_TAB_SIX_COUNT,
+		Varbits.BANK_TAB_SEVEN_COUNT,
+		Varbits.BANK_TAB_EIGHT_COUNT,
+		Varbits.BANK_TAB_NINE_COUNT
 	);
 
 	private final BankConfig config;
@@ -158,7 +158,7 @@ class BankCalculation
 				if (price > 0)
 				{
 					haPrice += (long) Math.round(price * HIGH_ALCHEMY_CONSTANT) *
-							(long) quantity;
+						(long) quantity;
 				}
 			}
 		}
@@ -172,7 +172,7 @@ class BankCalculation
 				int quantity = item.getQuantity();
 
 				if (itemId <= 0 || quantity == 0
-						|| itemId == ItemID.COINS_995 || itemId == ItemID.PLATINUM_TOKEN)
+					|| itemId == ItemID.COINS_995 || itemId == ItemID.PLATINUM_TOKEN)
 				{
 					continue;
 				}

@@ -63,4 +63,15 @@ public interface FpsConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "drawPing",
+		name = "Draw ping indicator",
+		description = "Show a number in the corner for the current ping",
+		position = 3
+	)
+	default boolean drawPing()
+	{
+		return false;
+	}
 }

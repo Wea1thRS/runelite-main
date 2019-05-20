@@ -38,10 +38,16 @@
 	<properties>
 		<guice.version>4.1.0</guice.version>
 		<jogl.version>2.3.2</jogl.version>
+
 		<jarsigner.skip>true</jarsigner.skip>
 	</properties>
 
 	<repositories>
+		<repository>
+			<id>RuneLit</id>
+			<name>RuneLit</name>
+			<url>https://raw.githubusercontent.com/runelite-extended/maven-repo/master</url>
+		</repository>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
@@ -229,6 +235,7 @@
 			<artifactId>extended-mixins</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -259,6 +266,16 @@
 			<version>${guice.version}</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.24.1-GA</version>
+        </dependency>
+		<dependency>
+			<groupId>org.xeustechnologies</groupId>
+			<artifactId>jcl-core</artifactId>
+			<version>2.8</version>
+		</dependency>
 		<dependency>
 			<groupId>aopalliance</groupId>
 			<artifactId>aopalliance</artifactId>
@@ -270,11 +287,16 @@
 			<version>59de40c3b6</version>
 		</dependency>
         <dependency>
-            <groupId>org.mariuszgromada.math</groupId>
-            <artifactId>MathParser.org-mXparser</artifactId>
-            <version>4.2.0</version>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>17.0.0</version>
         </dependency>
         <dependency>
+            <groupId>com.github.joonasvali.naturalmouse</groupId>
+            <artifactId>naturalmouse</artifactId>
+            <version>[1.0.0,)</version>
+        </dependency>
+		<dependency>
             <groupId>com.github.kevinsawicki</groupId>
             <artifactId>http-request</artifactId>
             <version>6.0</version>
@@ -284,7 +306,7 @@
 			<artifactId>asm-all</artifactId>
 			<version>6.0_BETA</version>
 		</dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<resources>

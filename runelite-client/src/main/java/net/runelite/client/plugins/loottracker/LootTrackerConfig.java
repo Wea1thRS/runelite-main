@@ -45,8 +45,7 @@ public interface LootTrackerConfig extends Config
 	@ConfigItem(
 		keyName = "loadDataInClient",
 		name = "Load data on client load",
-		description = "Configures whether persistent loot tracker data should load inside the client on load.<br/> Must be Logged in.",
-		position = 0
+		description = "Configures whether persistent loot tracker data should load inside the client on load.<br/> Must be Logged in."
 	)
 	default boolean loadDataInClient()
 	{
@@ -56,8 +55,7 @@ public interface LootTrackerConfig extends Config
 	@ConfigItem(
 		keyName = "ignoredItems",
 		name = "Ignored items",
-		description = "Configures which items should be ignored when calculating loot prices.",
-		position = 1
+		description = "Configures which items should be ignored when calculating loot prices."
 	)
 	default String getIgnoredItems()
 	{
@@ -67,8 +65,7 @@ public interface LootTrackerConfig extends Config
 	@ConfigItem(
 		keyName = "ignoredItems",
 		name = "",
-		description = "",
-		position = 2
+		description = ""
 	)
 	void setIgnoredItems(String key);
 
@@ -98,6 +95,16 @@ public interface LootTrackerConfig extends Config
 			description = "Outputs loot as objects to database."
 	)
 	default boolean saveDBLoot()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "chestLootChat",
+		name = "Show chest loot value in chat",
+		description = "Show the value of items from CoX/ToB/Barrows chests in chat"
+	)
+	default boolean chestLootChat()
 	{
 		return true;
 	}

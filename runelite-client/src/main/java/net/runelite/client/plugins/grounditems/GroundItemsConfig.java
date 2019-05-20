@@ -349,17 +349,6 @@ public interface GroundItemsConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "menuGroupingEnabled",
-			name = "Enable menu grouping",
-			description = "Groups together duplicate entries in the menu",
-			position = 26
-	)
-	default boolean isMenuGroupingEnabled()
-	{
-		return false;
-	}
-
-	@ConfigItem(
 		keyName = "collapseEntries",
 		name = "Collapse ground item menu entries",
 		description = "Collapses ground item menu entries together and appends count",
@@ -371,10 +360,21 @@ public interface GroundItemsConfig extends Config
 	}
 
 	@ConfigItem(
+		position = 28,
+		keyName = "removeIgnored",
+		name = "Hide Ignored",
+		description = "Remove take option for items that are on the hidden items list."
+	)
+	default boolean removeIgnored()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "toggleOutline",
 		name = "Text Outline",
 		description = "Use an outline around text instead of a text shadow",
-		position = 27
+		position = 29
 	)
 	default boolean toggleOutline()
 	{

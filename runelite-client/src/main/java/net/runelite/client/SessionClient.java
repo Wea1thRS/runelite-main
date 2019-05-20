@@ -39,7 +39,8 @@ class SessionClient
 {
 	UUID open() throws IOException
 	{
-		HttpUrl url = RuneLiteAPI.getSessionBase().newBuilder()
+		HttpUrl url = RuneLiteAPI.getApiRoot().newBuilder()
+			.addPathSegment("session")
 			.build();
 
 		Request request = new Request.Builder()
@@ -49,7 +50,7 @@ class SessionClient
 		try (Response response = RuneLiteAPI.CLIENT.newCall(request).execute())
 		{
 			ResponseBody body = response.body();
-			
+
 			InputStream in = body.byteStream();
 			return RuneLiteAPI.GSON.fromJson(new InputStreamReader(in), UUID.class);
 		}
@@ -61,7 +62,8 @@ class SessionClient
 
 	void ping(UUID uuid) throws IOException
 	{
-		HttpUrl url = RuneLiteAPI.getSessionBase().newBuilder()
+		HttpUrl url = RuneLiteAPI.getApiRoot().newBuilder()
+			.addPathSegment("session")
 			.addPathSegment("ping")
 			.addQueryParameter("session", uuid.toString())
 			.build();
@@ -81,7 +83,8 @@ class SessionClient
 
 	void delete(UUID uuid) throws IOException
 	{
-		HttpUrl url = RuneLiteAPI.getSessionBase().newBuilder()
+		HttpUrl url = RuneLiteAPI.getApiRoot().newBuilder()
+			.addPathSegment("session")
 			.addQueryParameter("session", uuid.toString())
 			.build();
 

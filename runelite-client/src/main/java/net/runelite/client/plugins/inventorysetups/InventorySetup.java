@@ -1,54 +1,39 @@
+/*
+ * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
+ * Copyright (c) 2018, https://runelitepl.us
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package net.runelite.client.plugins.inventorysetups;
 
-import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
-import net.runelite.client.game.ItemManager;
-
 import java.util.ArrayList;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-
-@Slf4j
+@AllArgsConstructor
 public class InventorySetup
 {
-
+	@Getter
 	private ArrayList<InventorySetupItem> inventory;
+	@Getter
 	private ArrayList<InventorySetupItem> equipment;
-
-	InventorySetup(final ItemContainer inventoryToAdd, final ItemContainer equipmentToAdd, final ItemManager itemManager)
-	{
-		this.inventory = new ArrayList<>();
-		this.equipment = new ArrayList<>();
-		populateContainer(inventoryToAdd, inventory, itemManager);
-		populateContainer(equipmentToAdd, equipment, itemManager);
-	}
-
-	public final ArrayList<InventorySetupItem> getInventory()
-	{
-		return inventory;
-	}
-
-	public final ArrayList<InventorySetupItem> getEquipment()
-	{
-		return equipment;
-	}
-
-	private void populateContainer(final ItemContainer container, final ArrayList<InventorySetupItem> containerToPopulate, final ItemManager itemManager)
-	{
-		Item[] items = null;
-		if (container != null)
-		{
-			items = container.getItems();
-		}
-
-		if (items != null)
-		{
-			for (final Item item : items)
-			{
-				// get the item name from the client thread
-				containerToPopulate.add(new InventorySetupItem(item.getId(), itemManager.getItemComposition(item.getId()).getName(), item.getQuantity()));
-			}
-		}
-	}
-
 }

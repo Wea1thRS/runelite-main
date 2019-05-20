@@ -28,7 +28,6 @@ public enum ExamineType
 {
 	ITEM,
 	ITEM_BANK_EQ,
-	ITEM_GROUND,
 	NPC,
 	OBJECT
 }

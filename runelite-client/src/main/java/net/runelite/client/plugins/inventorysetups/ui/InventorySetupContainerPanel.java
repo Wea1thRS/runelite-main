@@ -1,6 +1,35 @@
+/*
+ * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
+ * Copyright (c) 2018, https://runelitepl.us
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import net.runelite.api.Item;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.ArrayList;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import net.runelite.client.game.AsyncBufferedImage;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
@@ -9,38 +38,17 @@ import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public abstract class InventorySetupContainerPanel extends JPanel
 {
-
 	protected ItemManager itemManager;
-
-	JPanel containerPanel;
-
-	JPanel emptyContainerPanel;
-
-	JLabel emptyContainerLabel;
-
-	final Color originalLabelColor;
 
 	private final InventorySetupPlugin plugin;
 
-	InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText, final String emptyContainerText)
+	InventorySetupContainerPanel(final ItemManager itemManager, final InventorySetupPlugin plugin, String captionText)
 	{
 		this.itemManager = itemManager;
 		this.plugin = plugin;
-		this.containerPanel = new JPanel();
-		this.emptyContainerPanel = new JPanel();
-		this.emptyContainerLabel = new JLabel(emptyContainerText);
-		this.originalLabelColor = emptyContainerLabel.getForeground();
-
-		emptyContainerPanel.add(emptyContainerLabel);
+		JPanel containerPanel = new JPanel();
 
 		final JPanel containerSlotsPanel = new JPanel();
 
@@ -58,20 +66,19 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerPanel.setLayout(new BorderLayout());
 		containerPanel.add(captionPanel, BorderLayout.NORTH);
 		containerPanel.add(containerSlotsPanel, BorderLayout.CENTER);
+
+		add(containerPanel);
 	}
 
 	void setContainerSlot(int index,
-			final InventorySetupSlot containerSlot,
-			final ArrayList<InventorySetupItem> items,
-			final AtomicBoolean hasItems)
+						final InventorySetupSlot containerSlot,
+						final ArrayList<InventorySetupItem> items)
 	{
 		if (index >= items.size() || items.get(index).getId() == -1)
 		{
 			containerSlot.setImageLabel(null, null);
 			return;
 		}
-
-		hasItems.set(true);
 
 		int itemId = items.get(index).getId();
 		int quantity = items.get(index).getQuantity();
@@ -85,83 +92,29 @@ public abstract class InventorySetupContainerPanel extends JPanel
 		containerSlot.setImageLabel(toolTip, itemImg);
 	}
 
-	void modifyNoContainerCaption(final Item[] currContainer)
+	void highlightDifferentSlotColor(InventorySetupItem savedItem,
+									InventorySetupItem currItem,
+									final InventorySetupSlot containerSlot)
 	{
-		// inventory setup is empty but the current inventory is not, make the text red
-		boolean hasDifference = false;
-		for (Item item : currContainer)
-		{
-			if (item.getId() != -1)
-			{
-				hasDifference = true;
-				break;
-			}
-		}
+		// important note: do not use item names for comparisons
+		// they are all empty to avoid clientThread usage when highlighting
 
-		if (hasDifference)
-		{
-			final Color highlightColor = plugin.getConfig().getHighlightColor();
-			emptyContainerLabel.setForeground(highlightColor);
-		}
-		else
-		{
-			emptyContainerLabel.setForeground(this.originalLabelColor);
-		}
-
-	}
-
-	void highlightDifferentSlotColor(final ArrayList<InventorySetupItem> containerToCheck,
-			final Item[] currContainer,
-			final InventorySetupSlot containerSlot,
-			int index)
-	{
 		final InventorySetupConfig config = plugin.getConfig();
 		final Color highlightColor = config.getHighlightColor();
-		// both inventories are smaller than the current iteration, no need to change
-		if (index >= containerToCheck.size() && (currContainer == null || index >= currContainer.length))
+
+		if (config.getStackDifference() && currItem.getQuantity() != savedItem.getQuantity())
 		{
-			containerSlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			containerSlot.setBackground(highlightColor);
 			return;
 		}
 
-		// the current inventory is smaller in size than the inventory to check
-		if ((currContainer == null || index >= currContainer.length))
-		{
-			containerToCheck.size();
-			if (containerToCheck.get(index).getId() != -1)
-			{
-				containerSlot.setBackground(highlightColor);
-			}
-			return;
-		}
-
-		// the inventory to check is smaller than the current inventory
-		if (index >= containerToCheck.size())
-		{
-			if (currContainer[index].getId() != -1)
-			{
-				containerSlot.setBackground(highlightColor);
-			}
-			else
-			{
-				containerSlot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-			}
-			return;
-		}
-
-		int currId = currContainer[index].getId();
-		int checkId = containerToCheck.get(index).getId();
+		int currId = currItem.getId();
+		int checkId = savedItem.getId();
 
 		if (!config.getVariationDifference())
 		{
 			currId = ItemVariationMapping.map(currId);
 			checkId = ItemVariationMapping.map(checkId);
-		}
-
-		if (config.getStackDifference() && currContainer[index].getQuantity() != containerToCheck.get(index).getQuantity())
-		{
-			containerSlot.setBackground(highlightColor);
-			return;
 		}
 
 		if (currId != checkId)
@@ -175,5 +128,4 @@ public abstract class InventorySetupContainerPanel extends JPanel
 	}
 
 	abstract public void setupContainerPanel(final JPanel containerSlotsPanel);
-
 }

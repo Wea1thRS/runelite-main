@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Frosty Fridge <https://github.com/frostyfridge>
+ * Copyright (c) 2018, https://runelitepl.us
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,153 +24,129 @@
  */
 package net.runelite.client.plugins.blackjack;
 
-import com.google.inject.Provides;
-import net.runelite.api.*;
+import com.google.inject.Binder;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.Getter;
-import net.runelite.api.events.*;
-import net.runelite.client.config.ConfigManager;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
+import net.runelite.api.Client;
+import net.runelite.api.MenuEntry;
+import net.runelite.api.Quest;
+import net.runelite.api.QuestState;
+import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.GameTick;
+import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.util.Text;
+import net.runelite.client.plugins.PluginType;
 
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * Authors gazivodag longstreet
+ */
 @PluginDescriptor(
-        name = "Blackjack Helper",
-        description = "Dynamically change default menu entry while blackjacking to make knock-out or pickpocket the default option",
-        tags = {"thieving", "npcs"}
+	name = "Blackjack",
+	description = "Uses chat messages and tick timers instead of animations to read",
+	tags = {"blackjack", "thieving"},
+	type = PluginType.UTILITY
 )
-public class BlackjackPlugin extends Plugin {
+@Singleton
+@Slf4j
+public class BlackjackPlugin extends Plugin
+{
+
+	@Inject
+	Client client;
+
+	private long timeSinceKnockout;
+	private long timeSinceAggro;
+
+	@Getter
+	private long currentGameTick;
+
+	@Override
+	public void configure(Binder binder)
+	{
+	}
+
+	@Override
+	protected void startUp() throws Exception
+	{
+		currentGameTick = 0;
+	}
+
+	@Override
+	protected void shutDown() throws Exception
+	{
+		currentGameTick = 0;
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick gameTick)
+	{
+		currentGameTick++;
+	}
 
 
-    @Inject
-    private Client client;
+	@Subscribe
+	public void onChatMessage(ChatMessage chatMessage)
+	{
+		if (chatMessage.getType() == ChatMessageType.SPAM)
+		{
+			if (chatMessage.getMessage().equals("You smack the bandit over the head and render them unconscious."))
+			{
+				timeSinceKnockout = getCurrentGameTick();
+			}
+			if (chatMessage.getMessage().equals("Your blow only glances off the bandit's head."))
+			{
+				timeSinceAggro = getCurrentGameTick();
+			}
+		}
+	}
 
-    @Inject
-    private BlackjackConfig config;
+	@Subscribe
+	public void onMenuEntryAdded(MenuEntryAdded menuEntryAdded)
+	{
+		String target = menuEntryAdded.getTarget().toLowerCase();
+		if ((target.contains("bandit") || target.contains("menaphite thug")))
+		{
+			Quest quest = Quest.THE_FEUD;
+			if (quest.getState(client) == QuestState.FINISHED)
+			{
+				if (currentGameTick < (timeSinceKnockout + 4))
+				{
+					stripSpecificEntries("pickpocket");
+				}
+				if (currentGameTick < (timeSinceAggro + 4))
+				{
+					stripSpecificEntries("pickpocket");
+				}
+				stripSpecificEntries("knock-out");
+			}
+		}
+	}
 
-    @Getter
-    private Map<Integer, NPC> blackjackTargets;
+	private void stripSpecificEntries(String exceptFor)
+	{
+		MenuEntry[] currentEntires = client.getMenuEntries();
+		MenuEntry[] newEntries = new MenuEntry[2];
 
-    @Provides
-    BlackjackConfig getConfig(ConfigManager configManager)
-    {
-        return configManager.getConfig(BlackjackConfig.class);
-    }
+		for (MenuEntry currentEntry : currentEntires)
+		{
+			if (currentEntry.getOption().toLowerCase().equals(exceptFor.toLowerCase()))
+			{
+				newEntries[1] = currentEntry;
+			}
+			if (currentEntry.getOption().toLowerCase().equals("lure"))
+			{
+				newEntries[0] = currentEntry;
+			}
+		}
 
-    @Override
-    public void startUp()
-    {
-        blackjackTargets = new HashMap<>();
-    }
-
-    @Override
-    public void shutDown()
-    {
-        blackjackTargets = null;
-    }
-
-    private boolean isNpcBlackjackTarget(int npcId)
-    {
-        return npcId == NpcID.VILLAGER ||
-                npcId == NpcID.VILLAGER_3553 ||
-                npcId == NpcID.VILLAGER_3554 ||
-                npcId == NpcID.VILLAGER_3555 ||
-                npcId == NpcID.VILLAGER_3556 ||
-                npcId == NpcID.VILLAGER_3557 ||
-                npcId == NpcID.VILLAGER_3558 ||
-                npcId == NpcID.VILLAGER_3559 ||
-                npcId == NpcID.VILLAGER_3560 ||
-                npcId == NpcID.MENAPHITE_THUG ||
-                npcId == NpcID.MENAPHITE_THUG_3550 ||
-                npcId == NpcID.BANDIT_734 ||
-                npcId == NpcID.BANDIT_735 ||
-                npcId == NpcID.BANDIT_736 ||
-                npcId == NpcID.BANDIT_737;
-    }
-
-    @Subscribe
-    public void onNpcSpawned(NpcSpawned event)
-    {
-        NPC npc = event.getNpc();
-        if (isNpcBlackjackTarget(npc.getId()))
-        {
-            blackjackTargets.put(npc.getIndex(), npc);
-        }
-    }
-
-    @Subscribe
-    public void onNpcDespawned(NpcDespawned event)
-    {
-        NPC npc = event.getNpc();
-        if (isNpcBlackjackTarget(npc.getId()))
-        {
-            blackjackTargets.remove(npc.getIndex());
-        }
-    }
-
-    @Subscribe
-    public void onMenuEntryAdded(MenuEntryAdded event)
-    {
-        if (config.menuSwapActive() && blackjackTargets.containsKey(event.getIdentifier())) {
-            final int eventId = event.getIdentifier();
-            NPC npc = blackjackTargets.get(eventId);
-
-            final String option = Text.removeTags(event.getOption()).toLowerCase();
-            final String target = Text.removeTags(event.getTarget()).toLowerCase();
-            if (npc.getAnimation() == AnimationID.BLACKJACK_KO) {
-                swap("pickpocket", option, target, true);
-            } else {
-                swap("knock-out", option, target, true);
-            }
-        }
-    }
-
-    //swap() and searchIndex() are copied from MenuEntrySwapperPlugin.
-    private void swap(String optionA, String optionB, String target, boolean strict)
-    {
-        MenuEntry[] entries = client.getMenuEntries();
-
-        int idxA = searchIndex(entries, optionA, target, strict);
-        int idxB = searchIndex(entries, optionB, target, strict);
-
-        if (idxA >= 0 && idxB >= 0)
-        {
-            MenuEntry entry = entries[idxA];
-            entries[idxA] = entries[idxB];
-            entries[idxB] = entry;
-
-            client.setMenuEntries(entries);
-        }
-    }
-
-    private int searchIndex(MenuEntry[] entries, String option, String target, boolean strict)
-    {
-        for (int i = entries.length - 1; i >= 0; i--)
-        {
-            MenuEntry entry = entries[i];
-            String entryOption = Text.removeTags(entry.getOption()).toLowerCase();
-            String entryTarget = Text.removeTags(entry.getTarget()).toLowerCase();
-
-            if (strict)
-            {
-                if (entryOption.equals(option) && entryTarget.equals(target))
-                {
-                    return i;
-                }
-            }
-            else
-            {
-                if (entryOption.contains(option.toLowerCase()) && entryTarget.equals(target))
-                {
-                    return i;
-                }
-            }
-        }
-
-        return -1;
-    }
+		if (newEntries[0] != null && newEntries[1] != null)
+		{
+			client.setMenuEntries(newEntries);
+		}
+	}
 }

@@ -49,7 +49,9 @@ public class ProjectileID
 	public static final int OLM_FALLING_CRYSTAL_TRAIL = 1352;
 	public static final int OLM_ACID_TRAIL = 1354;
 	public static final int OLM_FIRE_LINE = 1347;
-
+	public static final int OLM_MAGE_ATTACK = 1339;
+	public static final int OLM_RANGE_ATTACK = 1340;
+	
 	public static final int VORKATH_BOMB_AOE = 1481;
 	public static final int VORKATH_POISON_POOL_AOE = 1483;
 	public static final int VORKATH_TICK_FIRE_AOE = 1482;
@@ -65,7 +67,7 @@ public class ProjectileID
 
 	public static final int VETION_LIGHTNING = 280;
 
-	public static final int CHAOS_FANATIC_AOE = 551; //for lack of a better word
+	public static final int CHAOS_FANATIC_AOE = 551;
 
 	public static final int CORPOREAL_BEAST_AOE = 315;
 	public static final int CORPOREAL_BEAST_DARK_CORE_AOE = 319;

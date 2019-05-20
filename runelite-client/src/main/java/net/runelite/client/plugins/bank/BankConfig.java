@@ -33,7 +33,7 @@ import net.runelite.client.config.ConfigItem;
 public interface BankConfig extends Config
 {
 	@ConfigItem(
-		keyName = "showGE ",
+		keyName = "showGE",
 		name = "Show Grand Exchange price",
 		description = "Show grand exchange price total (GE)",
 		position = 1
@@ -44,18 +44,18 @@ public interface BankConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "showHA ",
+		keyName = "showHA",
 		name = "Show high alchemy price",
 		description = "Show high alchemy price total (HA)",
 		position = 2
 	)
 	default boolean showHA()
 	{
-		return true;
+		return false;
 	}
 
 	@ConfigItem(
-		keyName = "showExact ",
+		keyName = "showExact",
 		name = "Show exact bank value",
 		description = "Show exact bank value",
 		position = 3
