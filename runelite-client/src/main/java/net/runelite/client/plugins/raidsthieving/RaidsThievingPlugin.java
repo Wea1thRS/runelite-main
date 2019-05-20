@@ -269,4 +269,3 @@ public class RaidsThievingPlugin extends Plugin
 		return chests.get(worldPoint).getChestId();
 	}
 }
-

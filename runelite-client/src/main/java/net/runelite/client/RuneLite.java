@@ -308,8 +308,8 @@ public class RuneLite
 		// Initialize UI
 		clientUI.open(this);
 
-		// Initialize Discord service
-		discordService.init();
+		// Close the splash screen
+		splashScreen.close();
 
 		// Close the splash screen
 		splashScreen.close();

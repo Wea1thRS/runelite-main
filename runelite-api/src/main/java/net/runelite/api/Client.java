@@ -1391,6 +1391,7 @@ public interface Client extends GameEngine
 	 */
 	void setClanMatesHidden(boolean state);
 
+
 	/**
 	 * Sets whether the local player is hidden.
 	 *
@@ -1610,7 +1611,7 @@ public interface Client extends GameEngine
 	void draw2010Menu();
 
 	NodeCache getHealthBarCache();
-	
+
 	void toggleRenderSelf();
 
 	/**
@@ -1625,8 +1626,8 @@ public interface Client extends GameEngine
 	 * @param canvasY Canvas Y Point
 	 */
 	void invokeMenuAction(int param0, int param1, int type, int id, String menuEntry, String targetString, int canvasX, int canvasY);
-	
+
 	MouseRecorder getMouseRecorder();
-	
+
 	void setPrintMenuActions(boolean b);
 }

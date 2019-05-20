@@ -67,4 +67,3 @@ public class VanguardPlugin extends Plugin
 
 
 }
-

@@ -274,4 +274,3 @@ public class GrandExchangeOfferSlot extends JPanel
 		return ColorScheme.PROGRESS_INPROGRESS_COLOR;
 	}
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2019, Trevor <https://github.com/Trevor159>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,30 +22,66 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.http.api.config;
+package net.runelite.client.plugins.questhelper;
 
-public class ConfigEntry
+import lombok.Getter;
+import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
+
+public class ItemRequirement
 {
-	private String key;
-	private String value;
+	@Getter
+	private int id;
+	@Getter
+	private int quantity;
+	private boolean equip;
 
-	public String getKey()
+	public ItemRequirement(int id)
 	{
-		return key;
+		this(id, 1);
 	}
 
-	public void setKey(String key)
+	public ItemRequirement(int id, int quantity)
 	{
-		this.key = key;
+		this.id = id;
+		this.quantity = quantity;
+		equip = false;
 	}
 
-	public String getValue()
+	public ItemRequirement(int id, int quantity, boolean equip)
 	{
-		return value;
+		this(id, quantity);
+		this.equip = equip;
 	}
 
-	public void setValue(String value)
+	public boolean check(Client client)
 	{
-		this.value = value;
+		Item[] items;
+		if (equip)
+		{
+			items = client.getItemContainer(InventoryID.EQUIPMENT).getItems();
+		}
+		else
+		{
+			items = client.getItemContainer(InventoryID.INVENTORY).getItems();
+		}
+
+		int tempQuantity = quantity;
+		for (Item item : items)
+		{
+			if (item.getId() == id)
+			{
+				if (item.getQuantity() >= tempQuantity)
+				{
+					return true;
+				}
+				else
+				{
+					tempQuantity -= item.getQuantity();
+				}
+			}
+		}
+		return false;
 	}
 }
