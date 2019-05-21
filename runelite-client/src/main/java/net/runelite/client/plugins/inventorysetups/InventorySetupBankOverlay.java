@@ -93,9 +93,9 @@ public class InventorySetupBankOverlay extends WidgetItemOverlay
 	private void drawQuantity(Graphics2D graphics, WidgetItem item, Color darker)
 	{
 		graphics.setColor(Color.BLACK);
-		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX() + 2, item.getCanvasLocation().getY() + 11);
+		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 10);
 		graphics.setColor(darker);
 		graphics.setFont(FontManager.getRunescapeSmallFont());
-		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX() + 1, item.getCanvasLocation().getY() + 10);
+		graphics.drawString(String.valueOf(item.getQuantity()), item.getCanvasLocation().getX(), item.getCanvasLocation().getY() + 9);
 	}
 }
