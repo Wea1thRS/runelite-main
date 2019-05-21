@@ -26,6 +26,8 @@
 package net.runelite.client.plugins.inventorysetups;
 
 import java.awt.Color;
+
+import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -52,6 +54,7 @@ public interface InventorySetupConfig extends Config
 		position = 1
 	)
 
+	@Alpha
 	default Color getHighlightColor()
 	{
 		return Color.RED;
