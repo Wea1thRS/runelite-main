@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2018, Adam <Adam@sigterm.info>
  * All rights reserved.
@@ -31,6 +32,17 @@ import net.runelite.client.config.ConfigItem;
 @ConfigGroup("menuentryswapper")
 public interface MenuEntrySwapperConfig extends Config
 {
+	@ConfigItem(
+		position = -3,
+		keyName = "customSwaps",
+		name = "Custom swaps",
+		description = "Add custom swaps here, 1 per line. Syntax: option, target : option, target<br>Note that the first entry should be the left click one!"
+	)
+	default String customSwaps()
+	{
+		return "";
+	}
+
 	@ConfigItem(
 		position = -2,
 		keyName = "shiftClickCustomization",
@@ -300,5 +312,15 @@ public interface MenuEntrySwapperConfig extends Config
 	default boolean swapRogueschests()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+			keyName = "swapClimbUpDown",
+			name = "Climb",
+			description = "Swap Climb-Up/Down depending on Shift or Control key									"
+	)
+	default boolean swapClimbUpDown()
+	{
+		return false;
 	}
 }

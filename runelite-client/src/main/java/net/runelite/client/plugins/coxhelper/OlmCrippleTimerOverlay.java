@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, https://runelitepl.us
+ * Copyright (c) 2019, ganom <https://github.com/Ganom>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,55 +23,71 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.hydra;
+package net.runelite.client.plugins.coxhelper;
 
+
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
+import net.runelite.api.Client;
+import net.runelite.api.NPC;
+import net.runelite.api.Point;
 import net.runelite.client.ui.overlay.Overlay;
+import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
-import net.runelite.client.ui.overlay.components.LineComponent;
-import net.runelite.client.ui.overlay.components.PanelComponent;
+import net.runelite.client.ui.overlay.OverlayUtil;
 
-public class HydraIndicatorOverlay extends Overlay
+
+public class OlmCrippleTimerOverlay extends Overlay
 {
-	private final HydraConfig config;
-	private final HydraPlugin plugin;
 
-	private final PanelComponent panelComponent = new PanelComponent();
+
+	private final Client client;
+	private final CoxPlugin plugin;
 
 	@Inject
-	private HydraIndicatorOverlay(HydraConfig config, HydraPlugin plugin)
+	private OlmCrippleTimerOverlay(Client client, CoxPlugin plugin)
 	{
-		this.config = config;
+		this.client = client;
 		this.plugin = plugin;
-		setPosition(OverlayPosition.BOTTOM_RIGHT);
-		setPriority(OverlayPriority.MED);
-		panelComponent.setPreferredSize(new Dimension(14, 0));
+		setPosition(OverlayPosition.DYNAMIC);
+		setPriority(OverlayPriority.HIGH);
+		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!config.PrayerHelper())
+		if (plugin.isHandCripple())
 		{
-			return null;
+			int tick = plugin.getTimer();
+			NPC olmHand = plugin.getHand();
+			final String tickStr = String.valueOf(tick);
+			Point canvasPoint = olmHand.getCanvasTextLocation(graphics, tickStr, 50);
+			renderTextLocation(graphics, tickStr, 12, Font.BOLD, Color.GRAY, canvasPoint);
 		}
 
-		if (plugin.Hydra != null)
-		{
-			if (plugin.hydras.containsKey(plugin.Hydra.getIndex()))
-			{
-				int val = plugin.hydras.get(plugin.Hydra.getIndex());
-				if (val != 0)
-				{
-					panelComponent.getChildren().clear();
-					panelComponent.getChildren().add(LineComponent.builder().right(Integer.toString(val)).build());
-					return panelComponent.render(graphics);
-				}
-			}
-		}
+
 		return null;
 	}
+
+	private void renderTextLocation(Graphics2D graphics, String txtString, int fontSize, int fontStyle, Color fontColor, Point canvasPoint)
+	{
+		graphics.setFont(new Font("Arial", fontStyle, fontSize));
+		if (canvasPoint != null)
+		{
+			final Point canvasCenterPoint = new Point(
+				canvasPoint.getX(),
+				canvasPoint.getY());
+			final Point canvasCenterPoint_shadow = new Point(
+				canvasPoint.getX() + 1,
+				canvasPoint.getY() + 1);
+			OverlayUtil.renderTextLocation(graphics, canvasCenterPoint_shadow, txtString, Color.BLACK);
+			OverlayUtil.renderTextLocation(graphics, canvasCenterPoint, txtString, fontColor);
+		}
+	}
+
 }

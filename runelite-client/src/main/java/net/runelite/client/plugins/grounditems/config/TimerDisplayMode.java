@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2019, gazivodag <https://github.com/gazivodag>
- * Copyright (c) 2019, ganom <https://github.com/Ganom>
+ * Copyright (c) 2018 Matthew Smith <https://github.com/ms813>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,6 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,11 +22,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.zcox;
+package net.runelite.client.plugins.grounditems.config;
 
-enum PrayAgainst
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum TimerDisplayMode
 {
-	MELEE,
-	MAGIC,
-	RANGED
+	ALWAYS("Always"),
+	HOTKEY_PRESSED("When Hotkey Pressed"),
+	NEVER("Never");
+
+	private final String name;
+
+	@Override
+	public String toString()
+	{
+		return name;
+	}
 }

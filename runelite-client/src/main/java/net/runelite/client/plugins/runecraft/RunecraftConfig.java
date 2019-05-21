@@ -220,11 +220,21 @@ public interface RunecraftConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "opLavas",
-		name = "Op lavas",
-		description = "Op orange dorito mode - Only does something if you're wearing fire tiara"
+		keyName = "Lavas",
+		name = "Lavas",
+		description = "Swaps Ring of dueling menu entry depending on location, requires fire tiara or RC cape to be worn."
 	)
-	default boolean opLavas()
+	default boolean Lavas()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "essPouch",
+		name = "Swap essence pouch",
+		description = "Makes essence pouch left-click fill in bank"
+	)
+	default boolean essPouch()
 	{
 		return true;
 	}

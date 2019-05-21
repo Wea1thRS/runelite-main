@@ -23,21 +23,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.runelite.client.plugins.zcox;
+package net.runelite.client.plugins.coxhelper;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("Cox")
 
 public interface CoxConfig extends Config
 {
 	@ConfigItem(
-		position = 0,
+		keyName = "muttadileStub",
+		name = "Muttadile",
+		description = "",
+		position = 1
+	)
+	default Stub muttadileStub()
+	{
+		return new Stub();
+	}
+	@ConfigItem(
+		position = 2,
 		keyName = "Muttadile",
 		name = "Muttadile Marker",
-		description = ""
+		description = "",
+		parent = "muttadileStub"
 	)
 	default boolean Muttadile()
 	{
@@ -45,10 +57,22 @@ public interface CoxConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 1,
+		keyName = "tektonStub",
+		name = "Tekton",
+		description = "",
+		position = 3
+	)
+	default Stub tektonStub()
+	{
+		return new Stub();
+	}
+
+	@ConfigItem(
+		position = 4,
 		keyName = "Tekton",
 		name = "Tekton Marker",
-		description = ""
+		description = "",
+		parent = "tektonStub"
 	)
 	default boolean Tekton()
 	{
@@ -56,10 +80,22 @@ public interface CoxConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 2,
+		keyName = "guardiansStub",
+		name = "Guardians",
+		description = "",
+		position = 5
+	)
+	default Stub guardiansStub()
+	{
+		return new Stub();
+	}
+
+	@ConfigItem(
+		position = 6,
 		keyName = "Guardians",
 		name = "Guardians timing",
-		description = ""
+		description = "",
+		parent = "guardiansStub"
 	)
 	default boolean Guardians()
 	{
@@ -67,45 +103,60 @@ public interface CoxConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 3,
-		keyName = "OlmSpec",
-		name = "Olm Next Spec",
-		description = ""
+		keyName = "olmStub",
+		name = "Olm",
+		description = "",
+		position = 7
 	)
-	default boolean OlmSpec()
+	default Stub olmStub()
+	{
+		return new Stub();
+	}
+
+	@ConfigItem(
+		position = 8,
+		keyName = "prayAgainstOlm",
+		name = "Olm Show Prayer",
+		description = "Shows what prayer to use during olm.",
+		parent = "olmStub"
+	)
+	default boolean prayAgainstOlm()
 	{
 		return true;
 	}
 
 	@ConfigItem(
-		position = 4,
-		keyName = "OlmTick",
-		name = "Olm Tick Counter",
-		description = ""
+		position = 9,
+		keyName = "timers",
+		name = "Olm Show Burn/Acid Timers",
+		description = "Shows tick timers for burns/acids.",
+		parent = "olmStub"
 	)
-	default boolean OlmTick()
+	default boolean timers()
 	{
 		return true;
 	}
 
 	@ConfigItem(
-		position = 5,
-		keyName = "OlmCrystals",
-		name = "Olm AoE Indicator",
-		description = ""
+		position = 10,
+		keyName = "tpOverlay",
+		name = "Olm Show Teleport Overlays",
+		description = "Shows Overlays for targeted teleports.",
+		parent = "olmStub"
 	)
-	default boolean OlmCrystals()
+	default boolean tpOverlay()
 	{
 		return true;
 	}
 
 	@ConfigItem(
 		position = 6,
-		keyName = "LargeCrystals",
-		name = "Mark Large AoE Crystals rather then small ones",
-		description = ""
+		keyName = "OlmTick",
+		name = "Olm Tick Counter",
+		description = "Show Tick Counter on Olm",
+		parent = "olmStub"
 	)
-	default boolean LargeCrystals()
+	default boolean OlmTick()
 	{
 		return true;
 	}

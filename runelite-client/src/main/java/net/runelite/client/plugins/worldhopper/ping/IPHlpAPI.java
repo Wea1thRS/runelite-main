@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Jordan Atwood <nightfirecat@protonmail.com>
+ * Copyright (c) 2018, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.groundmarkers;
+package net.runelite.client.plugins.worldhopper.ping;
 
-import java.awt.Color;
-import lombok.Value;
-import net.runelite.api.coords.WorldPoint;
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 
-/**
- * Used to denote marked tiles and their colors.
- * Note: This is not used for serialization of ground markers; see {@link GroundMarkerPoint}
- */
-@Value
-class ColorTileMarker
+interface IPHlpAPI extends Library
 {
-	private WorldPoint worldPoint;
-	private Color color;
+	IPHlpAPI INSTANCE = Native.loadLibrary("IPHlpAPI", IPHlpAPI.class);
+
+	Pointer IcmpCreateFile();
+
+	boolean IcmpCloseHandle(Pointer handle);
+
+	int IcmpSendEcho(Pointer IcmpHandle, int DestinationAddress, Pointer RequestData, short RequestSize, Pointer RequestOptions, IcmpEchoReply ReplyBuffer, int ReplySize, int Timeout);
 }
