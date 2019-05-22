@@ -54,7 +54,7 @@ import org.apache.commons.lang3.ArrayUtils;
 	name = "Easyscape",
 	type = PluginType.UTILITY
 )
-public class EasyscapePlugin extends Plugin
+public class EasyScapePlugin extends Plugin
 {
 	private static final int PURO_PURO_REGION_ID = 10307;
 
