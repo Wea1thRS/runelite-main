@@ -32,10 +32,9 @@ import net.runelite.api.Point;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
-import net.runelite.client.input.MouseAdapter;
 import net.runelite.client.input.MouseListener;
 
-public class InventoryHighlightInputListener extends MouseAdapter implements MouseListener
+public class InventoryHighlightInputListener implements MouseListener
 {
 	private final InventoryHighlightPlugin plugin;
 	private final Client client;
@@ -51,6 +50,18 @@ public class InventoryHighlightInputListener extends MouseAdapter implements Mou
 	public MouseEvent mouseDragged(MouseEvent mouseEvent)
 	{
 		plugin.setDragging(true);
+		return mouseEvent;
+	}
+
+	@Override
+	public MouseEvent mouseMoved(MouseEvent mouseEvent)
+	{
+		return mouseEvent;
+	}
+
+	@Override
+	public MouseEvent mouseClicked(MouseEvent mouseEvent)
+	{
 		return mouseEvent;
 	}
 
@@ -90,6 +101,19 @@ public class InventoryHighlightInputListener extends MouseAdapter implements Mou
 	{
 		plugin.setDragging(false);
 		plugin.setDraggingItem(-1);
+
+		return mouseEvent;
+	}
+
+	@Override
+	public MouseEvent mouseEntered(MouseEvent mouseEvent)
+	{
+		return mouseEvent;
+	}
+
+	@Override
+	public MouseEvent mouseExited(MouseEvent mouseEvent)
+	{
 		return mouseEvent;
 	}
 }

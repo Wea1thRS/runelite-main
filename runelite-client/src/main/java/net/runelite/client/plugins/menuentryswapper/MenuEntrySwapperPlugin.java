@@ -155,12 +155,16 @@ public class MenuEntrySwapperPlugin extends Plugin
 		{
 			enableCustomization();
 		}
+
+		loadCustomSwaps(config.customSwaps());
 	}
 
 	@Override
 	public void shutDown()
 	{
 		disableCustomization();
+
+		loadCustomSwaps(""); // Removes all custom swaps
 	}
 
 	@Subscribe
@@ -455,6 +459,11 @@ public class MenuEntrySwapperPlugin extends Plugin
 			{
 				swap(client, "pay", option, target, true);
 				swap(client, "pay (", option, target, false);
+			}
+
+			if (config.swapDream())
+			{
+				swap(client, "dream", option, target, true);
 			}
 
 			if (config.swapDecant())

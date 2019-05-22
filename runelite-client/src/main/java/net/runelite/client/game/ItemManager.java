@@ -45,6 +45,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import static net.runelite.api.Constants.CLIENT_DEFAULT_ZOOM;
+import static net.runelite.api.Constants.HIGH_ALCHEMY_CONSTANT;
 import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemID;
@@ -411,6 +412,20 @@ public class ItemManager
 		return price;
 	}
 
+	public int getAlchValue(int itemID)
+	{
+		if (itemID == ItemID.COINS_995)
+		{
+			return 1;
+		}
+		if (itemID == ItemID.PLATINUM_TOKEN)
+		{
+			return 1000;
+		}
+
+		return (int) Math.max(1, getItemComposition(itemID).getPrice() * HIGH_ALCHEMY_CONSTANT);
+	}
+
 	/**
 	 * Look up an item's stats
 	 *
@@ -553,7 +568,7 @@ public class ItemManager
 	/**
 	 * Create item sprite and applies an outline.
 	 *
-	 * @param itemId item id
+	 * @param itemId       item id
 	 * @param itemQuantity item quantity
 	 * @param outlineColor outline color
 	 * @return image
@@ -567,7 +582,7 @@ public class ItemManager
 	/**
 	 * Get item outline with a specific color.
 	 *
-	 * @param itemId item id
+	 * @param itemId       item id
 	 * @param itemQuantity item quantity
 	 * @param outlineColor outline color
 	 * @return image

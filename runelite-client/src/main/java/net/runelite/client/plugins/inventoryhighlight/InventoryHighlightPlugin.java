@@ -24,7 +24,6 @@
  */
 package net.runelite.client.plugins.inventoryhighlight;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
 import lombok.AccessLevel;
@@ -32,24 +31,24 @@ import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
 	name = "Inventory Highlight",
 	description = "Shows a preview of where items will be dragged",
 	tags = {"items", "overlay"},
-	enabledByDefault = false
+	enabledByDefault = false,
+	type = PluginType.UTILITY
 )
 public class InventoryHighlightPlugin extends Plugin
 {
 	@Inject
 	private InventoryHighlightOverlay overlay;
-
-	@Inject
-	private InventoryHighlightConfig config;
 
 	@Inject
 	private InventoryHighlightInputListener inputListener;
