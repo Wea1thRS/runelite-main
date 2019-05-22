@@ -59,6 +59,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.menus.MenuManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.overlay.OverlayManager;
 import static net.runelite.client.util.MenuUtil.swap;
 import net.runelite.client.util.Text;
@@ -67,7 +68,8 @@ import net.runelite.client.util.Text;
 @PluginDescriptor(
 	name = "Runecraft",
 	description = "Show minimap icons and clickboxes for abyssal rifts",
-	tags = {"abyssal", "minimap", "overlay", "rifts", "rc", "runecrafting"}
+	tags = {"abyssal", "minimap", "overlay", "rifts", "rc", "runecrafting"},
+	type = PluginType.SKILLING
 )
 public class RunecraftPlugin extends Plugin
 {
