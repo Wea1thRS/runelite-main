@@ -101,7 +101,7 @@ public class RuneLiteAPI
 		return HttpUrl.parse(BASE);
 	}
 
-	public static HttpUrl getSessionBase()
+	public static HttpUrl getRuneLitePlusSessionBase()
 	{
 		return HttpUrl.parse(RLPLUS);
 	}

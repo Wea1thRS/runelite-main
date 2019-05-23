@@ -39,12 +39,12 @@ class SessionClient
 {
 	UUID open() throws IOException
 	{
-		HttpUrl url = RuneLiteAPI.getSessionBase().newBuilder()
-				.build();
+		HttpUrl url = RuneLiteAPI.getRuneLitePlusSessionBase().newBuilder()
+			.build();
 
 		Request request = new Request.Builder()
-				.url(url)
-				.build();
+			.url(url)
+			.build();
 
 		try (Response response = RuneLiteAPI.CLIENT.newCall(request).execute())
 		{
@@ -61,14 +61,14 @@ class SessionClient
 
 	void ping(UUID uuid) throws IOException
 	{
-		HttpUrl url = RuneLiteAPI.getSessionBase().newBuilder()
-				.addPathSegment("ping")
-				.addQueryParameter("session", uuid.toString())
-				.build();
+		HttpUrl url = RuneLiteAPI.getRuneLitePlusSessionBase().newBuilder()
+			.addPathSegment("ping")
+			.addQueryParameter("session", uuid.toString())
+			.build();
 
 		Request request = new Request.Builder()
-				.url(url)
-				.build();
+			.url(url)
+			.build();
 
 		try (Response response = RuneLiteAPI.CLIENT.newCall(request).execute())
 		{
@@ -81,14 +81,14 @@ class SessionClient
 
 	void delete(UUID uuid) throws IOException
 	{
-		HttpUrl url = RuneLiteAPI.getSessionBase().newBuilder()
-				.addQueryParameter("session", uuid.toString())
-				.build();
+		HttpUrl url = RuneLiteAPI.getRuneLitePlusSessionBase().newBuilder()
+			.addQueryParameter("session", uuid.toString())
+			.build();
 
 		Request request = new Request.Builder()
-				.delete()
-				.url(url)
-				.build();
+			.delete()
+			.url(url)
+			.build();
 
 		RuneLiteAPI.CLIENT.newCall(request).execute().close();
 	}
