@@ -23,19 +23,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.easyscape.util;
+package net.runelite.client.plugins.menuentryswapper.util;
 
-public enum XericsTalismanMode
+public enum SkillsNecklaceMode
 {
-	XERICS_LOOKOUT("Xeric's Look-out"),
-	XERICS_GLADE("Xeric's Glade"),
-	XERICS_INFERNO("Xeric's Inferno"),
-	XERICS_HEART("Xeric's Heart"),
-	XERICS_HONOUR("Xeric's Honour");
+	FISHING_GUILD("Fishing Guild"),
+	MINING_GUILD("Mining Guild"),
+	CRAFTING_GUILD("Crafting Guild"),
+	COOKING_GUILD("Cooking Guild"),
+	WOODCUTTING_GUILD("Woodcutting Guild"),
+	FARMING_GUILD("Farming Guild");
 
 	private final String name;
 
-	XericsTalismanMode(String name)
+	SkillsNecklaceMode(String name)
 	{
 		this.name = name;
 	}

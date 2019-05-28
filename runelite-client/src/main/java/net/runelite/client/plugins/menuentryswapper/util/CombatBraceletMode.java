@@ -23,17 +23,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.easyscape.util;
+package net.runelite.client.plugins.menuentryswapper.util;
 
-public enum DigsitePendantMode
+public enum CombatBraceletMode
 {
-	DIGSITE("Digsite"),
-	FOSSIL_ISLAND("Fossil Island"),
-	LITHKREN("Lithkren");
+	WARRIORS_GUILD("Warriors' Guild"),
+	CHAMPIONS_GUILD("Champions' Guild"),
+	EDGEVILLE_MONASTERY("Edgeville Monstery"),
+	RANGING_GUILD("Ranging Guild");
 
 	private final String name;
 
-	DigsitePendantMode(String name)
+	CombatBraceletMode(String name)
 	{
 		this.name = name;
 	}

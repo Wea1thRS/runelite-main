@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2018, Snakk <http://github.com/SnakkSnokk>
+ * Copyright (c) 2018, https://runelitepl.us
+ * Copyright (c) 2018, Kyle <https://github.com/kyleeld>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,22 +23,20 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package net.runelite.client.plugins.menuentryswapper.util;
 
-package net.runelite.client.plugins.menuentryswapper;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
-public enum HouseMode
+public enum NecklaceOfPassageMode
 {
-	ENTER("Enter"),
-	HOME("Home"),
-	BUILD_MODE("Build mode"),
-	FRIENDS_HOUSE("Friend's House");
+	WIZARDS_TOWER("Wizards' Tower"),
+	THE_OUTPOST("The Outpost"),
+	EAGLES_EYRIE("Eagles' Eyrie");
 
 	private final String name;
+
+	NecklaceOfPassageMode(String name)
+	{
+		this.name = name;
+	}
 
 	@Override
 	public String toString()

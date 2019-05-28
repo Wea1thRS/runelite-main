@@ -32,6 +32,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
@@ -197,6 +198,15 @@ public class ConfigPanel extends PluginPanel
 		initializePluginList();
 		refreshPluginList();
 
+	}
+
+	static class configTextArea extends JTextArea
+	{
+		@Override
+		public void scrollRectToVisible(final Rectangle aRect)
+		{
+			// supress scrollToRect in textarea
+		}
 	}
 
 	private void initializePluginList()
@@ -652,7 +662,7 @@ public class ConfigPanel extends PluginPanel
 					}
 					else
 					{
-						final JTextArea textArea = new JTextArea();
+						final JTextArea textArea = new configTextArea();
 						textArea.setLineWrap(true);
 						textArea.setWrapStyleWord(true);
 						textField = textArea;
@@ -850,7 +860,8 @@ public class ConfigPanel extends PluginPanel
 			}
 
 			configManager.setConfiguration(cd.getGroup().value(), cig.getGroup() + "_collapse", collapse);
-			openGroupConfigPanel(listItem, config, cd);
+
+			reloadPluginlist(listItem, config, cd);
 		}
 	}
 
@@ -888,8 +899,22 @@ public class ConfigPanel extends PluginPanel
 
 					if (itemHide.contains(cid.getItem().keyName()))
 					{ // If another options visibility changes depending on the value of this checkbox, then render the entire menu again
-						openGroupConfigPanel(listItem, config, cd);
-						return;
+
+						reloadPluginlist(listItem, config, cd);
+					}
+				}
+
+				if (checkbox.isSelected())
+				{
+					if (cid2.getItem().enabledBy().contains(cid.getItem().keyName()))
+					{
+						configManager.setConfiguration(cd.getGroup().value(), cid2.getItem().keyName(), "true");
+						reloadPluginlist(listItem, config, cd);
+					}
+					else if (cid2.getItem().disabledBy().contains(cid.getItem().keyName()))
+					{
+						configManager.setConfiguration(cd.getGroup().value(), cid2.getItem().keyName(), "false");
+						reloadPluginlist(listItem, config, cd);
 					}
 				}
 			}
@@ -1023,5 +1048,12 @@ public class ConfigPanel extends PluginPanel
 			return new Dimension(PANEL_WIDTH, super.getPreferredSize().height);
 		}
 
+	}
+
+	private void reloadPluginlist(PluginListItem listItem, Config config, ConfigDescriptor cd)
+	{
+		int scrollBarPosition = scrollPane.getVerticalScrollBar().getValue();
+		openGroupConfigPanel(listItem, config, cd);
+		scrollPane.getVerticalScrollBar().setValue(scrollBarPosition);
 	}
 }

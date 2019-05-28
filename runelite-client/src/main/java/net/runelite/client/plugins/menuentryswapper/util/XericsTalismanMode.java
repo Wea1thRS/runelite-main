@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, https://runelitepl.us
+ * Copyright (c) 2018, Kyle <https://github.com/kyleeld>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,41 +23,26 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.menumodifier;
+package net.runelite.client.plugins.menuentryswapper.util;
 
-import java.awt.event.KeyEvent;
-import javax.inject.Inject;
-import net.runelite.client.input.KeyListener;
-import net.runelite.client.input.MouseAdapter;
-
-public class MenuModifierInputListener extends MouseAdapter implements KeyListener
+public enum XericsTalismanMode
 {
-	private static final int HOTKEY = KeyEvent.VK_CONTROL;
+	XERICS_LOOKOUT("Xeric's Look-out"),
+	XERICS_GLADE("Xeric's Glade"),
+	XERICS_INFERNO("Xeric's Inferno"),
+	XERICS_HEART("Xeric's Heart"),
+	XERICS_HONOUR("Xeric's Honour");
 
-	@Override
-	public void keyTyped(KeyEvent e)
+	private final String name;
+
+	XericsTalismanMode(String name)
 	{
-
-	}
-
-	@Inject
-	private MenuModifierPlugin plugin;
-
-	@Override
-	public void keyPressed(KeyEvent e)
-	{
-		if (e.getKeyCode() == HOTKEY)
-		{
-			plugin.setHotKeyPressed(true);
-		}
+		this.name = name;
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e)
+	public String toString()
 	{
-		if (e.getKeyCode() == HOTKEY)
-		{
-			plugin.setHotKeyPressed(false);
-		}
+		return name;
 	}
 }

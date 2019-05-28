@@ -14,3 +14,4 @@ classes/artifacts/client_jar/run.bat
 classes/artifacts/client_jar/client.jar
 *.log
 *.bak
+*.jar
