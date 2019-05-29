@@ -31,11 +31,13 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum Saradomin
+public enum Cerberus
 {
 	DISABLED("Disabled"),
-	SARDOMIN_CHEAP("Melee/Eagle"),
-	SARADOMIN_EXPENSIVE("Piety/Rigour");
+	CERBERUS_CHEAP("Low LVL Melee"),
+	CERBERUS_EXPENSIVE("Melee Piety"),
+	CERBERUS_CHEAP_RANGE("Range Eagle Eye"),
+	CERBERUS_EXPENSIVE_RANGE("Range Rigour");
 
 	private String name;
 
