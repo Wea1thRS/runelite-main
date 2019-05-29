@@ -301,7 +301,10 @@ public interface MenuEntrySwapperConfig extends Config
 			name = "Custom Swaps",
 			description = "Add custom swaps here, 1 per line. Syntax: option, target : option, target<br>Note that the first entry should be the left click one!",
 			position = 19,
-			group = "Miscellaneous"
+			group = "Miscellaneous",
+			parse = true,
+			clazz = Parse.class,
+			method = "parse"
 	)
 	default String customSwaps()
 	{
@@ -1530,6 +1533,18 @@ public interface MenuEntrySwapperConfig extends Config
 			group = "Right Click Options"
 	)
 	default boolean hideBait()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			keyName = "swapImps",
+			name = "Impling Jars",
+			description = "Don't open implings if bank has a clue.",
+			position = 117,
+			group = "Miscellaneous"
+	)
+	default boolean swapImps()
 	{
 		return false;
 	}

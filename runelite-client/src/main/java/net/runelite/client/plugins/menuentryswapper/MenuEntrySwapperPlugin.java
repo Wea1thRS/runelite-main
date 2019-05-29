@@ -36,12 +36,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.MenuAction;
 import static net.runelite.api.MenuAction.MENU_ACTION_DEPRIORITIZE_OFFSET;
@@ -95,6 +98,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private static final String SAVE = "Save";
 	private static final String RESET = "Reset";
 	private static final String MENU_TARGET = "Shift-click";
+	private List<String> bankItemNames = new ArrayList<>();
 	private static final String CONFIG_GROUP = "shiftclick";
 	private static final String ITEM_KEY_PREFIX = "item_";
 	private static final int PURO_PURO_REGION_ID = 10307;
@@ -315,13 +319,13 @@ public class MenuEntrySwapperPlugin extends Plugin
 
 		if (localPlayer == null)
 		{
-		return;
+			return;
 		}
 
 		if (!(MiscUtils.getWildernessLevelFrom(client, localPlayer.getWorldLocation()) >= 0))
 		{
 			return;
-			}
+		}
 
 		List<MenuEntry> menu_entries = new ArrayList<>();
 
@@ -781,6 +785,92 @@ public class MenuEntrySwapperPlugin extends Plugin
 			return;
 		}
 
+		if (config.swapImps() && target.contains("impling"))
+		{
+
+			if (client.getItemContainer(InventoryID.BANK) != null)
+			{
+				bankItemNames = new ArrayList<>();
+				for (Item i : Objects.requireNonNull(client.getItemContainer(InventoryID.BANK)).getItems())
+				{
+					bankItemNames.add(client.getItemDefinition((i.getId())).getName());
+				}
+			}
+			List<String> invItemNames = new ArrayList<>();
+			if (target.equals("gourmet impling jar"))
+			{
+				if (client.getItemContainer(InventoryID.INVENTORY) != null)
+				{
+					for (Item i : Objects.requireNonNull(client.getItemContainer(InventoryID.INVENTORY)).getItems())
+					{
+						invItemNames.add(client.getItemDefinition((i.getId())).getName());
+					}
+					if ((invItemNames.contains("Clue scroll (easy)") || bankItemNames.contains("Clue scroll (easy)")))
+					{
+						menuManager.addSwap("loot", target, "use");
+					}
+					else
+					{
+						menuManager.removeSwaps(target);
+					}
+				}
+			}
+			if (target.equals("eclectic impling jar"))
+			{
+				if (client.getItemContainer(InventoryID.INVENTORY) != null)
+				{
+					for (Item i : Objects.requireNonNull(client.getItemContainer(InventoryID.INVENTORY)).getItems())
+					{
+						invItemNames.add(client.getItemDefinition((i.getId())).getName());
+					}
+					if ((invItemNames.contains("Clue scroll (medium)") || bankItemNames.contains("Clue scroll (medium)")))
+					{
+						menuManager.addSwap("loot", target, "use");
+					}
+					else
+					{
+						menuManager.removeSwaps(target);
+					}
+				}
+			}
+			else if (target.equals("magpie impling jar") || (target.equals("nature impling jar")))
+			{
+				if (client.getItemContainer(InventoryID.INVENTORY) != null)
+				{
+					for (Item i : Objects.requireNonNull(client.getItemContainer(InventoryID.INVENTORY)).getItems())
+					{
+						invItemNames.add(client.getItemDefinition((i.getId())).getName());
+					}
+					if ((invItemNames.contains("Clue scroll (hard)") || bankItemNames.contains("Clue scroll (hard)")))
+					{
+						menuManager.addSwap("loot", target, "use");
+					}
+					else
+					{
+						menuManager.removeSwaps(target);
+					}
+				}
+			}
+			else if (target.equals("dragon impling jar"))
+			{
+				if (client.getItemContainer(InventoryID.INVENTORY) != null)
+				{
+					for (Item i : Objects.requireNonNull(client.getItemContainer(InventoryID.INVENTORY)).getItems())
+					{
+						invItemNames.add(client.getItemDefinition((i.getId())).getName());
+					}
+					if ((invItemNames.contains("Clue scroll (elite)") || bankItemNames.contains("Clue scroll (elite)")))
+					{
+						menuManager.addSwap("loot", target, "use");
+					}
+					else
+					{
+						menuManager.removeSwaps(target);
+					}
+				}
+			}
+		}
+
 		if (option.equals("talk-to"))
 		{
 			if (config.swapPickpocket())
@@ -1155,16 +1245,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 
 		if (!Strings.isNullOrEmpty(config))
 		{
-			Map<String, String> split;
-
-			try
-			{
-				split = NEWLINE_SPLITTER.withKeyValueSeparator(':').split(config);
-			}
-			catch (IllegalArgumentException ex)
-			{
-				return;
-			}
+			Map<String, String> split = NEWLINE_SPLITTER.withKeyValueSeparator(':').split(config);
 
 			for (Map.Entry<String, String> entry : split.entrySet())
 			{
@@ -1266,6 +1347,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 		if (config.getSlayerRing())
 		{
 			menuManager.addSwap("remove", "slayer ring", config.getSlayerRingMode().toString());
+			menuManager.addSwap("remove", "slayer ring (eternal)", config.getSlayerRingMode().toString());
 		}
 
 		if (config.getXericsTalisman())
