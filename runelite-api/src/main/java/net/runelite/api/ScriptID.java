@@ -114,11 +114,11 @@ public final class ScriptID
 	 * Checks the state of the given stash unit.
 	 * <ul>
 	 * <li>int (loc) The stash unit object id</li>
-	 *  <li>int Bitpacked stash unit states</li>
-	 *  <li>int Bitpacked stash unit states 2</li>
-	 *  <li>int Bitpacked stash unit states 3</li>
+	 * <li>int Bitpacked stash unit states</li>
+	 * <li>int Bitpacked stash unit states 2</li>
+	 * <li>int Bitpacked stash unit states 3</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * Returns a pair of booleans indicating if the stash unit is built and if it is filled
 	 */
 	public static final int WATSON_STASH_UNIT_CHECK = 1479;

@@ -25,27 +25,16 @@
 package net.runelite.client.plugins.config;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.client.config.Config;
@@ -53,18 +42,15 @@ import net.runelite.client.config.ConfigDescriptor;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconButton;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.LinkBrowser;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 
 public class PluginListItem extends JPanel
 {
 	private static final JaroWinklerDistance DISTANCE = new JaroWinklerDistance();
 	public JLabel nameLabel;
-	private static final String RUNELITE_WIKI_FORMAT = "https://github.com/runelite/runelite/wiki/%s";
 
 	private static final ImageIcon CONFIG_ICON;
 	private static final ImageIcon CONFIG_ICON_HOVER;
@@ -166,8 +152,6 @@ public class PluginListItem extends JPanel
 		Collections.addAll(keywords, description.toLowerCase().split(" "));
 		Collections.addAll(keywords, tags);
 
-		final List<JMenuItem> popupMenuItems = new ArrayList<>();
-
 		setLayout(new BorderLayout(3, 0));
 		setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, 20));
 
@@ -178,6 +162,7 @@ public class PluginListItem extends JPanel
 			nameLabel.setToolTipText("<html>" + name + ":<br>" + description + "</html>");
 		}
 
+		add(nameLabel, BorderLayout.CENTER);
 
 		pinButton.setPreferredSize(new Dimension(21, 0));
 		add(pinButton, BorderLayout.LINE_START);
@@ -204,20 +189,12 @@ public class PluginListItem extends JPanel
 			configButton.addActionListener(e ->
 			{
 				configButton.setIcon(CONFIG_ICON);
-				openGroupConfigPanel();
+				configPanel.openGroupConfigPanel(PluginListItem.this, config, configDescriptor);
 			});
 
 			configButton.setVisible(true);
 			configButton.setToolTipText("Edit plugin configuration");
-
-			final JMenuItem configMenuItem = new JMenuItem("Configure");
-			configMenuItem.addActionListener(e -> openGroupConfigPanel());
-			popupMenuItems.add(configMenuItem);
 		}
-
-		popupMenuItems.add(wikiLinkMenuItem(name));
-		addLabelPopupMenu(nameLabel, popupMenuItems);
-		add(nameLabel, BorderLayout.CENTER);
 
 		toggleButton.setPreferredSize(new Dimension(25, 0));
 		attachToggleButtonListener(toggleButton);
@@ -299,82 +276,5 @@ public class PluginListItem extends JPanel
 			}
 		}
 		return true;
-	}
-
-	private void openGroupConfigPanel()
-	{
-		configPanel.openGroupConfigPanel(PluginListItem.this, config, configDescriptor);
-	}
-
-	/**
-	 * Adds a mouseover effect to change the text of the passed label to {@link ColorScheme#BRAND_ORANGE} color, and
-	 * adds the passed menu item to a popup menu shown when the label is clicked.
-	 *
-	 * @param label    The label to attach the mouseover and click effects to
-	 * @param menuItem The menu item to be shown when the label is clicked
-	 */
-	static void addLabelPopupMenu(final JLabel label, final JMenuItem menuItem)
-	{
-		addLabelPopupMenu(label, Collections.singletonList(menuItem));
-	}
-
-	/**
-	 * Adds a mouseover effect to change the text of the passed label to {@link ColorScheme#BRAND_ORANGE} color, and
-	 * adds the passed menu items to a popup menu shown when the label is clicked.
-	 *
-	 * @param label     The label to attach the mouseover and click effects to
-	 * @param menuItems The menu items to be shown when the label is clicked
-	 */
-	static void addLabelPopupMenu(final JLabel label, final Collection<JMenuItem> menuItems)
-	{
-		final JPopupMenu menu = new JPopupMenu();
-		menu.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-		for (final JMenuItem menuItem : menuItems)
-		{
-			menu.add(menuItem);
-		}
-
-		label.addMouseListener(new MouseAdapter()
-		{
-			private Color lastForeground;
-
-			@Override
-			public void mouseClicked(MouseEvent mouseEvent)
-			{
-				Component source = (Component) mouseEvent.getSource();
-				Point location = MouseInfo.getPointerInfo().getLocation();
-				SwingUtilities.convertPointFromScreen(location, source);
-				menu.show(source, location.x, location.y);
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent mouseEvent)
-			{
-				lastForeground = label.getForeground();
-				label.setForeground(ColorScheme.BRAND_ORANGE);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent mouseEvent)
-			{
-				label.setForeground(lastForeground);
-			}
-		});
-	}
-
-	/**
-	 * Creates a menu item for linking to a wiki page which, when clicked, opens a link to the plugin's wiki page for
-	 * the passed plugin name.
-	 *
-	 * @param pluginName The name of the plugin which should be linked to
-	 * @return A {@link JMenuItem} which opens the plugin's wiki page URL in the browser when clicked
-	 */
-	static JMenuItem wikiLinkMenuItem(final String pluginName)
-	{
-		final JMenuItem menuItem = new JMenuItem("Wiki");
-		final String sanitizedName = pluginName.replace(' ', '-');
-		menuItem.addActionListener(e -> LinkBrowser.browse(String.format(RUNELITE_WIKI_FORMAT, sanitizedName)));
-		return menuItem;
 	}
 }

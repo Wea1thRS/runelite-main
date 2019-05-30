@@ -530,7 +530,6 @@ public class ConfigPanel extends PluginPanel
 		JLabel title = new JLabel(name);
 		title.setForeground(Color.WHITE);
 		title.setToolTipText("<html>" + name + ":<br>" + listItem.getDescription() + "</html>");
-		PluginListItem.addLabelPopupMenu(title, PluginListItem.wikiLinkMenuItem(listItem.getName()));
 		topPanel.add(title);
 
 		for (ConfigItemsGroup cig : cd.getItemGroups())
@@ -1177,5 +1176,10 @@ public class ConfigPanel extends PluginPanel
 			return new Dimension(PANEL_WIDTH, super.getPreferredSize().height);
 		}
 
+	}
+
+	private void reloadPluginlist(PluginListItem listItem, Config config, ConfigDescriptor cd)
+	{
+		openGroupConfigPanel(listItem, config, cd, true);
 	}
 }
