@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
+ * Copyright (c) 2019, lyzrds <https://discord.gg/5eb9Fe>
+ * Copyright (c) 2019, ganom <https://github.com/Ganom>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,7 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.objectindicators;
+package net.runelite.client.plugins.coxhelper;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -31,80 +31,66 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import javax.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.DecorativeObject;
-import net.runelite.api.GameObject;
-import net.runelite.api.TileObject;
+import net.runelite.api.NPC;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
-import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.OverlayPriority;
 
-class ObjectIndicatorsOverlay extends Overlay
+public class VanguardsHighlight extends Overlay
 {
+
 	private final Client client;
-	private final ObjectIndicatorsConfig config;
-	private final ObjectIndicatorsPlugin plugin;
+	private final CoxPlugin plugin;
+	private final CoxConfig config;
 
 	@Inject
-	private ObjectIndicatorsOverlay(Client client, ObjectIndicatorsConfig config, ObjectIndicatorsPlugin plugin)
+	VanguardsHighlight(Client client, CoxPlugin plugin, CoxConfig config)
 	{
+		super(plugin);
+		setLayer(OverlayLayer.ABOVE_MAP);
 		this.client = client;
-		this.config = config;
 		this.plugin = plugin;
-		setPosition(OverlayPosition.DYNAMIC);
-		setPriority(OverlayPriority.LOW);
-		setLayer(OverlayLayer.ABOVE_SCENE);
+		this.config = config;
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		for (TileObject object : plugin.getObjects())
+		if (plugin.isRunVanguards())
 		{
-			if (object.getPlane() != client.getPlane())
+			if (config.vangHighlight())
 			{
-				continue;
-			}
-
-			final Polygon polygon;
-			Polygon polygon2 = null;
-
-			if (object instanceof GameObject)
-			{
-				polygon = ((GameObject) object).getConvexHull();
-			}
-			else if (object instanceof DecorativeObject)
-			{
-				polygon = ((DecorativeObject) object).getConvexHull();
-				polygon2 = ((DecorativeObject) object).getConvexHull2();
-			}
-			else
-			{
-				polygon = object.getCanvasTilePoly();
-			}
-
-			if (polygon != null)
-			{
-				renderPoly(graphics, polygon, config.markerColor(), config.stroke(), config.alpha());
-			}
-
-			if (polygon2 != null)
-			{
-				renderPoly(graphics, polygon2, config.markerColor(), config.stroke(), config.alpha());
+				if (plugin.getRangeVang() != null)
+				{
+					renderNpcOverlay(graphics, plugin.getRangeVang(), "Range", Color.GREEN);
+				}
+				if (plugin.getMageVang() != null)
+				{
+					renderNpcOverlay(graphics, plugin.getMageVang(), "Mage", Color.BLUE);
+				}
+				if (plugin.getMeleeVang() != null)
+				{
+					renderNpcOverlay(graphics, plugin.getMeleeVang(), "Melee", Color.RED);
+				}
 			}
 		}
-
 		return null;
 	}
 
-	private void renderPoly(Graphics2D graphics, Polygon polygon, Color color, int stroke, int alpha)
+
+	private void renderNpcOverlay(Graphics2D graphics, NPC actor, String name, Color color)
+	{
+		Polygon objectClickbox = actor.getConvexHull();
+		renderPoly(graphics, color, objectClickbox);
+	}
+
+	private void renderPoly(Graphics2D graphics, Color color, Polygon polygon)
 	{
 		if (polygon != null)
 		{
-			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
-			graphics.setStroke(new BasicStroke(stroke));
+			graphics.setColor(color);
+			graphics.setStroke(new BasicStroke(2));
 			graphics.draw(polygon);
-			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha));
+			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 20));
 			graphics.fill(polygon);
 		}
 	}
