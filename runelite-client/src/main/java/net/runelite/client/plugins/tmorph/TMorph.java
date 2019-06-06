@@ -43,7 +43,8 @@ import org.apache.commons.lang3.ObjectUtils;
 	name = "TMorph",
 	description = "Want to wear a infernal cape? well now you can!",
 	tags = {"transform", "model", "item", "morph"},
-	type = PluginType.UTILITY
+	type = PluginType.UTILITY,
+	enabledByDefault = false
 )
 
 public class TMorph extends Plugin
@@ -63,7 +64,7 @@ public class TMorph extends Plugin
 	@Subscribe
 	public void onAnimationChanged(AnimationChanged event)
 	{
-		if (config.animationTarget() < 0 && config.animationSwap() < 0)
+		if (config.animationTarget() <= 0 && config.animationSwap() <= 0 && config.globalAnimSwap() > 0)
 		{
 			if (event.getActor().getAnimation() != -1)
 			{

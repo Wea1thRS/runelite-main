@@ -56,8 +56,10 @@ import net.runelite.client.ui.overlay.OverlayManager;
 	name = "Alchemical Hydra",
 	description = "Show what to pray against hydra",
 	tags = {"Hydra", "Lazy", "4 headed asshole"},
-	type = PluginType.PVM
+	type = PluginType.PVM,
+	enabledByDefault = false
 )
+
 @Slf4j
 public class HydraPlugin extends Plugin
 {
@@ -320,10 +322,11 @@ public class HydraPlugin extends Plugin
 		hydra.setPhase(newPhase);
 		hydra.setNextSpecial(3);
 		hydra.setAttackCount(0);
-		hydra.setWeakened(newPhase != HydraPhase.FOUR);
+		hydra.setWeakened(false);
 
 		if (newPhase == HydraPhase.FOUR)
 		{
+			hydra.setWeakened(true);
 			switchStyles();
 			hydra.setNextSwitch(newPhase.getAttacksPerSwitch());
 		}

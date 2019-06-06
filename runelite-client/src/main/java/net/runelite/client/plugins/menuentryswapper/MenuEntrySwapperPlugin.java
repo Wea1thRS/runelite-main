@@ -92,6 +92,7 @@ import org.apache.commons.lang3.ArrayUtils;
 	type = PluginType.UTILITY,
 	enabledByDefault = false
 )
+
 public class MenuEntrySwapperPlugin extends Plugin
 {
 	private static final String CONFIGURE = "Configure";
@@ -365,6 +366,42 @@ public class MenuEntrySwapperPlugin extends Plugin
 			if (option.contains("bait") && config.hideBait())
 			{
 				continue;
+			}
+
+			if (option.contains("destroy"))
+			{
+				if (config.hideDestroyRunepouch() && entry.getTarget().contains("Rune pouch"))
+				{
+					continue;
+				}
+				if (config.hideDestroyCoalbag() && entry.getTarget().contains("Coal bag"))
+				{
+					continue;
+				}
+				if (config.hideDestroyHerbsack() && entry.getTarget().contains("Herb sack"))
+				{
+					continue;
+				}
+				if (config.hideDestroyBoltpouch() && entry.getTarget().contains("Bolt pouch"))
+				{
+					continue;
+				}
+				if (config.hideDestroyGembag() && entry.getTarget().contains("Gem bag"))
+				{
+					continue;
+				}
+			}
+
+			if (option.contains("drop"))
+			{
+				if (config.hideDropRunecraftingPouch() && (
+						entry.getTarget().contains("Small pouch")
+								|| entry.getTarget().contains("Medium pouch")
+								|| entry.getTarget().contains("Large pouch")
+								|| entry.getTarget().contains("Giant pouch")))
+				{
+					continue;
+				}
 			}
 
 			int identifier = entry.getIdentifier();
