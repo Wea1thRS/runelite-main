@@ -58,4 +58,4 @@ public class LootingBagViewerPlugin extends Plugin
 	{
 		overlayManager.remove(overlay);
 	}
-}
+} 
