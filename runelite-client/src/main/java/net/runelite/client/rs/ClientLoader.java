@@ -143,7 +143,7 @@ public class ClientLoader
 
 			if (updateCheckMode == CUSTOM)
 			{
-				URL url = new URL("https://raw.githubusercontent.com/runelite-extended/maven-repo/master/artifacts/injected-client.jar");
+				URL url = new URL("https://raw.githubusercontent.com/runelite-extended/maven-repo/master/live/injected-client.jar");
 				ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
 				File LOCAL_INJECTED_CLIENT = new File("./injected-client/target/injected-client-" + RuneLiteAPI.getVersion() + ".jar");
 				File INJECTED_CLIENT = new File(RUNELITE_DIR + "/injected-client.jar");
@@ -222,7 +222,7 @@ public class ClientLoader
 
 			if (rs instanceof Client)
 			{
-				log.info("client-patch {}", "420 blaze it RL pricks");
+				log.info("client-patch 420 blaze it RL pricks");
 			}
 
 			return rs;
@@ -274,7 +274,7 @@ public class ClientLoader
 		{
 			FileOutputStream fileOutputStream = new FileOutputStream(INJECTED_CLIENT);
 			fileOutputStream.getChannel()
-					.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+					.transferFrom(readableByteChannel, 0, Integer.MAX_VALUE);
 		}
 		catch (IOException e)
 		{
