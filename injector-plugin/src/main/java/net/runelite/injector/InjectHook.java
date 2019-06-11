@@ -55,29 +55,16 @@ import net.runelite.asm.signature.Signature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InjectHook
+class InjectHook
 {
 	private static final Logger logger = LoggerFactory.getLogger(InjectHook.class);
-
-	static class HookInfo
-	{
-		String fieldName;
-		String clazz;
-		Method method;
-		boolean before;
-		Number getter;
-	}
-
 	private static final String HOOK_METHOD_SIGNATURE = "(I)V";
-
 	private static final String CLINIT = "<clinit>";
-
 	private final Inject inject;
 	private final Map<Field, HookInfo> hooked = new HashMap<>();
-
 	private int injectedHooks;
 
-	public InjectHook(Inject inject)
+	InjectHook(Inject inject)
 	{
 		this.inject = inject;
 	}
@@ -87,7 +74,7 @@ public class InjectHook
 		hooked.put(field, hookInfo);
 	}
 
-	public void run()
+	void run()
 	{
 		Execution e = new Execution(inject.getVanilla());
 		e.populateInitialMethods();
@@ -142,8 +129,7 @@ public class InjectHook
 			StackContext objectStackContext = null;
 			if (sfi instanceof PutField)
 			{
-				StackContext objectStack = ic.getPops().get(1); // Object being set on
-				objectStackContext = objectStack;
+				objectStackContext = ic.getPops().get(1);
 			}
 
 			int idx = ins.getInstructions().indexOf(sfi);
@@ -219,8 +205,7 @@ public class InjectHook
 			StackContext objectStackContext = null;
 			if (arrayReferencePushed.getInstruction().getType() == InstructionType.GETFIELD)
 			{
-				StackContext objectReference = arrayReferencePushed.getPops().get(0);
-				objectStackContext = objectReference;
+				objectStackContext = arrayReferencePushed.getPops().get(0);
 			}
 
 			// inject hook after 'i'
@@ -272,7 +257,7 @@ public class InjectHook
 				if (hookInfo.getter instanceof Integer)
 				{
 					ins.getInstructions().add(idx++, new LDC(ins, (int) hookInfo.getter));
-					ins.getInstructions().add(idx++,new IMul(ins));
+					ins.getInstructions().add(idx++, new IMul(ins));
 				}
 				else
 				{
@@ -395,8 +380,17 @@ public class InjectHook
 		}
 	}
 
-	public int getInjectedHooks()
+	int getInjectedHooks()
 	{
 		return injectedHooks;
+	}
+
+	static class HookInfo
+	{
+		String fieldName;
+		String clazz;
+		Method method;
+		boolean before;
+		Number getter;
 	}
 }

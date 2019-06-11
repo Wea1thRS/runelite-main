@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2019, Jacky <liangj97@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,55 +22,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.injector;
+package net.runelite.client.plugins.inferno;
 
-import java.io.File;
-import java.io.IOException;
-import net.runelite.asm.ClassGroup;
-import net.runelite.deob.util.JarUtil;
+import net.runelite.client.config.Config;
+import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
 
-public class Injector
+@ConfigGroup("inferno")
+public interface InfernoConfig extends Config
 {
-	private final ClassGroup deobfuscated, vanilla;
-
-	public Injector(ClassGroup deobfuscated, ClassGroup vanilla)
+	@ConfigItem(
+		position = 0,
+		keyName = "Nibbler Overlay",
+		name = "Nibbler Overlay",
+		description = "Shows if there are any Nibblers left"
+	)
+	default boolean displayNibblerOverlay()
 	{
-		this.deobfuscated = deobfuscated;
-		this.vanilla = vanilla;
+		return false;
 	}
 
-	public static void main(String[] args) throws IOException, InjectionException
+	@ConfigItem(
+		position = 1,
+		keyName = "Prayer Helper",
+		name = "Prayer Helper",
+		description = "Tells you what to flick in how many ticks"
+	)
+	default boolean showPrayerHelp()
 	{
-		if (args.length < 3)
-		{
-			System.exit(-1);
-		}
-
-		ClassGroup deobfuscated = JarUtil.loadJar(new File(args[0]));
-		ClassGroup vanilla = JarUtil.loadJar(new File(args[1]));
-
-		Injector u = new Injector(
-			deobfuscated,
-			vanilla
-		);
-		u.inject();
-
-		InjectorValidator iv = new InjectorValidator(vanilla);
-		iv.validate();
-
-		u.save(new File(args[2]));
+		return false;
 	}
-
-	public void inject() throws InjectionException
-	{
-		Inject instance = new Inject(deobfuscated, vanilla);
-		instance.run();
-	}
-
-	private void save(File out) throws IOException
-	{
-		JarUtil.saveJar(vanilla, out);
-	}
-
-
 }
