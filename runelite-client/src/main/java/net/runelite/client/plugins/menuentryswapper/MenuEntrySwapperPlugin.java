@@ -404,27 +404,6 @@ public class MenuEntrySwapperPlugin extends Plugin
 				}
 			}
 
-			int identifier = entry.getIdentifier();
-
-			Player[] players = client.getCachedPlayers();
-			Player player = null;
-
-			if (identifier >= 0 && identifier < players.length)
-			{
-				player = players[identifier];
-			}
-
-			if (player == null)
-			{
-				menu_entries.add(entry);
-				continue;
-			}
-
-			if ((option.contains("attack") || option.contains("cast")) && (player.isFriend() || player.isClanMember()))
-			{
-				continue;
-			}
-
 			menu_entries.add(entry);
 		}
 
@@ -963,6 +942,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 			{
 				swap(client, "trade", option, target, true);
 				swap(client, "trade-with", option, target, true);
+				swap(client, "shop", option, target, true);
 			}
 
 			if (config.claimSlime() && target.equals("robin"))

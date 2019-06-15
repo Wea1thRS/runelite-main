@@ -27,12 +27,18 @@ package net.runelite.client.plugins.idlenotifier;
 
 import com.google.inject.Provides;
 import java.awt.TrayIcon;
+//import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import javax.inject.Inject;
+//import javax.sound.sampled.LineUnavailableException;
+//import javax.sound.sampled.UnsupportedAudioFileException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.runelite.api.Actor;
 import net.runelite.api.AnimationID;
 import static net.runelite.api.AnimationID.COOKING_FIRE;
@@ -93,17 +99,6 @@ import static net.runelite.api.AnimationID.MINING_DRAGON_PICKAXE_ORN;
 import static net.runelite.api.AnimationID.MINING_INFERNAL_PICKAXE;
 import static net.runelite.api.AnimationID.MINING_IRON_PICKAXE;
 import static net.runelite.api.AnimationID.MINING_MITHRIL_PICKAXE;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_3A;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_ADAMANT;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_BLACK;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_BRONZE;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_DRAGON;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_DRAGON_ORN;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_INFERNAL;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_IRON;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_MITHRIL;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_RUNE;
-import static net.runelite.api.AnimationID.MINING_MOTHERLODE_STEEL;
 import static net.runelite.api.AnimationID.MINING_RUNE_PICKAXE;
 import static net.runelite.api.AnimationID.MINING_STEEL_PICKAXE;
 import static net.runelite.api.AnimationID.PISCARILIUS_CRANE_REPAIR;
@@ -145,6 +140,8 @@ import net.runelite.api.events.PlayerSpawned;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.Sound;
+import net.runelite.client.game.SoundManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.PvPUtil;
@@ -156,6 +153,8 @@ import net.runelite.client.util.PvPUtil;
 )
 public class IdleNotifierPlugin extends Plugin
 {
+	private static final Logger logger = LoggerFactory.getLogger(IdleNotifierPlugin.class);
+
 	// This must be more than 500 client ticks (10 seconds) before you get AFK kicked
 	private static final int LOGOUT_WARNING_MILLIS = (4 * 60 + 40) * 1000; // 4 minutes and 40 seconds
 	private static final int COMBAT_WARNING_MILLIS = 19 * 60 * 1000; // 19 minutes
@@ -172,6 +171,9 @@ public class IdleNotifierPlugin extends Plugin
 
 	@Inject
 	private Client client;
+
+	@Inject
+	private SoundManager soundManager;
 
 	@Inject
 	private IdleNotifierConfig config;
@@ -282,19 +284,7 @@ public class IdleNotifierPlugin extends Plugin
 			case MINING_3A_PICKAXE:
 			case DENSE_ESSENCE_CHIPPING:
 			case DENSE_ESSENCE_CHISELING:
-				/* Mining(Motherlode) */
-			case MINING_MOTHERLODE_BRONZE:
-			case MINING_MOTHERLODE_IRON:
-			case MINING_MOTHERLODE_STEEL:
-			case MINING_MOTHERLODE_BLACK:
-			case MINING_MOTHERLODE_MITHRIL:
-			case MINING_MOTHERLODE_ADAMANT:
-			case MINING_MOTHERLODE_RUNE:
-			case MINING_MOTHERLODE_DRAGON:
-			case MINING_MOTHERLODE_DRAGON_ORN:
-			case MINING_MOTHERLODE_INFERNAL:
-			case MINING_MOTHERLODE_3A:
-				/* Herblore */
+			/* Herblore */
 			case HERBLORE_PESTLE_AND_MORTAR:
 			case HERBLORE_POTIONMAKING:
 			case HERBLORE_MAKE_TAR:
@@ -509,28 +499,47 @@ public class IdleNotifierPlugin extends Plugin
 		if (config.animationIdle() && checkAnimationIdle(waitDuration, local))
 		{
 			notifier.notify("[" + local.getName() + "] is now idle!");
+			if (config.animationIdleSound())
+			{
+				soundManager.playSound(Sound.IDLE);
+			}
 		}
-
 		if (config.interactionIdle() && checkInteractionIdle(waitDuration, local))
 		{
 			if (lastInteractWasCombat)
 			{
 				notifier.notify("[" + local.getName() + "] is now out of combat!");
+				if (config.outOfCombatSound())
+				{
+					soundManager.playSound(Sound.OUT_OF_COMBAT);
+				}
 			}
 			else
 			{
 				notifier.notify("[" + local.getName() + "] is now idle!");
+				if (config.interactionIdleSound())
+				{
+					soundManager.playSound(Sound.IDLE);
+				}
 			}
 		}
 
 		if (checkLowHitpoints())
 		{
 			notifier.notify("[" + local.getName() + "] has low hitpoints!");
+			if (config.getPlayHealthSound())
+			{
+				soundManager.playSound(Sound.LOW_HEATLH);
+			}
 		}
 
 		if (checkLowPrayer())
 		{
 			notifier.notify("[" + local.getName() + "] has low prayer!");
+			if (config.getPlayPrayerSound())
+			{
+				soundManager.playSound(Sound.LOW_PRAYER);
+			}
 		}
 
 		if (checkLowOxygen())
@@ -541,6 +550,10 @@ public class IdleNotifierPlugin extends Plugin
 		if (checkFullSpecEnergy())
 		{
 			notifier.notify("[" + local.getName() + "] has restored spec energy!");
+			if (config.getSpecSound())
+			{
+				soundManager.playSound(Sound.RESTORED_SPECIAL_ATTACK);
+			}
 		}
 	}
 
@@ -557,8 +570,10 @@ public class IdleNotifierPlugin extends Plugin
 
 		// Check if we have regenerated over the threshold, and that the
 		// regen was small enough.
-		boolean notify = lastSpecEnergy < threshold && currentSpecEnergy >= threshold
-			&& currentSpecEnergy - lastSpecEnergy <= 100;
+		boolean notify = lastSpecEnergy < threshold && currentSpecEnergy >= threshold && currentSpecEnergy - lastSpecEnergy <= 100;
+
+		notify = (notify) || ((config.getOverSpecEnergy()) && (currentSpecEnergy >= threshold) && (currentSpecEnergy != lastSpecEnergy) && (currentSpecEnergy - lastSpecEnergy <= 100));
+
 		lastSpecEnergy = currentSpecEnergy;
 		return notify;
 	}

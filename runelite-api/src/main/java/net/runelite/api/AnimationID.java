@@ -255,4 +255,30 @@ public final class AnimationID
 	public static final int HYDRA_RANGED_4 = 8255;
 	public static final int HYDRA_4_1 = 8257;
 	public static final int HYDRA_4_2 = 8258;
+
+	// INFERNO animations
+	public static final int JAL_NIB = 7574;
+	public static final int JAL_MEJRAH = 7578;
+	public static final int JAL_AK_RANGE_ATTACK = 7581;
+	public static final int JAL_AK_MELEE_ATTACK = 7582;
+	public static final int JAL_AK_MAGIC_ATTACK = 7583;
+	public static final int JAL_IMKOT = 7597;
+	public static final int JAL_XIL_MELEE_ATTACK = 7604;
+	public static final int JAL_XIL_RANGE_ATTACK = 7605;
+	public static final int JAL_ZEK_MAGE_ATTACK = 7610;
+	public static final int JAL_ZEK_MELEE_ATTACK = 7612;
+	public static final int JALTOK_JAD_MELEE_ATTACK = 7590;
+	public static final int JALTOK_JAD_MAGE_ATTACK = 7592;
+	public static final int JALTOK_JAD_RANGE_ATTACK = 7593;
+	public static final int TZKAL_ZUK = 7566;
+	public static final int JAL_MEJJAK = 2858;
+
+	//General Graardor
+	public static final int MINION_AUTO1 = 6154;
+	public static final int MINION_AUTO2 = 6156;
+	public static final int MINION_AUTO3 = 7071;
+	public static final int MINION_AUTO4 = 7073;
+	public static final int GENERAL_AUTO1 = 7018;
+	public static final int GENERAL_AUTO2 = 7020;
+	public static final int GENERAL_AUTO3 = 7021;
 }

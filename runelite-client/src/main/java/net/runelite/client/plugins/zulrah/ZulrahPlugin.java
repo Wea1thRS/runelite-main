@@ -38,6 +38,8 @@ import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.Sound;
+import net.runelite.client.game.SoundManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
@@ -51,6 +53,7 @@ import net.runelite.client.plugins.zulrah.patterns.ZulrahPatternB;
 import net.runelite.client.plugins.zulrah.patterns.ZulrahPatternC;
 import net.runelite.client.plugins.zulrah.patterns.ZulrahPatternD;
 import net.runelite.client.plugins.zulrah.phase.ZulrahPhase;
+import net.runelite.client.plugins.zulrah.phase.ZulrahType;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
@@ -60,7 +63,6 @@ import net.runelite.client.ui.overlay.OverlayManager;
 	type = PluginType.PVM,
 	enabledByDefault = false
 )
-
 @Slf4j
 public class ZulrahPlugin extends Plugin
 {
@@ -74,10 +76,10 @@ public class ZulrahPlugin extends Plugin
 	private ZulrahConfig config;
 
 	@Inject
-	private ZulrahOverlay overlay;
+	private OverlayManager overlayManager;
 
 	@Inject
-	private OverlayManager overlayManager;
+	private SoundManager soundManager;
 
 	@Inject
 	private ZulrahCurrentPhaseOverlay currentPhaseOverlay;
@@ -91,20 +93,19 @@ public class ZulrahPlugin extends Plugin
 	@Inject
 	private ZulrahOverlay zulrahOverlay;
 
-
 	@Provides
 	ZulrahConfig getConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(ZulrahConfig.class);
 	}
 
-	private final ZulrahPattern[] patterns = new ZulrahPattern[]
-		{
-			new ZulrahPatternA(),
-			new ZulrahPatternB(),
-			new ZulrahPatternC(),
-			new ZulrahPatternD()
-		};
+	private static final ZulrahPattern[] patterns = new ZulrahPattern[]
+	{
+		new ZulrahPatternA(),
+		new ZulrahPatternB(),
+		new ZulrahPatternC(),
+		new ZulrahPatternD()
+	};
 
 	private ZulrahInstance instance;
 
@@ -153,6 +154,7 @@ public class ZulrahPlugin extends Plugin
 		}
 
 		ZulrahPhase currentPhase = ZulrahPhase.valueOf(zulrah, instance.getStartLocation());
+
 		if (instance.getPhase() == null)
 		{
 			instance.setPhase(currentPhase);
@@ -164,6 +166,21 @@ public class ZulrahPlugin extends Plugin
 			instance.nextStage();
 
 			log.debug("Zulrah phase has moved from {} -> {}, stage: {}", previousPhase, currentPhase, instance.getStage());
+		}
+
+		ZulrahType type = instance.getPhase().getType();
+
+		if (config.sounds())
+		{
+			if (type == ZulrahType.RANGE)
+			{
+				soundManager.playSound(Sound.PRAY_RANGED);
+			}
+
+			if (type == ZulrahType.MAGIC)
+			{
+				soundManager.playSound(Sound.PRAY_MAGIC);
+			}
 		}
 
 		ZulrahPattern pattern = instance.getPattern();
@@ -199,34 +216,22 @@ public class ZulrahPlugin extends Plugin
 	@Subscribe
 	public void onNpcSpawned(NpcSpawned event)
 	{
-		try
+		NPC npc = event.getNpc();
+		if (npc != null && npc.getName() != null &&
+			npc.getName().toLowerCase().contains("zulrah"))
 		{
-			NPC npc = event.getNpc();
-			if (npc != null && npc.getName().toLowerCase().contains("zulrah"))
-			{
-				zulrah = npc;
-			}
-		}
-		catch (Exception e)
-		{
-
+			zulrah = npc;
 		}
 	}
 
 	@Subscribe
 	public void onNpcDespawned(NpcDespawned event)
 	{
-		try
+		NPC npc = event.getNpc();
+		if (npc != null && npc.getName() != null &&
+			npc.getName().toLowerCase().contains("zulrah"))
 		{
-			NPC npc = event.getNpc();
-			if (npc != null && npc.getName().toLowerCase().contains("zulrah"))
-			{
-				zulrah = null;
-			}
-		}
-		catch (Exception e)
-		{
-
+			zulrah = null;
 		}
 	}
 

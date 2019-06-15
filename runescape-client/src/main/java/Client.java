@@ -994,8 +994,8 @@ public final class Client extends GameShell implements Usernamed {
    @ObfuscatedGetter(
       intValue = 1005832199
    )
-   @Export("__client_ho")
-   static int __client_ho;
+   @Export("cameraFollowHeight")
+   static int cameraFollowHeight;
    @ObfuscatedName("hc")
    @ObfuscatedGetter(
       intValue = -441913785
@@ -1442,7 +1442,7 @@ public final class Client extends GameShell implements Usernamed {
       __client_hi = 0;
       __client_ht = 0;
       oculusOrbState = 0;
-      __client_ho = 50;
+      cameraFollowHeight = 50;
       __client_hc = 0;
       __client_hk = 0;
       __client_if = 0;
@@ -4281,7 +4281,7 @@ public final class Client extends GameShell implements Usernamed {
                      }
                   }
 
-                  if(FriendSystem.method1868() && KeyHandler.KeyHandler_pressedKeys[82] && KeyHandler.KeyHandler_pressedKeys[81] && mouseWheelRotation != 0) {
+                  if(FriendSystem.jmodCheck() && KeyHandler.KeyHandler_pressedKeys[82] && KeyHandler.KeyHandler_pressedKeys[81] && mouseWheelRotation != 0) {
                      var3 = Canvas.localPlayer.plane - mouseWheelRotation;
                      if(var3 < 0) {
                         var3 = 0;
@@ -4694,11 +4694,11 @@ public final class Client extends GameShell implements Usernamed {
       Rasterizer2D.Rasterizer2D_resetClip();
       if(showMouseCross) {
          if(mouseCrossColor == 1) {
-            KeyHandler.crossSprites[mouseCrossState / 100].__a_505(mouseCrossX - 8, mouseCrossY - 8);
+            KeyHandler.crossSprites[mouseCrossState / 100].drawAt2(mouseCrossX - 8, mouseCrossY - 8);
          }
 
          if(mouseCrossColor == 2) {
-            KeyHandler.crossSprites[mouseCrossState / 100 + 4].__a_505(mouseCrossX - 8, mouseCrossY - 8);
+            KeyHandler.crossSprites[mouseCrossState / 100 + 4].drawAt2(mouseCrossX - 8, mouseCrossY - 8);
          }
       }
 
@@ -4762,9 +4762,9 @@ public final class Client extends GameShell implements Usernamed {
       if(gameDrawingMode == 3) {
          for(var1 = 0; var1 < rootWidgetCount; ++var1) {
             if(__client_oq[var1]) {
-               Rasterizer2D.Rasterizer2D_moreAlpha(rootWidgetXs[var1], rootWidgetYs[var1], rootWidgetWidths[var1], rootWidgetHeights[var1], 0xff00ff, 128);
+               Rasterizer2D.Rasterizer2D_fillRectangleAlpha(rootWidgetXs[var1], rootWidgetYs[var1], rootWidgetWidths[var1], rootWidgetHeights[var1], 0xff00ff, 128);
             } else if(__client_ot[var1]) {
-               Rasterizer2D.Rasterizer2D_moreAlpha(rootWidgetXs[var1], rootWidgetYs[var1], rootWidgetWidths[var1], rootWidgetHeights[var1], 0xff0000, 128);
+               Rasterizer2D.Rasterizer2D_fillRectangleAlpha(rootWidgetXs[var1], rootWidgetYs[var1], rootWidgetWidths[var1], rootWidgetHeights[var1], 0xff0000, 128);
             }
          }
       }

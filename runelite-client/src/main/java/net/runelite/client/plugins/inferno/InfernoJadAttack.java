@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2018, https://runelitepl.us
+ * Copyright (c) 2017, Devin French <https://github.com/devinfrench>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *	list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ *	this list of conditions and the following disclaimer in the documentation
+ *	and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -22,18 +22,32 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.vorkath;
+package net.runelite.client.plugins.inferno;
 
-import lombok.Getter;
-import net.runelite.api.NPC;
+import net.runelite.api.AnimationID;
+import net.runelite.api.Prayer;
 
-class ZombifiedSpawn
-{
-	@Getter
-	private NPC npc;
-
-	ZombifiedSpawn(NPC npc)
+public enum InfernoJadAttack
 	{
-		this.npc = npc;
+		MAGIC(AnimationID.JALTOK_JAD_MAGE_ATTACK, Prayer.PROTECT_FROM_MAGIC),
+		RANGE(AnimationID.JALTOK_JAD_RANGE_ATTACK, Prayer.PROTECT_FROM_MISSILES);
+
+	private final int animation;
+	private final Prayer prayer;
+
+	InfernoJadAttack(int animation, Prayer prayer)
+		{
+			this.animation = animation;
+			this.prayer = prayer;
+		}
+
+	public int getAnimation()
+		{
+			return animation;
+		}
+
+	public Prayer getPrayer()
+		{
+			return prayer;
+		}
 	}
-}

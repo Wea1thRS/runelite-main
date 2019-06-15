@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2018, Infinitay <https://github.com/Infinitay>
- * Copyright (c) 2018, Shaun Dreclin <https://github.com/ShaunDreclin>
+ * Copyright (c) 2018, Jordan Atwood <jordan.atwood423@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,54 +22,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package net.runelite.client.plugins.inferno;
 
-package net.runelite.client.plugins.rememberclan;
+import lombok.AllArgsConstructor;
 
-import com.google.inject.Provides;
-import javax.inject.Inject;
-import net.runelite.api.Client;
-import net.runelite.api.VarClientStr;
-import net.runelite.api.events.GameTick;
-import net.runelite.client.chat.ChatMessageManager;
-import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.PluginType;
-
-@PluginDescriptor(
-	name = "Remember Clan",
-	description = "Remember a specific clan!",
-	type = PluginType.UTILITY,
-	enabledByDefault = false
-)
-
-public class RememberClanPlugin extends Plugin
+@AllArgsConstructor
+enum InfernoWaveMonster
 {
+	
+	JAL_NIB("Jal-Nib", 32),
+	JAL_MEJRAH("Jal-MejRah", 85),
+	JAL_AK("Jal-Ak", 165),
+	JAL_IMKOT("Jal-ImKot", 240),
+	JAL_XIL("Jal-XIL", 370),
+	JAL_ZEK("Jal-Zek", 490),
+	JALTOK_JAD("JalTok-Jad", 900),
+	TZKAL_ZUK("TzKal-Zuk", 1400);
 
-	@Inject
-	private Client client;
+	private final String name;
+	private final int level;
 
-	@Inject
-	private RememberClanConfig config;
-
-	@Inject
-	private ChatMessageManager chatMessageManager;
-
-	private boolean loggingIn;
-
-	@Provides
-	RememberClanConfig provideConfig(ConfigManager configManager)
+	@Override
+	public String toString()
 	{
-		return configManager.getConfig(RememberClanConfig.class);
+		return String.format("%s - Level %s", name, level);
 	}
-
-	@Subscribe
-	public void onGameTick(GameTick event)
-	{
-		client.setVar(VarClientStr.RECENT_CLAN_CHAT, config.clanname());
-
-	}
-
-
 }

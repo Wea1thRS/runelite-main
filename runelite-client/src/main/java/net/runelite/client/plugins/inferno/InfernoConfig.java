@@ -52,4 +52,15 @@ public interface InfernoConfig extends Config
 	{
 		return false;
 	}
+	
+	@ConfigItem(
+		position = 2,
+		keyName = "Wave Display",
+		name = "Wave display",
+		description = "Shows monsters that will spawn on the selected wave(s)."
+	)
+	default InfernoWaveDisplayMode waveDisplay()
+	{
+		return InfernoWaveDisplayMode.BOTH;
+	}
 }
