@@ -384,7 +384,7 @@ public class LootTrackerPlugin extends Plugin
 	{
 		clientToolbar.removeNavigation(navButton);
 		lootTrackerClient = null;
-		lootRecords = new ArrayList<LootRecord>();
+		lootRecords = new ArrayList<>();
 	}
 
 	@Subscribe
@@ -396,6 +396,7 @@ public class LootTrackerPlugin extends Plugin
 		final int combat = npc.getCombatLevel();
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		handleDrops(entries, name);
+		writer.addLootTrackerRecordToDB(name, entries);
 		String localUsername = client.getLocalPlayer().getName();
 		SwingUtilities.invokeLater(() -> panel.add(name, localUsername, combat, entries));
 		LootRecord lootRecord = new LootRecord( name, localUsername, LootRecordType.NPC,
@@ -404,11 +405,6 @@ public class LootTrackerPlugin extends Plugin
 		if (lootTrackerClient != null && config.saveLoot())
 		{
 			lootTrackerClient.submit(lootRecord);
-
-			if (config.saveLocalLoot())
-			{
-				writer.addLootTrackerRecordToDB(name, entries);
-			}
 		}
 		if (config.localPersistence())
 		{
