@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, ganom <https://github.com/Ganom>
+ * Copyright (c) 2019, TheStonedTurtle <https://github.com/TheStonedTurtle>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,6 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -21,26 +22,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.coxhelper;
+package net.runelite.client.plugins.performancestats;
 
-import java.awt.Font;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import net.runelite.client.config.Config;
+import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
 
-@Getter
-@AllArgsConstructor
-public enum FontStyle
+@ConfigGroup("performancestats")
+public interface PerformanceStatsConfig extends Config
 {
-	BOLD("Bold", Font.BOLD),
-	ITALIC("Italic", Font.ITALIC),
-	PLAIN("Plain", Font.PLAIN);
-
-	private String name;
-	private int font;
-
-	@Override
-	public String toString()
+	@ConfigItem(
+		position = 0,
+		keyName = "submitTimeout",
+		name = "Submit Timeout (seconds)",
+		description = "Submits after this many seconds of inactivity"
+	)
+	default int submitTimeout()
 	{
-		return getName();
+		return 30;
 	}
 }

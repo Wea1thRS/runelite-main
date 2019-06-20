@@ -86,4 +86,3 @@ public interface ChatLogConfig extends Config
 		return false;
 	}
 }
-

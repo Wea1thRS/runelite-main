@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Kamiel
+ * Copyright (c) 2019, gazivodag <https://github.com/gazivodag>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,54 +21,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.raids.solver;
 
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+package net.runelite.client.plugins.blackjack;
 
-public class Layout
+import net.runelite.client.config.Config;
+import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
+
+@ConfigGroup("blackjack")
+public interface BlackjackConfig extends Config
 {
-	@Getter
-	private final List<Room> rooms = new ArrayList<>();
-
-	@Getter
-	@Setter
-	private String test;
-
-	public void add(Room room)
+	@ConfigItem(
+			keyName = "pickpocketOnAggro",
+			name = "Pickpocket when aggro\'d",
+			description = "Switches to \"Pickpocket\" when bandit is aggro\'d. Saves food at the cost of slight xp/h."
+	)
+	default boolean pickpocketOnAggro()
 	{
-		rooms.add(room);
-	}
-
-	public Room getRoomAt(int position)
-	{
-		for (Room room : rooms)
-		{
-			if (room.getPosition() == position)
-			{
-				return room;
-			}
-		}
-
-		return null;
-	}
-
-	public String toCode()
-	{
-		StringBuilder builder = new StringBuilder();
-
-		for (Room room : rooms)
-		{
-			builder.append(room.getSymbol());
-		}
-
-		return builder.toString();
-	}
-
-	public String toCodeString()
-	{
-		return toCode().replaceAll("#", "").replaceAll("¤", "");
+		return false;
 	}
 }
