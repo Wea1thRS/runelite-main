@@ -349,13 +349,14 @@ public class LootTrackerPlugin extends Plugin
 						log.debug("Loaded {} remote data entries", lootRecords.size());
 					}
 
-					if (config.localPersistence() )
+					if (config.localPersistence())
 					{
 						try
 						{
 							lootRecords.addAll(RuneLiteAPI.GSON.fromJson(new FileReader(LOOT_RECORDS_FILE),
 								new TypeToken<ArrayList<LootRecord>>()
-								{ }.getType()));
+								{
+								}.getType()));
 						}
 						catch (IOException | NullPointerException e)
 						{
@@ -398,8 +399,28 @@ public class LootTrackerPlugin extends Plugin
 		handleDrops(entries, name);
 		writer.addLootTrackerRecordToDB(name, entries);
 		String localUsername = client.getLocalPlayer().getName();
+
+		if (config.whitelistEnabled())
+		{
+			final String configNpcs = config.getWhitelist().toLowerCase();
+			List<String> whitelist = Text.fromCSV(configNpcs);
+			if (!whitelist.contains(name.toLowerCase()))
+			{
+				return;
+			}
+		}
+		else if (config.blacklistEnabled())
+		{
+			final String configNpcs = config.getBlacklist().toLowerCase();
+			List<String> blacklist = Text.fromCSV(configNpcs);
+			if (blacklist.contains(name.toLowerCase()))
+			{
+				return;
+			}
+		}
+
 		SwingUtilities.invokeLater(() -> panel.add(name, localUsername, combat, entries));
-		LootRecord lootRecord = new LootRecord( name, localUsername, LootRecordType.NPC,
+		LootRecord lootRecord = new LootRecord(name, localUsername, LootRecordType.NPC,
 			toGameItems(items), Instant.now());
 
 		if (lootTrackerClient != null && config.saveLoot())
@@ -432,7 +453,7 @@ public class LootTrackerPlugin extends Plugin
 		final LootTrackerItem[] entries = buildEntries(stack(items));
 		String localUsername = client.getLocalPlayer().getName();
 		SwingUtilities.invokeLater(() -> panel.add(name, localUsername, combat, entries));
-		LootRecord lootRecord = new LootRecord( name, localUsername, LootRecordType.PLAYER,
+		LootRecord lootRecord = new LootRecord(name, localUsername, LootRecordType.PLAYER,
 			toGameItems(items), Instant.now());
 		if (lootTrackerClient != null && config.saveLoot())
 		{
@@ -638,7 +659,7 @@ public class LootTrackerPlugin extends Plugin
 					SwingUtilities.invokeLater(() -> panel.add(name, client.getLocalPlayer().getName(),
 						client.getLocalPlayer().getCombatLevel(), entries));
 					LootRecord lootRecord = new LootRecord(name, client.getLocalPlayer().getName(), LootRecordType.DEATH,
-						toGameItems(itemsLost),	Instant.now());
+						toGameItems(itemsLost), Instant.now());
 					if (lootTrackerClient != null && config.saveLoot())
 					{
 						lootTrackerClient.submit(lootRecord);
@@ -711,10 +732,10 @@ public class LootTrackerPlugin extends Plugin
 				.forEach(item -> inventorySnapshot.add(item.getId(), item.getQuantity()));
 		}
 
-			if (equipment != null)
-			{
-				Arrays.stream(equipment.getItems())
-					.forEach(item -> inventorySnapshot.add(item.getId(), item.getQuantity()));
+		if (equipment != null)
+		{
+			Arrays.stream(equipment.getItems())
+				.forEach(item -> inventorySnapshot.add(item.getId(), item.getQuantity()));
 		}
 	}
 
