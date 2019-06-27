@@ -200,6 +200,16 @@ public abstract class RSClientMixin implements RSClient
 	}
 
 	@Inject
+	private static boolean hideFriendAttackOptions;
+
+	@Inject
+	@Override
+	public void setHideFriendAttackOptions(boolean yes)
+	{
+		hideFriendAttackOptions = yes;
+	}
+
+	@Inject
 	public RSClientMixin()
 	{
 	}
@@ -298,14 +308,6 @@ public abstract class RSClientMixin implements RSClient
 		}
 
 		return AccountType.NORMAL;
-	}
-
-	@Inject
-	@Override
-	public void setMouseCanvasHoverPosition(final Point position)
-	{
-		setMouseCanvasHoverPositionX(position.getX());
-		setMouseCanvasHoverPositionY(position.getY());
 	}
 
 	@Inject
@@ -1569,5 +1571,11 @@ public abstract class RSClientMixin implements RSClient
 	{
 		getHealthBarCache().reset();
 		getHealthBarSpriteCache().reset();
+	}
+
+	@Inject
+	static boolean shouldHideAttackOptionFor(RSPlayer p)
+	{
+		return hideFriendAttackOptions && p.isFriended() || p.isClanMember();
 	}
 }

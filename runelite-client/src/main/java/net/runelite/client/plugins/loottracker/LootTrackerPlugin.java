@@ -154,10 +154,6 @@ public class LootTrackerPlugin extends Plugin
 		5179, "Brimstone Chest",
 		11573, "Crystal Chest"
 	);
-
-	// Player deaths
-	public static HashSet<String> usernameSet = new HashSet<String>(Arrays.stream(new String[]{"All Records"}).collect(Collectors.toList()));
-
 	private static final File LOOT_RECORDS_FILE = new File(RuneLite.RUNELITE_DIR, "lootRecords.json");
 	private static final Set<Integer> RESPAWN_REGIONS = ImmutableSet.of(
 		12850, // Lumbridge
@@ -165,23 +161,24 @@ public class LootTrackerPlugin extends Plugin
 		12342, // Edgeville
 		11062 // Camelot
 	);
+	// Player deaths
+	public static HashSet<String> usernameSet = new HashSet<String>(Arrays.stream(new String[]{"All Records"}).collect(Collectors.toList()));
+	@Inject
+	public Client client;
+	@VisibleForTesting
+	public Collection<LootRecord> lootRecords = new ArrayList<>();
 	private boolean pvpDeath = false;
-
 	@Inject
 	private ClientToolbar clientToolbar;
-
 	@Inject
 	private LootRecordWriter writer;
 
 	@Inject
 	private ItemManager itemManager;
-
 	@Inject
 	private ChatMessageManager chatMessageManager;
-
 	@Inject
 	private SpriteManager spriteManager;
-
 	@Inject
 	private LootTrackerConfig config;
 
@@ -196,13 +193,10 @@ public class LootTrackerPlugin extends Plugin
 
 	@Inject
 	private ClientThread clientThread;
-
 	@Inject
 	private SessionManager sessionManager;
-
 	@Inject
 	private ScheduledExecutorService executor;
-
 	private LootTrackerPanel panel;
 	private NavigationButton navButton;
 	private String eventType;
@@ -210,15 +204,11 @@ public class LootTrackerPlugin extends Plugin
 	TemmieWebhook temmie = new TemmieWebhook("https://discordapp.com/api/webhooks/478488367093514280/CmaXv7dof2psRgV07lGPkYw9cYzwO2wVAM8s1easN9afwotbuA0cKLsAlDd3BBpQCREJ");
 
 	private List<String> ignoredItems = new ArrayList<>();
-
 	private Multiset<Integer> inventorySnapshot;
-
 	@Getter(AccessLevel.PACKAGE)
 	private LootTrackerClient lootTrackerClient;
 	private BufferedReader bufferedReader;
 	private JsonStreamParser jsonStreamParser;
-	@VisibleForTesting
-	public Collection<LootRecord> lootRecords = new ArrayList<>();
 
 	private static Collection<ItemStack> stack(Collection<ItemStack> items)
 	{
@@ -247,6 +237,13 @@ public class LootTrackerPlugin extends Plugin
 		}
 
 		return list;
+	}
+
+	private static Collection<GameItem> toGameItems(Collection<ItemStack> items)
+	{
+		return items.stream()
+			.map(item -> new GameItem(item.getId(), item.getQuantity()))
+			.collect(Collectors.toList());
 	}
 
 	@Subscribe
@@ -433,7 +430,6 @@ public class LootTrackerPlugin extends Plugin
 		}
 	}
 
-
 	@Subscribe
 	public void onPlayerSpawned(PlayerSpawned event)
 	{
@@ -446,6 +442,18 @@ public class LootTrackerPlugin extends Plugin
 	@Subscribe
 	public void onPlayerLootReceived(final PlayerLootReceived playerLootReceived) throws SQLException
 	{
+		if (config.sendLootValueMessages())
+		{
+			if (WorldType.isDeadmanWorld(client.getWorldType()) || WorldType.isHighRiskWorld(client.getWorldType()) || WorldType.isPvpWorld(client.getWorldType()) || client.getVar(Varbits.IN_WILDERNESS) == 1)
+			{
+				final String totalValue = StackFormatter.quantityToRSStackSize(playerLootReceived.getItems().stream()
+					.mapToInt(itemStack -> itemManager.getItemPrice(itemStack.getId()) * itemStack.getQuantity()).sum());
+
+				chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.CONSOLE).runeLiteFormattedMessage(
+					new ChatMessageBuilder().append("The total value of your loot is " + totalValue + " GP.")
+						.build()).build());
+			}
+		}
 		final Player player = playerLootReceived.getPlayer();
 		final Collection<ItemStack> items = playerLootReceived.getItems();
 		final String name = player.getName();
@@ -855,13 +863,6 @@ public class LootTrackerPlugin extends Plugin
 		DiscordMessage dm = new DiscordMessage("OSRS", "", "https://img04.deviantart.net/360e/i/2015/300/9/d/temmie_by_ilovegir64-d9elpal.png");
 		dm.getEmbeds().add(de);
 		temmie.sendMessage(dm);
-	}
-
-	private static Collection<GameItem> toGameItems(Collection<ItemStack> items)
-	{
-		return items.stream()
-			.map(item -> new GameItem(item.getId(), item.getQuantity()))
-			.collect(Collectors.toList());
 	}
 
 	public Collection<LootTrackerRecord> convertToLootTrackerRecord(final Collection<LootRecord> records)
