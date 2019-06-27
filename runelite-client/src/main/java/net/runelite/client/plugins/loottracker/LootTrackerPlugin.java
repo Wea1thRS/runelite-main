@@ -163,8 +163,7 @@ public class LootTrackerPlugin extends Plugin
 	);
 	// Player deaths
 	public static HashSet<String> usernameSet = new HashSet<String>(Arrays.stream(new String[]{"All Records"}).collect(Collectors.toList()));
-	@Inject
-	public Client client;
+
 	@VisibleForTesting
 	public Collection<LootRecord> lootRecords = new ArrayList<>();
 	private boolean pvpDeath = false;
