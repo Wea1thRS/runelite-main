@@ -24,7 +24,9 @@
  */
 package net.runelite.api.events;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 
@@ -40,12 +42,24 @@ import net.runelite.api.MenuEntry;
  * it seems that this event still triggers with the "Cancel" action.
  */
 @Data
-public class MenuOptionClicked
+public class MenuOptionClicked implements Event
 {
+	public MenuOptionClicked(MenuEntry entry)
+	{
+		menuEntry = entry;
+		authentic = true;
+	}
+
+	public MenuOptionClicked(MenuEntry entry, boolean authentic)
+	{
+		menuEntry = entry;
+		this.authentic = authentic;
+	}
+
 	/**
 	 * The actual MenuEntry object representing what was clicked
 	 */
-	private final MenuEntry menuEntry;
+	private MenuEntry menuEntry;
 
 	/**
 	 * The option text added to the menu.
@@ -124,4 +138,10 @@ public class MenuOptionClicked
 	{
 		this.consumed = true;
 	}
+
+	/**
+	 * Whether or not the event is authentic.
+	 */
+	@Setter(AccessLevel.PRIVATE)
+	private boolean authentic;
 }

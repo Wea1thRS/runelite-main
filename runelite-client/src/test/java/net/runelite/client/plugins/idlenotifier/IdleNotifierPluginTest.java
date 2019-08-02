@@ -48,15 +48,15 @@ import net.runelite.client.game.SoundManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IdleNotifierPluginTest
@@ -114,12 +114,12 @@ public class IdleNotifierPluginTest
 		when(client.getLocalPlayer()).thenReturn(player);
 
 		// Mock config
-		when(config.logoutIdle()).thenReturn(true);
-		when(config.animationIdle()).thenReturn(true);
-		when(config.interactionIdle()).thenReturn(true);
-		when(config.getIdleNotificationDelay()).thenReturn(0);
-		when(config.getHitpointsThreshold()).thenReturn(42);
-		when(config.getPrayerThreshold()).thenReturn(42);
+		plugin.setLogoutIdle(true);
+		plugin.setAnimationIdle(true);
+		plugin.setInteractionIdle(true);
+		plugin.setGetIdleNotificationDelay(0);
+		plugin.setGetHitpointsThreshold(42);
+		plugin.setGetPrayerThreshold(42);
 
 		// Mock client
 		when(client.getGameState()).thenReturn(GameState.LOGGED_IN);
@@ -135,10 +135,10 @@ public class IdleNotifierPluginTest
 		AnimationChanged animationChanged = new AnimationChanged();
 		animationChanged.setActor(player);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		when(player.getAnimation()).thenReturn(AnimationID.IDLE);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier).notify("[" + PLAYER_NAME + "] is now idle!");
 	}
 
@@ -149,13 +149,13 @@ public class IdleNotifierPluginTest
 		AnimationChanged animationChanged = new AnimationChanged();
 		animationChanged.setActor(player);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		when(player.getAnimation()).thenReturn(AnimationID.LOOKING_INTO);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		when(player.getAnimation()).thenReturn(AnimationID.IDLE);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier, times(0)).notify(any());
 	}
 
@@ -166,7 +166,7 @@ public class IdleNotifierPluginTest
 		AnimationChanged animationChanged = new AnimationChanged();
 		animationChanged.setActor(player);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 
 		// Logout
 		when(client.getGameState()).thenReturn(GameState.LOGIN_SCREEN);
@@ -182,7 +182,7 @@ public class IdleNotifierPluginTest
 		// Tick
 		when(player.getAnimation()).thenReturn(AnimationID.IDLE);
 		plugin.onAnimationChanged(animationChanged);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier, times(0)).notify(any());
 	}
 
@@ -191,10 +191,10 @@ public class IdleNotifierPluginTest
 	{
 		when(player.getInteracting()).thenReturn(monster);
 		plugin.onInteractingChanged(new InteractingChanged(player, monster));
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		when(player.getInteracting()).thenReturn(null);
 		plugin.onInteractingChanged(new InteractingChanged(player, null));
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier).notify("[" + PLAYER_NAME + "] is now out of combat!");
 	}
 
@@ -203,13 +203,11 @@ public class IdleNotifierPluginTest
 	{
 		when(player.getInteracting()).thenReturn(monster);
 		plugin.onInteractingChanged(new InteractingChanged(player, monster));
-		plugin.onGameTick(new GameTick());
-		when(player.getInteracting()).thenReturn(randomEvent);
+		plugin.onGameTick(GameTick.INSTANCE);
 		plugin.onInteractingChanged(new InteractingChanged(player, randomEvent));
-		plugin.onGameTick(new GameTick());
-		when(player.getInteracting()).thenReturn(null);
+		plugin.onGameTick(GameTick.INSTANCE);
 		plugin.onInteractingChanged(new InteractingChanged(player, null));
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier, times(0)).notify(any());
 	}
 
@@ -218,7 +216,7 @@ public class IdleNotifierPluginTest
 	{
 		plugin.onInteractingChanged(new InteractingChanged(player, monster));
 		when(player.getInteracting()).thenReturn(monster);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 
 		// Logout
 		when(client.getGameState()).thenReturn(GameState.LOGIN_SCREEN);
@@ -232,9 +230,8 @@ public class IdleNotifierPluginTest
 		plugin.onGameStateChanged(gameStateChanged);
 
 		// Tick
-		when(player.getInteracting()).thenReturn(null);
 		plugin.onInteractingChanged(new InteractingChanged(player, null));
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier, times(0)).notify(any());
 	}
 
@@ -249,7 +246,7 @@ public class IdleNotifierPluginTest
 		hitsplatApplied.setActor(player);
 		hitsplatApplied.setHitsplat(new Hitsplat(Hitsplat.HitsplatType.DAMAGE, 0, 0));
 		plugin.onHitsplatApplied(hitsplatApplied);
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier, times(0)).notify(any());
 	}
 
@@ -262,22 +259,22 @@ public class IdleNotifierPluginTest
 		when(client.getKeyboardIdleTicks()).thenReturn(80_000);
 		when(client.getMouseIdleTicks()).thenReturn(14_500);
 
-		plugin.onGameTick(new GameTick());
-		plugin.onGameTick(new GameTick());
+		plugin.onGameTick(GameTick.INSTANCE);
+		plugin.onGameTick(GameTick.INSTANCE);
 		verify(notifier, times(1)).notify(any());
 	}
 
 	@Test
 	public void testSpecRegen()
 	{
-		when(config.getSpecEnergyThreshold()).thenReturn(50);
+		plugin.setGetSpecEnergyThreshold(50);
 
-		when(client.getVar(Matchers.eq(VarPlayer.SPECIAL_ATTACK_PERCENT))).thenReturn(400); // 40%
-		plugin.onGameTick(new GameTick()); // once to set lastSpecEnergy to 400
+		when(client.getVar(eq(VarPlayer.SPECIAL_ATTACK_PERCENT))).thenReturn(400); // 40%
+		plugin.onGameTick(GameTick.INSTANCE); // once to set lastSpecEnergy to 400
 		verify(notifier, never()).notify(any());
 
-		when(client.getVar(Matchers.eq(VarPlayer.SPECIAL_ATTACK_PERCENT))).thenReturn(500); // 50%
-		plugin.onGameTick(new GameTick());
-		verify(notifier).notify(Matchers.eq("[" + PLAYER_NAME + "] has restored spec energy!"));
+		when(client.getVar(eq(VarPlayer.SPECIAL_ATTACK_PERCENT))).thenReturn(500); // 50%
+		plugin.onGameTick(GameTick.INSTANCE);
+		verify(notifier).notify(eq("[" + PLAYER_NAME + "] has restored spec energy!"));
 	}
 }

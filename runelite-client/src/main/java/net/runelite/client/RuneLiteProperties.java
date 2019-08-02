@@ -27,21 +27,21 @@ package net.runelite.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.plugins.runeliteplus.RuneLitePlusPlugin;
+import net.runelite.client.config.RuneLitePlusConfig;
 
 @Singleton
 @Slf4j
 public class RuneLiteProperties
 {
-	public static String discordAppID = "409416265891971072";
-	private static final String RUNELITE_TITLE = "runelite.title";
+	private static final String RUNELITE_TITLE = "runelite.plus.title";
 	private static final String RUNELITE_VERSION = "runelite.version";
+	private static final String RUNELITE_PLUS_VERSION = "runelite.plus.version";
+	private static final String RUNELITE_PLUS_DATE = "runelite.plus.builddate";
 	private static final String RUNESCAPE_VERSION = "runescape.version";
-	private static final String DISCORD_APP_ID = "runelite.discord.appid";
+	private static final String DISCORD_APP_ID = "runelite.plus.discord.appid";
 	private static final String DISCORD_INVITE = "runelite.discord.invite";
 	private static final String GITHUB_LINK = "runelite.github.link";
 	private static final String WIKI_LINK = "runelite.wiki.link";
@@ -50,10 +50,14 @@ public class RuneLiteProperties
 
 	private final Properties properties = new Properties();
 
+	private final RuneLitePlusConfig runeLitePlusConfig;
+
 	@Inject
-	public RuneLiteProperties()
+	public RuneLiteProperties(final RuneLitePlusConfig runeLiteConfig)
 	{
-		try (InputStream in = getClass().getResourceAsStream("runelite.properties"))
+		this.runeLitePlusConfig = runeLiteConfig;
+
+		try (InputStream in = getClass().getResourceAsStream("/runelite.plus.properties"))
 		{
 			properties.load(in);
 		}
@@ -61,6 +65,11 @@ public class RuneLiteProperties
 		{
 			log.warn("unable to load propertries", ex);
 		}
+	}
+
+	public RuneLiteProperties()
+	{
+		runeLitePlusConfig = null;
 	}
 
 	public String getTitle()
@@ -79,6 +88,16 @@ public class RuneLiteProperties
 		return properties.getProperty(RUNELITE_VERSION);
 	}
 
+	public String getPlusVersion()
+	{
+		return properties.getProperty(RUNELITE_PLUS_VERSION);
+	}
+
+	public String getPlusDate()
+	{
+		return properties.getProperty(RUNELITE_PLUS_DATE);
+	}
+
 	public String getRunescapeVersion()
 	{
 		return properties.getProperty(RUNESCAPE_VERSION);
@@ -86,14 +105,7 @@ public class RuneLiteProperties
 
 	public String getDiscordAppId()
 	{
-		if (RuneLitePlusPlugin.customPresenceEnabled)
-		{
-			return properties.getProperty(RuneLitePlusPlugin.rlPlusDiscordApp);
-		}
-		else
-		{
-			return properties.getProperty(DISCORD_APP_ID);
-		}
+		return properties.getProperty(DISCORD_APP_ID);
 	}
 
 	public String getDiscordInvite()
@@ -114,11 +126,5 @@ public class RuneLiteProperties
 	public String getPatreonLink()
 	{
 		return properties.getProperty(PATREON_LINK);
-	}
-
-	@Nullable
-	public static String getLauncherVersion()
-	{
-		return System.getProperty(LAUNCHER_VERSION_PROPERTY);
 	}
 }

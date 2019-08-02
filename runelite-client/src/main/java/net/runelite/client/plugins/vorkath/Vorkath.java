@@ -38,22 +38,11 @@ public class Vorkath
 	static final int FIRE_BALL_ATTACKS = 25;
 
 	private NPC vorkath;
-
 	private VorkathAttack lastAttack;
-
 	private Phase currentPhase;
 	private Phase nextPhase;
 	private Phase lastPhase;
-
 	private int attacksLeft;
-
-	enum Phase
-	{
-		UNKNOWN,
-		ACID,
-		FIRE_BALL,
-		SPAWN
-	}
 
 	public Vorkath(NPC vorkath)
 	{
@@ -70,7 +59,7 @@ public class Vorkath
 	 *
 	 * @param newPhase the new phase Vorkath is current on
 	 */
-	public void updatePhase(Phase newPhase)
+	void updatePhase(Phase newPhase)
 	{
 		Phase oldLastPhase = this.lastPhase;
 		Phase oldCurrentPhase = this.currentPhase;
@@ -106,5 +95,13 @@ public class Vorkath
 
 		log.debug("[Vorkath] Update! Last Phase: {}->{}, Current Phase: {}->{}, Next Phase: {}->{}, Attacks: {}->{}",
 			oldLastPhase, this.lastPhase, oldCurrentPhase, this.currentPhase, oldNextPhase, this.nextPhase, oldAttacksLeft, this.attacksLeft);
+	}
+
+	enum Phase
+	{
+		UNKNOWN,
+		ACID,
+		FIRE_BALL,
+		SPAWN
 	}
 }

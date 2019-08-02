@@ -28,15 +28,20 @@ package net.runelite.client.plugins.inventorysetups;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -49,7 +54,7 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.Plugin;
@@ -70,6 +75,7 @@ import net.runelite.client.util.ImageUtil;
 )
 
 @Slf4j
+@Singleton
 public class InventorySetupPlugin extends Plugin
 {
 	private static final String CONFIG_GROUP = "inventorysetups";
@@ -99,19 +105,37 @@ public class InventorySetupPlugin extends Plugin
 	private ClientThread clientThread;
 
 	@Inject
+	private EventBus eventBus;
+
+	@Inject
 	private ConfigManager configManager;
 
 	private InventorySetupPluginPanel panel;
 
-	private Map<String, InventorySetup> inventorySetups = new HashMap<>();
+	private final Map<String, InventorySetup> inventorySetups = new HashMap<>();
 
 	private NavigationButton navButton;
 
 	private boolean highlightDifference;
 
+	private boolean getHighlightDifferences;
+	@Getter(AccessLevel.PUBLIC)
+	private Color getHighlightColor;
+	@Getter(AccessLevel.PUBLIC)
+	private boolean getStackDifference;
+	@Getter(AccessLevel.PUBLIC)
+	private boolean getVariationDifference;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean getBankHighlight;
+	@Getter(AccessLevel.PACKAGE)
+	private Color getBankHighlightColor;
+
 	@Override
 	public void startUp()
 	{
+		updateConfigOptions();
+		addSubscriptions();
+
 		overlayManager.add(overlay);
 
 		panel = new InventorySetupPluginPanel(this, itemManager);
@@ -186,8 +210,8 @@ public class InventorySetupPlugin extends Plugin
 
 		clientThread.invoke(() ->
 		{
-			ArrayList<InventorySetupItem> inv = getNormalizedContainer(InventoryID.INVENTORY);
-			ArrayList<InventorySetupItem> eqp = getNormalizedContainer(InventoryID.EQUIPMENT);
+			List<InventorySetupItem> inv = getNormalizedContainer(InventoryID.INVENTORY);
+			List<InventorySetupItem> eqp = getNormalizedContainer(InventoryID.EQUIPMENT);
 
 			final InventorySetup invSetup = new InventorySetup(inv, eqp);
 			SwingUtilities.invokeLater(() ->
@@ -237,13 +261,13 @@ public class InventorySetupPlugin extends Plugin
 		return configManager.getConfig(InventorySetupConfig.class);
 	}
 
-	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
+	private void onConfigChanged(ConfigChanged event)
 	{
 		if (event.getGroup().equals(CONFIG_GROUP))
 		{
+			updateConfigOptions();
 			// only allow highlighting if the config is enabled and the player is logged in
-			highlightDifference = config.getHighlightDifferences() && client.getGameState() == GameState.LOGGED_IN;
+			highlightDifference = this.getHighlightDifferences && client.getGameState() == GameState.LOGGED_IN;
 			final String setupName = panel.getSelectedInventorySetup();
 			if (highlightDifference && !setupName.isEmpty())
 			{
@@ -292,8 +316,7 @@ public class InventorySetupPlugin extends Plugin
 
 	}
 
-	@Subscribe
-	public void onItemContainerChanged(ItemContainerChanged event)
+	private void onItemContainerChanged(ItemContainerChanged event)
 	{
 
 		if (!highlightDifference || client.getGameState() != GameState.LOGGED_IN)
@@ -313,21 +336,20 @@ public class InventorySetupPlugin extends Plugin
 
 		if (container == client.getItemContainer(InventoryID.INVENTORY))
 		{
-			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.INVENTORY);
+			List<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.INVENTORY);
 			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
 			panel.highlightDifferences(normContainer, setup, InventoryID.INVENTORY);
 		}
 		else if (container == client.getItemContainer(InventoryID.EQUIPMENT))
 		{
-			ArrayList<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.EQUIPMENT);
+			List<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.EQUIPMENT);
 			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
 			panel.highlightDifferences(normContainer, setup, InventoryID.EQUIPMENT);
 		}
 
 	}
 
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged event)
+	private void onGameStateChanged(GameStateChanged event)
 	{
 		switch (event.getGameState())
 		{
@@ -338,7 +360,7 @@ public class InventorySetupPlugin extends Plugin
 
 			// set highlighting
 			case LOGGED_IN:
-				highlightDifference = config.getHighlightDifferences();
+				highlightDifference = this.getHighlightDifferences;
 				break;
 
 			default:
@@ -351,13 +373,13 @@ public class InventorySetupPlugin extends Plugin
 		}
 	}
 
-	public ArrayList<InventorySetupItem> getNormalizedContainer(final InventoryID id)
+	public List<InventorySetupItem> getNormalizedContainer(final InventoryID id)
 	{
 		assert id == InventoryID.INVENTORY || id == InventoryID.EQUIPMENT : "invalid inventory ID";
 
 		final ItemContainer container = client.getItemContainer(id);
 
-		ArrayList<InventorySetupItem> newContainer = new ArrayList<>();
+		List<InventorySetupItem> newContainer = new ArrayList<>();
 
 		Item[] items = null;
 		if (container != null)
@@ -401,8 +423,16 @@ public class InventorySetupPlugin extends Plugin
 	@Override
 	public void shutDown()
 	{
+		eventBus.unregister(this);
 		overlayManager.remove(overlay);
 		clientToolbar.removeNavigation(navButton);
+	}
+
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
+		eventBus.subscribe(ItemContainerChanged.class, this, this::onItemContainerChanged);
+		eventBus.subscribe(GameStateChanged.class, this, this::onGameStateChanged);
 	}
 
 	final int[] getCurrentInventorySetupIds()
@@ -432,5 +462,15 @@ public class InventorySetupPlugin extends Plugin
 			.filter(Objects::nonNull)
 			.filter(id -> id != -1)
 			.toArray();
+	}
+
+	private void updateConfigOptions()
+	{
+		this.getHighlightDifferences = config.getHighlightDifferences();
+		this.getHighlightColor = config.getHighlightColor();
+		this.getStackDifference = config.getHighlightDifferences();
+		this.getVariationDifference = config.getVariationDifference();
+		this.getBankHighlight = config.getBankHighlight();
+		this.getBankHighlightColor = config.getBankHighlightColor();
 	}
 }

@@ -75,17 +75,15 @@ public class Deob
 			System.exit(-1);
 		}
 
-		//logger.info("Deobfuscator revision {}", DeobProperties.getRevision());
+		logger.info("Deobfuscator revision {}", DeobProperties.getRevision());
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		ClassGroup group = JarUtil.loadJar(new File(args[0]));
 
-		if (args.length > 2 && args[2].equals("rl"))
-		{
-			run(group, new StaticShouldBeInstance());
-		}
-		else
+		run(group, new StaticShouldBeInstance());
+
+		if (args.length <= 2 || !args[2].equals("rl"))
 		{
 			// remove except RuntimeException
 			run(group, new RuntimeExceptions());

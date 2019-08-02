@@ -38,8 +38,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,8 +45,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
+import javax.inject.Singleton;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -91,6 +91,7 @@ import net.runelite.client.config.Keybind;
 import net.runelite.client.config.ModifierlessKeybind;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.RuneLiteConfig;
+import net.runelite.client.config.RuneLitePlusConfig;
 import net.runelite.client.config.Stub;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -103,6 +104,7 @@ import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.ComboBoxListRenderer;
 import net.runelite.client.ui.components.IconButton;
 import net.runelite.client.ui.components.IconTextField;
+import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
@@ -111,6 +113,7 @@ import net.runelite.client.util.Text;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
+@Singleton
 public class ConfigPanel extends PluginPanel
 {
 	private static final int SPINNER_FIELD_WIDTH = 6;
@@ -122,12 +125,15 @@ public class ConfigPanel extends PluginPanel
 	private static final String RUNELITE_GROUP_NAME = RuneLiteConfig.class.getAnnotation(ConfigGroup.class).value();
 	private static final String PINNED_PLUGINS_CONFIG_KEY = "pinnedPlugins";
 	private static final String RUNELITE_PLUGIN = "RuneLite";
+	private static final String RUNELITEPLUS_PLUGIN = "RuneLitePlus";
 	private static final String CHAT_COLOR_PLUGIN = "Chat Color";
 	private final PluginManager pluginManager;
 	private final ConfigManager configManager;
 	private final ScheduledExecutorService executorService;
 	private final RuneLiteConfig runeLiteConfig;
+	private final RuneLitePlusConfig runeLitePlusConfig;
 	private final ChatColorConfig chatColorConfig;
+	private final ColorPickerManager colorPickerManager;
 	public static List<PluginListItem> pluginList = new ArrayList<>();
 
 	private final IconTextField searchBar = new IconTextField();
@@ -146,14 +152,17 @@ public class ConfigPanel extends PluginPanel
 	}
 
 	ConfigPanel(PluginManager pluginManager, ConfigManager configManager, ScheduledExecutorService executorService,
-				RuneLiteConfig runeLiteConfig, ChatColorConfig chatColorConfig)
+				RuneLiteConfig runeLiteConfig, RuneLitePlusConfig runeLitePlusConfig, ChatColorConfig chatColorConfig,
+				ColorPickerManager colorPickerManager)
 	{
 		super(false);
 		this.pluginManager = pluginManager;
 		this.configManager = configManager;
 		this.executorService = executorService;
 		this.runeLiteConfig = runeLiteConfig;
+		this.runeLitePlusConfig = runeLitePlusConfig;
 		this.chatColorConfig = chatColorConfig;
+		this.colorPickerManager = colorPickerManager;
 
 		searchBar.setIcon(IconTextField.Icon.SEARCH);
 		searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
@@ -241,7 +250,7 @@ public class ConfigPanel extends PluginPanel
 			}
 			lines.add(sb.toString());
 
-			return new Dimension(WIDTH, (lines.size()  * fontMetrics.getHeight()) + HEIGHT_PADDING);
+			return new Dimension(WIDTH, (lines.size() * fontMetrics.getHeight()) + HEIGHT_PADDING);
 		}
 	}
 
@@ -256,6 +265,14 @@ public class ConfigPanel extends PluginPanel
 		runeLite.setPinned(pinnedPlugins.contains(RUNELITE_PLUGIN));
 		runeLite.nameLabel.setForeground(Color.WHITE);
 		pluginList.add(runeLite);
+
+		// set RuneLitePlus config on top, as it should always have been
+		final PluginListItem runeLitePlus = new PluginListItem(this, configManager, runeLitePlusConfig,
+			configManager.getConfigDescriptor(runeLitePlusConfig),
+			RUNELITEPLUS_PLUGIN, "RuneLitePlus client settings", "client");
+		runeLitePlus.setPinned(pinnedPlugins.contains(RUNELITEPLUS_PLUGIN));
+		runeLitePlus.nameLabel.setForeground(Color.WHITE);
+		pluginList.add(runeLitePlus);
 
 		List<PluginListItem> externalPlugins = new ArrayList<>();
 		// populate pluginList with all external Plugins
@@ -397,15 +414,18 @@ public class ConfigPanel extends PluginPanel
 
 	void refreshPluginList()
 	{
-		// update enabled / disabled status of all items
-		pluginList.forEach(listItem ->
+		if (pluginManager != null)
 		{
-			final Plugin plugin = listItem.getPlugin();
-			if (plugin != null)
+			// update enabled / disabled status of all items
+			pluginList.forEach(listItem ->
 			{
-				listItem.setPluginEnabled(pluginManager.isPluginEnabled(plugin));
-			}
-		});
+				final Plugin plugin = listItem.getPlugin();
+				if (plugin != null)
+				{
+					listItem.setPluginEnabled(pluginManager.isPluginEnabled(plugin));
+				}
+			});
+		}
 
 		if (showingPluginList)
 		{
@@ -504,6 +524,7 @@ public class ConfigPanel extends PluginPanel
 		openGroupConfigPanel(listItem, config, cd, false);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void openGroupConfigPanel(PluginListItem listItem, Config config, ConfigDescriptor cd, boolean refresh)
 	{
 		showingPluginList = false;
@@ -635,10 +656,10 @@ public class ConfigPanel extends PluginPanel
 							}
 							else if (cid2.getType().isEnum())
 							{
-								Class<? extends Enum> type = (Class<? extends Enum>) cid2.getType();
+								@SuppressWarnings("unchecked") Class<? extends Enum> type = (Class<? extends Enum>) cid2.getType();
 								try
 								{
-									Enum selectedItem = Enum.valueOf(type, configManager.getConfiguration(cd.getGroup().value(), cid2.getItem().keyName()));
+									@SuppressWarnings("unchecked") Enum selectedItem = Enum.valueOf(type, configManager.getConfiguration(cd.getGroup().value(), cid2.getItem().keyName()));
 									if (!cid.getItem().unhideValue().equals(""))
 									{
 										show = selectedItem.toString().equals(cid.getItem().unhideValue());
@@ -890,8 +911,11 @@ public class ConfigPanel extends PluginPanel
 						@Override
 						public void mouseClicked(MouseEvent e)
 						{
-							RuneliteColorPicker colorPicker = new RuneliteColorPicker(SwingUtilities.windowForComponent(ConfigPanel.this),
-								colorPickerBtn.getBackground(), cid.getItem().name(), cid.getAlpha() == null);
+							RuneliteColorPicker colorPicker = colorPickerManager.create(
+								SwingUtilities.windowForComponent(ConfigPanel.this),
+								colorPickerBtn.getBackground(),
+								cid.getItem().name(),
+								cid.getAlpha() == null);
 							colorPicker.setLocation(getLocationOnScreen());
 							colorPicker.setOnColorChange(c ->
 							{
@@ -899,14 +923,7 @@ public class ConfigPanel extends PluginPanel
 								colorPickerBtn.setText(ColorUtil.toHexColor(c).toUpperCase());
 							});
 
-							colorPicker.addWindowListener(new WindowAdapter()
-							{
-								@Override
-								public void windowClosing(WindowEvent e)
-								{
-									changeConfiguration(listItem, config, colorPicker, cd, cid);
-								}
-							});
+							colorPicker.setOnClose(c -> changeConfiguration(listItem, config, colorPicker, cd, cid));
 							colorPicker.setVisible(true);
 						}
 					});
@@ -973,7 +990,7 @@ public class ConfigPanel extends PluginPanel
 						if (e.getStateChange() == ItemEvent.SELECTED)
 						{
 							changeConfiguration(listItem, config, box, cd, cid);
-							box.setToolTipText(box.getSelectedItem().toString());
+							box.setToolTipText(Objects.requireNonNull(box.getSelectedItem()).toString());
 						}
 					});
 					item.add(box, BorderLayout.EAST);
@@ -998,7 +1015,6 @@ public class ConfigPanel extends PluginPanel
 
 					item.add(button, BorderLayout.EAST);
 				}
-
 				mainPanel.add(item);
 			}
 		}
@@ -1126,7 +1142,7 @@ public class ConfigPanel extends PluginPanel
 		else if (component instanceof JComboBox)
 		{
 			JComboBox jComboBox = (JComboBox) component;
-			configManager.setConfiguration(cd.getGroup().value(), cid.getItem().keyName(), ((Enum) jComboBox.getSelectedItem()).name());
+			configManager.setConfiguration(cd.getGroup().value(), cid.getItem().keyName(), ((Enum) Objects.requireNonNull(jComboBox.getSelectedItem())).name());
 
 			for (ConfigItemDescriptor cid2 : cd.getItems())
 			{
@@ -1259,7 +1275,7 @@ public class ConfigPanel extends PluginPanel
 		return new Dimension(PANEL_WIDTH + SCROLLBAR_WIDTH, super.getPreferredSize().height);
 	}
 
-	private class FixedWidthPanel extends JPanel
+	private static class FixedWidthPanel extends JPanel
 	{
 		@Override
 		public Dimension getPreferredSize()

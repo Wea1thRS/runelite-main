@@ -24,12 +24,13 @@
  */
 package net.runelite.mixins;
 
+import java.awt.Polygon;
 import net.runelite.api.AnimationID;
 import net.runelite.api.NPCDefinition;
 import net.runelite.api.Perspective;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.events.NpcDefinitionChanged;
 import net.runelite.api.events.NpcDespawned;
-import java.awt.Polygon;
 import net.runelite.api.mixins.Copy;
 import net.runelite.api.mixins.FieldHook;
 import net.runelite.api.mixins.Inject;
@@ -109,7 +110,11 @@ public abstract class RSNPCMixin implements RSNPC
 	{
 		if (composition == null)
 		{
-			client.getCallbacks().post(new NpcDespawned(this));
+			client.getCallbacks().post(NpcDespawned.class, new NpcDespawned(this));
+		}
+		else if (this.getId() != -1)
+		{
+			client.getCallbacks().post(NpcDefinitionChanged.class, new NpcDefinitionChanged(this));
 		}
 	}
 

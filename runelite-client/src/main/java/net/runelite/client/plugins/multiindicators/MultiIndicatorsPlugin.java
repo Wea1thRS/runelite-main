@@ -26,11 +26,14 @@
 package net.runelite.client.plugins.multiindicators;
 
 import com.google.inject.Provides;
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import javax.inject.Inject;
+import javax.inject.Singleton;
+import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.Constants;
@@ -48,7 +51,7 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.geometry.Geometry;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
@@ -62,7 +65,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 	type = PluginType.PVP,
 	enabledByDefault = false
 )
-
+@Singleton
 public class MultiIndicatorsPlugin extends Plugin
 {
 	@Inject
@@ -83,22 +86,42 @@ public class MultiIndicatorsPlugin extends Plugin
 	@Inject
 	private OverlayManager overlayManager;
 
-	@Getter
+	@Inject
+	private EventBus eventBus;
+
+	@Getter(AccessLevel.PACKAGE)
 	private GeneralPath[] multicombatPathToDisplay;
 
-	@Getter
+	@Getter(AccessLevel.PACKAGE)
 	private GeneralPath[] pvpPathToDisplay;
 
-	@Getter
+	@Getter(AccessLevel.PACKAGE)
 	private GeneralPath[] wildernessLevelLinesPathToDisplay;
 
-	@Getter
+	@Getter(AccessLevel.PACKAGE)
 	private boolean inPvp;
 
-	@Getter
+	@Getter(AccessLevel.PACKAGE)
 	private boolean inDeadman;
 
 	private int currentPlane;
+
+	@Getter(AccessLevel.PACKAGE)
+	private ZoneVisibility multicombatZoneVisibility;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean showPvpSafeZones;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean showDeadmanSafeZones;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean showWildernessLevelLines;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean showMinimapLines;
+	@Getter(AccessLevel.PACKAGE)
+	private Color multicombatColor;
+	@Getter(AccessLevel.PACKAGE)
+	private Color safeZoneColor;
+	@Getter(AccessLevel.PACKAGE)
+	private Color wildernessLevelLinesColor;
 
 	@Provides
 	MultiIndicatorsConfig getConfig(ConfigManager configManager)
@@ -109,6 +132,9 @@ public class MultiIndicatorsPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
+		updateConfig();
+		addSubscriptions();
+
 		overlayManager.add(overlay);
 		overlayManager.add(minimapOverlay);
 
@@ -126,10 +152,18 @@ public class MultiIndicatorsPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
+		eventBus.unregister(this);
+
 		overlayManager.remove(overlay);
 		overlayManager.remove(minimapOverlay);
 
 		uninitializePaths();
+	}
+
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
+		eventBus.subscribe(GameStateChanged.class, this, this::onGameStateChanged);
 	}
 
 	private void initializePaths()
@@ -165,9 +199,13 @@ public class MultiIndicatorsPlugin extends Plugin
 	private void transformWorldToLocal(float[] coords)
 	{
 		LocalPoint lp = LocalPoint.fromWorld(client, (int) coords[0], (int) coords[1]);
-		coords[0] = lp.getX() - Perspective.LOCAL_TILE_SIZE / 2;
-		coords[1] = lp.getY() - Perspective.LOCAL_TILE_SIZE / 2;
+		if (lp != null)
+		{
+			coords[0] = lp.getX() - Perspective.LOCAL_TILE_SIZE / 2;
+			coords[1] = lp.getY() - Perspective.LOCAL_TILE_SIZE / 2;
+		}
 	}
+
 	private boolean isOpenableAt(WorldPoint wp)
 	{
 		int sceneX = wp.getX() - client.getBaseX();
@@ -253,7 +291,7 @@ public class MultiIndicatorsPlugin extends Plugin
 			Constants.SCENE_SIZE - 2, Constants.SCENE_SIZE - 2);
 
 		// Generate lines for multicombat zones
-		if (config.multicombatZoneVisibility() == ZoneVisibility.HIDE)
+		if (this.multicombatZoneVisibility == ZoneVisibility.HIDE)
 		{
 			for (int i = 0; i < multicombatPathToDisplay.length; i++)
 			{
@@ -268,7 +306,7 @@ public class MultiIndicatorsPlugin extends Plugin
 
 				GeneralPath lines = new GeneralPath(MapLocations.getMulticombat(sceneRect, i));
 				lines = Geometry.clipPath(lines, sceneRect);
-				if (config.multicombatZoneVisibility() == ZoneVisibility.SHOW_IN_PVP &&
+				if (this.multicombatZoneVisibility == ZoneVisibility.SHOW_IN_PVP &&
 					!isInDeadman() && !isInPvp())
 				{
 					lines = Geometry.clipPath(lines, MapLocations.getRoughWilderness(i));
@@ -289,11 +327,11 @@ public class MultiIndicatorsPlugin extends Plugin
 			currentPlane = i;
 
 			GeneralPath safeZonePath = null;
-			if (config.showDeadmanSafeZones() && isInDeadman())
+			if (this.showDeadmanSafeZones && isInDeadman())
 			{
 				safeZonePath = new GeneralPath(MapLocations.getDeadmanSafeZones(sceneRect, i));
 			}
-			else if (config.showPvpSafeZones() && isInPvp())
+			else if (this.showPvpSafeZones && isInPvp())
 			{
 				safeZonePath = new GeneralPath(MapLocations.getPvpSafeZones(sceneRect, i));
 			}
@@ -316,7 +354,7 @@ public class MultiIndicatorsPlugin extends Plugin
 			currentPlane = i;
 
 			GeneralPath wildernessLevelLinesPath = null;
-			if (config.showWildernessLevelLines())
+			if (this.showWildernessLevelLines)
 			{
 				wildernessLevelLinesPath = new GeneralPath(MapLocations.getWildernessLevelLines(sceneRect, i));
 			}
@@ -340,9 +378,15 @@ public class MultiIndicatorsPlugin extends Plugin
 		return false;
 	}
 
-	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
+	private void onConfigChanged(ConfigChanged event)
 	{
+		if (!event.getGroup().equals("multiindicators"))
+		{
+			return;
+		}
+
+		updateConfig();
+
 		if (event.getKey().equals("collisionDetection") ||
 			event.getKey().equals("multicombatZoneVisibility") ||
 			event.getKey().equals("deadmanSafeZones") ||
@@ -353,12 +397,23 @@ public class MultiIndicatorsPlugin extends Plugin
 		}
 	}
 
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged event)
+	private void onGameStateChanged(GameStateChanged event)
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
 			findLinesInScene();
 		}
+	}
+
+	private void updateConfig()
+	{
+		this.multicombatZoneVisibility = config.multicombatZoneVisibility();
+		this.showPvpSafeZones = config.showPvpSafeZones();
+		this.showDeadmanSafeZones = config.showDeadmanSafeZones();
+		this.showWildernessLevelLines = config.showWildernessLevelLines();
+		this.showMinimapLines = config.showMinimapLines();
+		this.multicombatColor = config.multicombatColor();
+		this.safeZoneColor = config.safeZoneColor();
+		this.wildernessLevelLinesColor = config.wildernessLevelLinesColor();
 	}
 }

@@ -1,7 +1,7 @@
 import net.runelite.mapping.Implements;
 import net.runelite.mapping.ObfuscatedName;
 
-@ObfuscatedName("gb")
+@ObfuscatedName("fh")
 @Implements("ClientPacketMarker")
 public interface ClientPacketMarker {
 }

@@ -27,13 +27,14 @@ package net.runelite.client.plugins.vorkath;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.runelite.api.AnimationID;
 import net.runelite.api.ProjectileID;
 
 @AllArgsConstructor
-@Getter
+@Getter(AccessLevel.PACKAGE)
 public enum VorkathAttack
 {
 	/**
@@ -81,9 +82,6 @@ public enum VorkathAttack
 	 */
 	ZOMBIFIED_SPAWN(AnimationID.VORKATH_FIRE_BOMB_OR_SPAWN_ATTACK, ProjectileID.VORKATH_SPAWN_AOE);
 
-	private final int vorkathAnimationID;
-	private final int projectileID;
-
 	private static final Map<Integer, VorkathAttack> VORKATH_ATTACKS;
 	private static final Map<Integer, VorkathAttack> VORKATH_BASIC_ATTACKS;
 
@@ -112,6 +110,9 @@ public enum VorkathAttack
 		VORKATH_BASIC_ATTACKS = builder.build();
 	}
 
+	private final int vorkathAnimationID;
+	private final int projectileID;
+
 	/**
 	 * @param projectileID id of projectile
 	 * @return {@link VorkathAttack} associated with the specified projectile
@@ -122,7 +123,7 @@ public enum VorkathAttack
 	}
 
 	/**
-	 * @param projectileID
+	 * @param projectileID id of projectile
 	 * @return true if the projectile id matches a {@link VorkathAttack#getProjectileID()} within {@link VorkathAttack#VORKATH_BASIC_ATTACKS},
 	 * false otherwise
 	 */

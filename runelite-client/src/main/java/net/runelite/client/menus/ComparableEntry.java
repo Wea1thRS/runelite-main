@@ -27,6 +27,7 @@ package net.runelite.client.menus;
 import joptsimple.internal.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import net.runelite.api.MenuEntry;
 import static net.runelite.client.menus.MenuManager.LEVEL_PATTERN;
 import net.runelite.client.util.Text;
@@ -52,6 +53,16 @@ public class ComparableEntry
 	@Getter
 	private boolean strictTarget;
 
+	/**
+	 * If two entries are both suppose to be left click,
+	 * the entry with the higher priority will be selected.
+	 * This only effects left click priority entries.
+	 */
+	@Getter
+	@Setter
+	@EqualsAndHashCode.Exclude
+	private int priority;
+
 	public ComparableEntry(String option, String target)
 	{
 		this(option, target, -1, -1, true, true);
@@ -64,12 +75,24 @@ public class ComparableEntry
 
 	public ComparableEntry(String option, String target, int id, int type, boolean strictOption, boolean strictTarget)
 	{
-		this.option = option;
-		this.target = target;
+		this.option = Text.standardize(option);
+		this.target = Text.standardize(target);
 		this.id = id;
 		this.type = type;
 		this.strictOption = strictOption;
 		this.strictTarget = strictTarget;
+		this.priority = 0;
+	}
+
+	// This is only used for type checking, which is why it has everything but target
+	// target sometimes changes to option.
+	public ComparableEntry(MenuEntry e)
+	{
+		this.option = Text.standardize(e.getOption());
+		this.id = e.getIdentifier();
+		this.type = e.getType();
+		this.strictOption = true;
+		this.priority = 0;
 	}
 
 	boolean matches(MenuEntry entry)

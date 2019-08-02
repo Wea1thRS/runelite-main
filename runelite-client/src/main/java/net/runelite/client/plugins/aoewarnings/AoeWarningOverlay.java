@@ -27,24 +27,19 @@
  */
 package net.runelite.client.plugins.aoewarnings;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Iterator;
-import java.util.Map;
-import javax.annotation.Nullable;
+import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
-import net.runelite.api.Projectile;
-import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -52,6 +47,7 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import static net.runelite.client.util.ColorUtil.setAlphaComponent;
 
+@Singleton
 public class AoeWarningOverlay extends Overlay
 {
 	private static final int FILL_START_ALPHA = 25;
@@ -59,68 +55,64 @@ public class AoeWarningOverlay extends Overlay
 
 	private final Client client;
 	private final AoeWarningPlugin plugin;
-	private final AoeWarningConfig config;
 
 	@Inject
-	public AoeWarningOverlay(@Nullable Client client, AoeWarningPlugin plugin, AoeWarningConfig config)
+	public AoeWarningOverlay(final Client client, final AoeWarningPlugin plugin)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.UNDER_WIDGETS);
 		this.client = client;
 		this.plugin = plugin;
-		this.config = config;
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		for (WorldPoint point : plugin.getLightningTrail())
-		{
-			drawTile(graphics, point, new Color(0, 150, 200), 2, 150, 50);
-		}
+		WorldPoint lp = client.getLocalPlayer().getWorldLocation();
 
-		for (WorldPoint point : plugin.getAcidTrail())
-		{
-			drawTile(graphics, point, new Color(69, 241, 44), 2, 150, 50);
-		}
+		plugin.getLightningTrail().forEach(o ->
+			OverlayUtil.drawTiles(graphics, client, o, lp, new Color(0, 150, 200), 2, 150, 50));
 
-		for (WorldPoint point : plugin.getCrystalSpike())
-		{
-			drawTile(graphics, point, new Color(255, 0, 84), 2, 150, 50);
-		}
+		plugin.getAcidTrail().forEach(o ->
+			OverlayUtil.drawTiles(graphics, client, o.getWorldLocation(), lp, new Color(69, 241, 44), 2, 150, 50));
 
-		for (WorldPoint point : plugin.getWintertodtSnowFall())
-		{
-			drawTile(graphics, point, new Color(255, 0, 84), 2, 150, 50);
-		}
+		plugin.getCrystalSpike().forEach(o ->
+			OverlayUtil.drawTiles(graphics, client, o.getWorldLocation(), lp, new Color(255, 0, 84), 2, 150, 50));
+
+		plugin.getWintertodtSnowFall().forEach(o ->
+			OverlayUtil.drawTiles(graphics, client, o.getWorldLocation(), lp, new Color(255, 0, 84), 2, 150, 50));
 
 		Instant now = Instant.now();
-		Map<Projectile, AoeProjectile> projectiles = plugin.getProjectiles();
-		for (Iterator<AoeProjectile> it = projectiles.values().iterator(); it.hasNext(); )
+		Set<ProjectileContainer> projectiles = plugin.getProjectiles();
+		projectiles.forEach(proj ->
 		{
-			AoeProjectile aoeProjectile = it.next();
-			Color color;
-			if (now.isAfter(aoeProjectile.getStartTime().plus(Duration.ofMillis(aoeProjectile.getProjectileLifetime()))))
+			if (proj.getTargetPoint() == null)
 			{
-				it.remove();
-				continue;
+				return;
 			}
 
-			Polygon tilePoly = Perspective.getCanvasTileAreaPoly(client, aoeProjectile.getTargetPoint(), aoeProjectile.getAoeProjectileInfo().getAoeSize());
+			Color color;
+
+			if (now.isAfter(proj.getStartTime().plus(Duration.ofMillis(proj.getLifetime()))))
+			{
+				return;
+			}
+
+			final Polygon tilePoly = Perspective.getCanvasTileAreaPoly(client, proj.getTargetPoint(), proj.getAoeProjectileInfo().getAoeSize());
+
 			if (tilePoly == null)
 			{
-				continue;
+				return;
 			}
 
-			// how far through the projectiles lifetime between 0-1.
-			double progress = (System.currentTimeMillis() - aoeProjectile.getStartTime().toEpochMilli()) / (double) aoeProjectile.getProjectileLifetime();
+			final double progress = (System.currentTimeMillis() - proj.getStartTime().toEpochMilli()) / (double) proj.getLifetime();
 
-			int tickProgress = aoeProjectile.getFinalTick() - client.getTickCount();
+			final int tickProgress = proj.getFinalTick() - client.getTickCount();
 
 			int fillAlpha, outlineAlpha;
-			if (config.isFadeEnabled())
+			if (plugin.isConfigFadeEnabled())
 			{
-				fillAlpha = (int) ((1 - progress) * FILL_START_ALPHA);//alpha drop off over lifetime
+				fillAlpha = (int) ((1 - progress) * FILL_START_ALPHA);
 				outlineAlpha = (int) ((1 - progress) * OUTLINE_START_ALPHA);
 			}
 			else
@@ -155,66 +147,22 @@ public class AoeWarningOverlay extends Overlay
 				outlineAlpha = 255;
 			}
 
-			if (config.isOutlineEnabled())
+			if (plugin.isConfigOutlineEnabled())
 			{
-				graphics.setColor(new Color(setAlphaComponent(config.overlayColor().getRGB(), outlineAlpha), true));
+				graphics.setColor(new Color(setAlphaComponent(plugin.getOverlayColor().getRGB(), outlineAlpha), true));
 				graphics.drawPolygon(tilePoly);
 			}
-			if (config.tickTimers())
+			if (plugin.isTickTimers() && tickProgress >= 0)
 			{
-				if (tickProgress >= 0)
-				{
-					renderTextLocation(graphics, Integer.toString(tickProgress), config.textSize(), config.fontStyle().getFont(), color, centerPoint(tilePoly.getBounds()));
-				}
+				OverlayUtil.renderTextLocation(graphics, Integer.toString(tickProgress), plugin.getTextSize(),
+					plugin.getFontStyle(), color, centerPoint(tilePoly.getBounds()), plugin.isShadows(), 0);
 			}
-			graphics.setColor(new Color(setAlphaComponent(config.overlayColor().getRGB(), fillAlpha), true));
+
+			graphics.setColor(new Color(setAlphaComponent(plugin.getOverlayColor().getRGB(), fillAlpha), true));
 			graphics.fillPolygon(tilePoly);
-		}
+		});
+		projectiles.removeIf(proj -> now.isAfter(proj.getStartTime().plus(Duration.ofMillis(proj.getLifetime()))));
 		return null;
-	}
-
-	private void drawTile(Graphics2D graphics, WorldPoint point, Color color, int strokeWidth, int outlineAlpha, int fillAlpha)
-	{
-		WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
-		if (point.distanceTo(playerLocation) >= 32)
-		{
-			return;
-		}
-		LocalPoint lp = LocalPoint.fromWorld(client, point);
-		if (lp == null)
-		{
-			return;
-		}
-
-		Polygon poly = Perspective.getCanvasTilePoly(client, lp);
-		if (poly == null)
-		{
-			return;
-		}
-		graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), outlineAlpha));
-		graphics.setStroke(new BasicStroke(strokeWidth));
-		graphics.draw(poly);
-		graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), fillAlpha));
-		graphics.fill(poly);
-	}
-
-	private void renderTextLocation(Graphics2D graphics, String txtString, int fontSize, int fontStyle, Color fontColor, Point canvasPoint)
-	{
-		graphics.setFont(new Font("Arial", fontStyle, fontSize));
-		if (canvasPoint != null)
-		{
-			final Point canvasCenterPoint = new Point(
-				canvasPoint.getX(),
-				canvasPoint.getY());
-			final Point canvasCenterPoint_shadow = new Point(
-				canvasPoint.getX() + 1,
-				canvasPoint.getY() + 1);
-			if (config.shadows())
-			{
-				OverlayUtil.renderTextLocation(graphics, canvasCenterPoint_shadow, txtString, Color.BLACK);
-			}
-			OverlayUtil.renderTextLocation(graphics, canvasCenterPoint, txtString, fontColor);
-		}
 	}
 
 	private Point centerPoint(Rectangle rect)

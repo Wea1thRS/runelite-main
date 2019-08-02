@@ -26,9 +26,12 @@ package net.runelite.api;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
@@ -348,6 +351,7 @@ public interface Client extends GameShell
 	 * @return the corresponding item composition
 	 * @see ItemID
 	 */
+	@Nonnull
 	ItemDefinition getItemDefinition(int id);
 
 	/**
@@ -362,6 +366,7 @@ public interface Client extends GameShell
 	 * @param scale the scale of the sprite
 	 * @return the created sprite
 	 */
+	@Nullable
 	Sprite createItemSprite(int itemId, int quantity, int border, int shadowColor, int stackable, boolean noted, int scale);
 
 	/**
@@ -372,6 +377,7 @@ public interface Client extends GameShell
 	 * @param fileId the sprites file ID
 	 * @return the sprite image of the file
 	 */
+	@Nullable
 	Sprite[] getSprites(IndexDataBase source, int archiveId, int fileId);
 
 	/**
@@ -1353,6 +1359,20 @@ public interface Client extends GameShell
 	void setInterpolateObjectAnimations(boolean interpolate);
 
 	/**
+	 * Checks whether animation smoothing is enabled for widgets.
+	 *
+	 * @return true if widget animation smoothing is enabled, false otherwise
+	 */
+	boolean isInterpolateWidgetAnimations();
+
+	/**
+	 * Sets the animation smoothing state for widgets.
+	 *
+	 * @param interpolate the new smoothing state
+	 */
+	void setInterpolateWidgetAnimations(boolean interpolate);
+
+	/**
 	 * Checks whether the logged in player is in an instanced region.
 	 *
 	 * @return true if the player is in instanced region, false otherwise
@@ -1432,9 +1452,16 @@ public interface Client extends GameShell
 	/**
 	 * Sets which NPCs are hidden
 	 *
-	 * @param names the names of the npcs seperated by ','
+	 * @param names the names of the npcs
 	 */
-	void setNPCsNames(String names);
+	void setNPCsNames(List<String> names);
+
+	/**
+	 * Sets which NPCs are hidden on death
+	 *
+	 * @param names the names of the npcs
+	 */
+	void setNPCsHiddenOnDeath(List<String> names);
 
 	/**
 	 * Sets whether 2D sprites (ie. overhead prayers) related to
@@ -1457,6 +1484,13 @@ public interface Client extends GameShell
 	 * @param state new projectile hidden state
 	 */
 	void setProjectilesHidden(boolean state);
+
+	/**
+	 * Sets whether dead NPCs are hidden.
+	 *
+	 * @param state new NPC hidden state
+	 */
+	void setDeadNPCsHidden(boolean state);
 
 	/**
 	 * Gets an array of tile collision data.
@@ -1627,6 +1661,11 @@ public interface Client extends GameShell
 	 */
 	NodeCache getItemDefinitionCache();
 
+	/**
+	 * Returns the array of cross sprites that appear and animate when left-clicking
+	 */
+	Sprite[] getCrossSprites();
+
 	EnumDefinition getEnum(int id);
 
 	void draw2010Menu();
@@ -1653,20 +1692,58 @@ public interface Client extends GameShell
 	MouseRecorder getMouseRecorder();
 
 	void setPrintMenuActions(boolean b);
-	
+
 	String getSelectedSpellName();
-	
-	boolean getIsSpellSelected();
+
+	boolean isSpellSelected();
 
 	/**
-	 * Set whether or not player attack options will be hidden for clanmembers/friends
+	 * Set whether or not player attack options will be hidden for friends
 	 */
 	void setHideFriendAttackOptions(boolean yes);
-	
+
+	/**
+	 * Set whether or not player cast options will be hidden for friends
+	 */
+	void setHideFriendCastOptions(boolean yes);
+
+	/**
+	 * Set whether or not player attack options will be hidden for clanmates
+	 */
+	void setHideClanmateAttackOptions(boolean yes);
+
+	/**
+	 * Set whether or not player cast options will be hidden for clanmates
+	 */
+	void setHideClanmateCastOptions(boolean yes);
+
+	/**
+	 * Set spells excluded from above hiding
+	 */
+	void setUnhiddenCasts(Set<String> casts);
+
 	/**
 	 * Sorts the current menu entries in the same way the client does this.
 	 * The last entry will be the left click one after this.
 	 */
 	void sortMenuEntries();
 
+	/**
+	 * Add player to friendlist
+	 */
+	void addFriend(String name);
+
+	/**
+	 * Remove player from friendlist
+	 */
+	void removeFriend(String name);
+
+	BigInteger getModulus();
+
+	void setModulus(BigInteger modulus);
+
+	/*
+	 * Returns the max item index + 1 from cache
+	 */
+	int getItemCount();
 }

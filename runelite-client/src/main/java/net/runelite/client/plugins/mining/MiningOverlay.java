@@ -31,8 +31,7 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import javax.inject.Inject;
-import lombok.AccessLevel;
-import lombok.Getter;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -43,25 +42,28 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.ProgressPieComponent;
 
+@Singleton
 class MiningOverlay extends Overlay
 {
-	// Range of Motherlode vein respawn time not 100% confirmed but based on observation
-	@Getter(AccessLevel.PACKAGE)
-	public static final int ORE_VEIN_MAX_RESPAWN_TIME = 123;
+	// Range of Motherlode vein respawn time - not 100% confirmed but based on observation
+	static final int ORE_VEIN_MAX_RESPAWN_TIME = 166;
 	private static final int ORE_VEIN_MIN_RESPAWN_TIME = 90;
 	private static final float ORE_VEIN_RANDOM_PERCENT_THRESHOLD = (float) ORE_VEIN_MIN_RESPAWN_TIME / ORE_VEIN_MAX_RESPAWN_TIME;
 	private static final Color DARK_GREEN = new Color(0, 100, 0);
+	private static final int MOTHERLODE_UPPER_FLOOR_HEIGHT = -500;
 
 	private final Client client;
 	private final MiningPlugin plugin;
+	private final MiningConfig config;
 
 	@Inject
-	private MiningOverlay(Client client, MiningPlugin plugin)
+	private MiningOverlay(final Client client, final MiningPlugin plugin, final MiningConfig config)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 		this.plugin = plugin;
 		this.client = client;
+		this.config = config;
 	}
 
 	@Override
@@ -76,8 +78,8 @@ class MiningOverlay extends Overlay
 		Instant now = Instant.now();
 		for (Iterator<RockRespawn> it = respawns.iterator(); it.hasNext();)
 		{
-			Color pieFillColor = Color.YELLOW;
-			Color pieBorderColor = Color.ORANGE;
+			Color pieFillColor = config.progressPieColor();
+			Color pieBorderColor;
 			RockRespawn rockRespawn = it.next();
 			float percent = (now.toEpochMilli() - rockRespawn.getStartTime().toEpochMilli()) / (float) rockRespawn.getRespawnTime();
 			WorldPoint worldPoint = rockRespawn.getWorldPoint();
@@ -95,14 +97,30 @@ class MiningOverlay extends Overlay
 				continue;
 			}
 
-			// Recolour pie on motherlode veins during the portion of the timer where they may respawn
-			if (rockRespawn.getRock() == Rock.ORE_VEIN && percent > ORE_VEIN_RANDOM_PERCENT_THRESHOLD)
+			Rock rock = rockRespawn.getRock();
+
+			// Only draw timer for veins on the same level in motherlode mine
+			LocalPoint localLocation = client.getLocalPlayer().getLocalLocation();
+			if (rock == Rock.ORE_VEIN && isUpstairsMotherlode(localLocation) != isUpstairsMotherlode(loc))
 			{
-				pieFillColor = Color.GREEN;
-				pieBorderColor = DARK_GREEN;
+				continue;
 			}
 
+			// Recolour pie on motherlode veins during the portion of the timer where they may respawn
+			if (rock == Rock.ORE_VEIN && percent > ORE_VEIN_RANDOM_PERCENT_THRESHOLD)
+			{
+				pieFillColor = config.progressPieColorMotherlode();
+			}
+
+			if (config.progressPieInverted())
+			{
+				percent = 1.0f - percent;
+			}
+
+			pieBorderColor = pieFillColor.darker();
+
 			ProgressPieComponent ppc = new ProgressPieComponent();
+			ppc.setDiameter(config.progressPieDiameter());
 			ppc.setBorderColor(pieBorderColor);
 			ppc.setFill(pieFillColor);
 			ppc.setPosition(point);
@@ -110,5 +128,20 @@ class MiningOverlay extends Overlay
 			ppc.render(graphics);
 		}
 		return null;
+	}
+
+	/**
+	 * Checks if the given point is "upstairs" in the mlm.
+	 * The upper floor is actually on z=0.
+	 *
+	 * This method assumes that the given point is already in the mlm
+	 * and is not meaningful when outside the mlm.
+	 *
+	 * @param localPoint the LocalPoint to be tested
+	 * @return true if localPoint is at same height as mlm upper floor
+	 */
+	private boolean isUpstairsMotherlode(LocalPoint localPoint)
+	{
+		return Perspective.getTileHeight(client, localPoint, 0) < MOTHERLODE_UPPER_FLOOR_HEIGHT;
 	}
 }

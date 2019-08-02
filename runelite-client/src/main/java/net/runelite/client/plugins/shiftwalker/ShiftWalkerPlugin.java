@@ -26,9 +26,11 @@ package net.runelite.client.plugins.shiftwalker;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import javax.inject.Singleton;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.menus.MenuManager;
 import net.runelite.client.plugins.Plugin;
@@ -45,12 +47,12 @@ import net.runelite.client.plugins.PluginType;
 	type = PluginType.UTILITY,
 	enabledByDefault = false
 )
-
+@Singleton
 public class ShiftWalkerPlugin extends Plugin
 {
 
 	private static final String WALK_HERE = "Walk here";
-
+	private static final String TAKE = "Take";
 	@Inject
 	private ShiftWalkerConfig config;
 
@@ -63,6 +65,12 @@ public class ShiftWalkerPlugin extends Plugin
 	@Inject
 	private KeyManager keyManager;
 
+	@Inject
+	private EventBus eventBus;
+
+	private boolean shiftWalk;
+	private boolean shiftLoot;
+
 	@Provides
 	ShiftWalkerConfig provideConfig(ConfigManager configManager)
 	{
@@ -72,17 +80,29 @@ public class ShiftWalkerPlugin extends Plugin
 	@Override
 	public void startUp()
 	{
+		this.shiftWalk = config.shiftWalk();
+		this.shiftLoot = config.shiftLoot();
+
+		addSubscriptions();
+
 		keyManager.registerKeyListener(inputListener);
 	}
 
 	@Override
 	public void shutDown()
 	{
+		eventBus.unregister(this);
+
 		keyManager.unregisterKeyListener(inputListener);
 	}
 
-	@Subscribe
-	public void onFocusChanged(FocusChanged event)
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
+		eventBus.subscribe(FocusChanged.class, this, this::onFocusChanged);
+	}
+
+	private void onFocusChanged(FocusChanged event)
 	{
 		if (!event.isFocused())
 		{
@@ -92,11 +112,31 @@ public class ShiftWalkerPlugin extends Plugin
 
 	void startPrioritizing()
 	{
-		menuManager.addPriorityEntry(WALK_HERE);
+		if (this.shiftLoot)
+		{
+			menuManager.addPriorityEntry(TAKE).setPriority(100);
+		}
+		
+		if (this.shiftWalk)
+		{
+			menuManager.addPriorityEntry(WALK_HERE).setPriority(90);
+		}	
 	}
 
 	void stopPrioritizing()
 	{
+		menuManager.removePriorityEntry(TAKE);
 		menuManager.removePriorityEntry(WALK_HERE);
+	}
+
+	private void onConfigChanged(ConfigChanged event)
+	{
+		if (!event.getGroup().equals("shiftwalkhere"))
+		{
+			return;
+		}
+
+		this.shiftWalk = config.shiftWalk();
+		this.shiftLoot = config.shiftLoot();
 	}
 }

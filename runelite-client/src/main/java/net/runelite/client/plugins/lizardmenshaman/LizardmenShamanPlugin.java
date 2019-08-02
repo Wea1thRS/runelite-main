@@ -28,17 +28,19 @@ import com.google.inject.Provides;
 import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Actor;
-import net.runelite.api.Client;
+import static net.runelite.api.AnimationID.LIZARDMAN_SHAMAN_SPAWN;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
@@ -51,8 +53,8 @@ import net.runelite.client.ui.overlay.OverlayManager;
 	type = PluginType.PVM,
 	enabledByDefault = false
 )
-
 @Slf4j
+@Singleton
 public class LizardmenShamanPlugin extends Plugin
 {
 	private static final String SHAMAN = "Lizardman shaman";
@@ -74,7 +76,10 @@ public class LizardmenShamanPlugin extends Plugin
 	private Notifier notifier;
 
 	@Inject
-	private Client client;
+	private EventBus eventBus;
+
+	private boolean showTimer;
+	private boolean notifyOnSpawn;
 
 	@Provides
 	LizardmenShamanConfig getConfig(ConfigManager configManager)
@@ -85,30 +90,40 @@ public class LizardmenShamanPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
+		addSubscriptions();
+
+		this.showTimer = config.showTimer();
+		this.notifyOnSpawn = config.notifyOnSpawn();
+
 		overlayManager.add(overlay);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
+		eventBus.unregister(this);
+
 		overlayManager.remove(overlay);
 		spawns.clear();
 	}
 
-	@Subscribe
-	public void onChatMessage(ChatMessage event)
+	private void addSubscriptions()
 	{
-		if (config.notifyOnSpawn())
+		eventBus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
+		eventBus.subscribe(ChatMessage.class, this, this::onChatMessage);
+		eventBus.subscribe(AnimationChanged.class, this, this::onAnimationChanged);
+	}
+
+	private void onChatMessage(ChatMessage event)
+	{
+		if (this.notifyOnSpawn && /* event.getType() == ChatMessageType.GAMEMESSAGE && */event.getMessage().contains(MESSAGE))
+		// ChatMessageType should probably be SPAM <- should be tested first though
 		{
-			if (event.getMessage().contains(MESSAGE))
-			{
-				notifier.notify(MESSAGE);
-			}
+			notifier.notify(MESSAGE);
 		}
 	}
 
-	@Subscribe
-	public void onAnimationChanged(AnimationChanged event)
+	private void onAnimationChanged(AnimationChanged event)
 	{
 		Actor actor = event.getActor();
 		if (actor == null || actor.getName() == null)
@@ -116,12 +131,20 @@ public class LizardmenShamanPlugin extends Plugin
 			return;
 		}
 
-		if (actor.getName().equals(SHAMAN) && actor.getAnimation() == 7157)
+		if (actor.getName().equals(SHAMAN) && actor.getAnimation() == LIZARDMAN_SHAMAN_SPAWN && this.showTimer)
 		{
-			if (config.showTimer())
-			{
-				spawns.put(event.getActor().getLocalLocation(), new LizardmenShamanSpawn(8.4, null));
-			}
+			spawns.put(event.getActor().getLocalLocation(), new LizardmenShamanSpawn(8.4, null));
 		}
+	}
+
+	private void onConfigChanged(ConfigChanged event)
+	{
+		if (!event.getGroup().equals("shaman"))
+		{
+			return;
+		}
+
+		this.showTimer = config.showTimer();
+		this.notifyOnSpawn = config.notifyOnSpawn();
 	}
 }

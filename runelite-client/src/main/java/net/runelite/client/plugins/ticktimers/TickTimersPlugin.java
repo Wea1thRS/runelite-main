@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +36,13 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
 import net.runelite.api.NpcID;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.game.NPCManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -54,7 +56,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 	enabledByDefault = false,
 	type = PluginType.PVM
 )
-
+@Singleton
 @Slf4j
 public class TickTimersPlugin extends Plugin
 {
@@ -74,9 +76,26 @@ public class TickTimersPlugin extends Plugin
 	private TickTimersConfig config;
 	@Inject
 	private NPCManager npcManager;
+	@Inject
+	private EventBus eventBus;
 	@Getter(AccessLevel.PACKAGE)
 	private Set<NPCContainer> npcContainer = new HashSet<>();
 	private boolean validRegion;
+
+	@Getter(AccessLevel.PACKAGE)
+	private boolean showPrayerWidgetHelper;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean showHitSquares;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean changeTickColor;
+	private boolean gwd;
+	private boolean dks;
+	@Getter(AccessLevel.PACKAGE)
+	private TickTimersConfig.FontStyle fontStyle;
+	@Getter(AccessLevel.PACKAGE)
+	private int textSize;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean shadows;
 
 	@Provides
 	TickTimersConfig getConfig(ConfigManager configManager)
@@ -87,19 +106,30 @@ public class TickTimersPlugin extends Plugin
 	@Override
 	public void startUp()
 	{
+		updateConfig();
+		addSubscriptions();
 		npcContainer.clear();
 	}
 
 	@Override
 	public void shutDown()
 	{
+		eventBus.unregister(this);
 		npcContainer.clear();
 		overlayManager.remove(timersOverlay);
 		validRegion = false;
 	}
 
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged gameStateChanged)
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
+		eventBus.subscribe(GameStateChanged.class, this, this::onGameStateChanged);
+		eventBus.subscribe(NpcSpawned.class, this, this::onNpcSpawned);
+		eventBus.subscribe(NpcDespawned.class, this, this::onNpcDespawned);
+		eventBus.subscribe(GameTick.class, this, this::onGameTick);
+	}
+
+	private void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
 		if (gameStateChanged.getGameState() != GameState.LOGGED_IN)
 		{
@@ -119,8 +149,7 @@ public class TickTimersPlugin extends Plugin
 		npcContainer.clear();
 	}
 
-	@Subscribe
-	public void onNpcSpawned(NpcSpawned event)
+	private void onNpcSpawned(NpcSpawned event)
 	{
 		if (!validRegion)
 		{
@@ -147,7 +176,7 @@ public class TickTimersPlugin extends Plugin
 			case NpcID.FLOCKLEADER_GEERIN:
 			case NpcID.WINGMAN_SKREE:
 			case NpcID.KREEARRA:
-				if (config.gwd())
+				if (this.gwd)
 				{
 					npcContainer.add(new NPCContainer(npc, npcManager.getAttackSpeed(npc.getId())));
 				}
@@ -155,7 +184,7 @@ public class TickTimersPlugin extends Plugin
 			case NpcID.DAGANNOTH_REX:
 			case NpcID.DAGANNOTH_SUPREME:
 			case NpcID.DAGANNOTH_PRIME:
-				if (config.dks())
+				if (this.dks)
 				{
 					npcContainer.add(new NPCContainer(npc, npcManager.getAttackSpeed(npc.getId())));
 				}
@@ -163,8 +192,7 @@ public class TickTimersPlugin extends Plugin
 		}
 	}
 
-	@Subscribe
-	public void onNpcDespawned(NpcDespawned event)
+	private void onNpcDespawned(NpcDespawned event)
 	{
 		if (!validRegion)
 		{
@@ -199,7 +227,6 @@ public class TickTimersPlugin extends Plugin
 		}
 	}
 
-	@Subscribe
 	public void onGameTick(GameTick Event)
 	{
 		if (!validRegion)
@@ -221,12 +248,9 @@ public class TickTimersPlugin extends Plugin
 
 			for (int anims : npcs.getAnimations())
 			{
-				if (anims == npcs.getNpc().getAnimation())
+				if (anims == npcs.getNpc().getAnimation() && npcs.getTicksUntilAttack() < 1)
 				{
-					if (npcs.getTicksUntilAttack() < 1)
-					{
-						npcs.setTicksUntilAttack(npcs.getAttackSpeed());
-					}
+					npcs.setTicksUntilAttack(npcs.getAttackSpeed());
 				}
 			}
 		}
@@ -237,5 +261,27 @@ public class TickTimersPlugin extends Plugin
 		return Arrays.stream(client.getMapRegions()).anyMatch(
 			x -> x == ARMA_REGION || x == GENERAL_REGION || x == ZAMMY_REGION || x == SARA_REGION || x == WATERBITH_REGION
 		);
+	}
+
+	private void onConfigChanged(ConfigChanged event)
+	{
+		if (!"TickTimers".equals(event.getGroup()))
+		{
+			return;
+		}
+
+		updateConfig();
+	}
+
+	private void updateConfig()
+	{
+		this.showPrayerWidgetHelper = config.showPrayerWidgetHelper();
+		this.showHitSquares = config.showHitSquares();
+		this.changeTickColor = config.changeTickColor();
+		this.gwd = config.gwd();
+		this.dks = config.dks();
+		this.fontStyle = config.fontStyle();
+		this.textSize = config.textSize();
+		this.shadows = config.shadows();
 	}
 }

@@ -28,6 +28,7 @@
 
 package net.runelite.rs.api;
 
+import java.math.BigInteger;
 import net.runelite.api.Client;
 import net.runelite.api.Sprite;
 import net.runelite.api.World;
@@ -84,7 +85,7 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	int getFPS();
 
-	@Import("minimapOrientation")
+	@Import("camAngleY")
 	@Override
 	int getMapAngle();
 
@@ -187,7 +188,7 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	void setDraggedOnWidget(Widget widget);
 
-	@Import("widgets")
+	@Import("Widget_interfaceComponents")
 	RSWidget[][] getWidgets();
 
 	/**
@@ -278,10 +279,10 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	int[] getPlayerMenuTypes();
 
-	@Import("MouseHandler_x0")
+	@Import("MouseHandler_xVolatile")
 	int getMouseX();
 
-	@Import("MouseHandler_y0")
+	@Import("MouseHandler_yVolatile")
 	int getMouseY();
 
 	@Import("Scene_selectedScreenX")
@@ -390,70 +391,72 @@ public interface RSClient extends RSGameShell, Client
 	RSSprite createItemSprite(int itemId, int quantity, int thickness, int borderColor, int stackable, boolean noted);
 
 	@Import("menuAction")
-	@Override
-	void invokeMenuAction(int n2, int n3, int n4, int n5, String string, String string2, int n6, int n7);
+	void sendMenuAction(int n2, int n3, int n4, int n5, String string, String string2, int n6, int n7);
 
-	@Import("decodeSprite")
+	@Import("tempMenuAction")
+	RSMenuAction getTempMenuAction();
+
+	@Import("SpriteBuffer_decode")
 	void decodeSprite(byte[] data);
 
-	@Import("indexedSpriteCount")
+	@Import("SpriteBuffer_spriteCount")
 	int getIndexedSpriteCount();
 
-	@Import("indexedSpriteWidth")
+	@Import("SpriteBuffer_spriteWidth")
 	int getIndexedSpriteWidth();
 
-	@Import("indexedSpriteHeight")
+	@Import("SpriteBuffer_spriteHeight")
 	int getIndexedSpriteHeight();
 
-	@Import("indexedSpriteOffsetXs")
+	@Import("SpriteBuffer_xOffsets")
 	int[] getIndexedSpriteOffsetXs();
 
-	@Import("indexedSpriteOffsetXs")
+	@Import("SpriteBuffer_xOffsets")
 	void setIndexedSpriteOffsetXs(int[] indexedSpriteOffsetXs);
 
-	@Import("indexedSpriteOffsetYs")
+	@Import("SpriteBuffer_yOffsets")
 	int[] getIndexedSpriteOffsetYs();
 
-	@Import("indexedSpriteOffsetYs")
+	@Import("SpriteBuffer_yOffsets")
 	void setIndexedSpriteOffsetYs(int[] indexedSpriteOffsetYs);
 
-	@Import("indexedSpriteWidths")
+	@Import("SpriteBuffer_spriteWidths")
 	int[] getIndexedSpriteWidths();
 
-	@Import("indexedSpriteWidths")
+	@Import("SpriteBuffer_spriteWidths")
 	void setIndexedSpriteWidths(int[] indexedSpriteWidths);
 
-	@Import("indexedSpriteHeights")
+	@Import("SpriteBuffer_spriteHeights")
 	int[] getIndexedSpriteHeights();
 
-	@Import("indexedSpriteHeights")
+	@Import("SpriteBuffer_spriteHeights")
 	void setIndexedSpriteHeights(int[] indexedSpriteHeights);
 
-	@Import("spritePixels")
+	@Import("SpriteBuffer_pixels")
 	byte[][] getSpritePixels();
 
-	@Import("spritePixels")
+	@Import("SpriteBuffer_pixels")
 	void setSpritePixels(byte[][] spritePixels);
 
-	@Import("indexedSpritePalette")
+	@Import("SpriteBuffer_spritePalette")
 	int[] getIndexedSpritePalette();
 
-	@Import("indexedSpritePalette")
+	@Import("SpriteBuffer_spritePalette")
 	void setIndexedSpritePalette(int[] indexedSpritePalette);
 
-	@Import("indexCache8")
+	@Import("archive8")
 	@Override
-	RSAbstractIndexCache getIndexSprites();
+	RSAbstractArchive getIndexSprites();
 
-	@Import("indexCache12")
+	@Import("archive12")
 	@Override
-	RSAbstractIndexCache getIndexScripts();
+	RSAbstractArchive getIndexScripts();
 
 	@Import("widgetClickMasks")
 	@Override
 	RSNodeHashTable getWidgetFlags();
 
-	@Import("widgetGroupParents")
+	@Import("interfaceParents")
 	@Override
 	RSNodeHashTable getComponentTable();
 
@@ -480,7 +483,7 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	RSIterableNodeHashTable getMessages();
 
-	@Import("revision")
+	@Import("RunException_revision")
 	@Override
 	int getRevision();
 
@@ -514,7 +517,7 @@ public interface RSClient extends RSGameShell, Client
 	 * Get the widget top group. widgets[topGroup] contains widgets with
 	 * parentId -1, which are the widget roots.
 	 */
-	@Import("rootWidgetGroup")
+	@Import("rootInterface")
 	int getWidgetRoot();
 
 	@Import("WorldMapElement_cached")
@@ -606,7 +609,7 @@ public interface RSClient extends RSGameShell, Client
 	void setObjectDefinitionLowDetail(boolean lowDetail);
 
 	@Construct
-	RSGroundItem createItem();
+	RSTileItem createItem();
 
 	@Import("Interpreter_intStackSize")
 	@Override
@@ -662,10 +665,10 @@ public interface RSClient extends RSGameShell, Client
 	 *
 	 * (1) JAU - Jagex Angle Unit; 1/1024 of a revolution
 	 */
-	@Import("cameraPitchTarget")
+	@Import("camAngleX")
 	int getCameraPitchTarget();
 
-	@Import("cameraPitchTarget")
+	@Import("camAngleX")
 	void setCameraPitchTarget(int pitch);
 
 	@Import("Scene_cameraPitchSine")
@@ -711,7 +714,7 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	int getCenterY();
 
-	@Import("worldMap0")
+	@Import("getWorldMap")
 	RSWorldMap getRenderOverview();
 
 	@Import("changeWorld")
@@ -746,7 +749,7 @@ public interface RSClient extends RSGameShell, Client
 	@Construct
 	RSScriptEvent createScriptEvent();
 
-	@Import("runScript0")
+	@Import("runScript")
 	void runScript(RSScriptEvent ev, int ex);
 
 	@Import("hintArrowType")
@@ -802,7 +805,7 @@ public interface RSClient extends RSGameShell, Client
 	@Import("compass")
 	void setCompass(Sprite spritePixels);
 
-	@Import("widgetSpriteCache")
+	@Import("Widget_cachedSprites")
 	@Override
 	RSEvictingDualNodeHashTable getWidgetSpriteCache();
 
@@ -830,9 +833,9 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	int getOculusOrbFocalPointY();
 
-	RSGroundItem getLastItemDespawn();
+	RSTileItem getLastItemDespawn();
 
-	void setLastItemDespawn(RSGroundItem lastItemDespawn);
+	void setLastItemDespawn(RSTileItem lastItemDespawn);
 
 	@Construct
 	RSWidget createWidget();
@@ -979,7 +982,7 @@ public interface RSClient extends RSGameShell, Client
 	@Import("Rasterizer2D_drawVerticalLine")
 	void rasterizerDrawVerticalLine(int x, int y, int h, int rgb);
 
-	@Import("drawGradient")
+	@Import("Rasterizer2D_fillRectangleGradient")
 	void rasterizerDrawGradient(int x, int y, int w, int h, int rgbTop, int rgbBottom);
 
 	@Import("Rasterizer2D_fillRectangleAlpha")
@@ -1012,10 +1015,10 @@ public interface RSClient extends RSGameShell, Client
 	String getSelectedSpellName();
 
 	@Import("isSpellSelected")
-	boolean getIsSpellSelected();
+	boolean isSpellSelected();
 
 	@Import("readSoundEffect")
-	RSSoundEffect getTrack(RSAbstractIndexCache indexData, int id, int var0);
+	RSSoundEffect getTrack(RSAbstractArchive indexData, int id, int var0);
 
 	@Import("createRawPcmStream")
 	RSRawPcmStream createRawPcmStream(RSRawSound audioNode, int var0, int volume);
@@ -1023,8 +1026,8 @@ public interface RSClient extends RSGameShell, Client
 	@Import("pcmStreamMixer")
 	RSPcmStreamMixer getSoundEffectAudioQueue();
 
-	@Import("indexCache4")
-	RSAbstractIndexCache getIndexCache4();
+	@Import("archive4")
+	RSAbstractArchive getIndexCache4();
 
 	@Import("decimator")
 	RSDecimator getSoundEffectResampler();
@@ -1034,4 +1037,15 @@ public interface RSClient extends RSGameShell, Client
 
 	@Import("viewportWalking")
 	void setViewportWalking(boolean viewportWalking);
+
+	@Import("crossSprites")
+	@Override
+	RSSprite[] getCrossSprites();
+
+	BigInteger getModulus();
+
+	void setModulus(BigInteger modulus);
+
+	@Import("ItemDefinition_fileCount")
+	int getItemCount();
 }

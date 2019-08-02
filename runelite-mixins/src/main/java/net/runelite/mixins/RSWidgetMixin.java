@@ -30,6 +30,8 @@ import net.runelite.api.Point;
 import net.runelite.api.WidgetNode;
 import net.runelite.api.events.WidgetHiddenChanged;
 import net.runelite.api.events.WidgetPositioned;
+import net.runelite.api.mixins.Copy;
+import net.runelite.api.mixins.Replace;
 import net.runelite.api.widgets.Widget;
 import static net.runelite.api.widgets.WidgetInfo.TO_CHILD;
 import static net.runelite.api.widgets.WidgetInfo.TO_GROUP;
@@ -44,8 +46,11 @@ import net.runelite.api.mixins.Inject;
 import net.runelite.api.mixins.Mixin;
 import net.runelite.api.mixins.Shadow;
 import net.runelite.rs.api.RSClient;
+import net.runelite.rs.api.RSModel;
 import net.runelite.rs.api.RSNode;
 import net.runelite.rs.api.RSNodeHashTable;
+import net.runelite.rs.api.RSPlayerAppearance;
+import net.runelite.rs.api.RSSequenceDefinition;
 import net.runelite.rs.api.RSWidget;
 
 @Mixin(RSWidget.class)
@@ -138,7 +143,7 @@ public abstract class RSWidgetMixin implements RSWidget
 			// parent id potentially incorrect
 
 			// check the parent in the component table
-			HashTable<WidgetNode> componentTable = client.getComponentTable();
+			@SuppressWarnings("unchecked") HashTable<WidgetNode> componentTable = client.getComponentTable();
 			WidgetNode widgetNode = componentTable.get(parentId);
 			if (widgetNode == null || widgetNode.getId() != TO_GROUP(id))
 			{
@@ -375,7 +380,7 @@ public abstract class RSWidgetMixin implements RSWidget
 			return new Widget[0];
 		}
 
-		HashTable<WidgetNode> componentTable = client.getComponentTable();
+		@SuppressWarnings("unchecked") HashTable<WidgetNode> componentTable = client.getComponentTable();
 
 		WidgetNode wn = componentTable.get(getId());
 		if (wn == null)
@@ -412,7 +417,7 @@ public abstract class RSWidgetMixin implements RSWidget
 		event.setWidget(this);
 		event.setHidden(hidden);
 
-		client.getCallbacks().post(event);
+		client.getCallbacks().post(WidgetHiddenChanged.class, event);
 
 		RSWidget[] children = getChildren();
 
@@ -496,8 +501,8 @@ public abstract class RSWidgetMixin implements RSWidget
 
 		client.getLogger().trace("Posting widget position changed");
 
-		WidgetPositioned widgetPositioned = new WidgetPositioned();
-		client.getCallbacks().postDeferred(widgetPositioned);
+		WidgetPositioned widgetPositioned = WidgetPositioned.INSTANCE;
+		client.getCallbacks().postDeferred(WidgetPositioned.class, widgetPositioned);
 	}
 
 	@Inject
@@ -580,5 +585,18 @@ public abstract class RSWidgetMixin implements RSWidget
 		{
 			Arrays.fill(getChildren(), null);
 		}
+	}
+
+	@Copy("getModel")
+	public abstract RSModel rs$getModel(RSSequenceDefinition sequence, int frame, boolean alternate, RSPlayerAppearance playerComposition);
+
+	@Replace("getModel")
+	public RSModel rl$getModel(RSSequenceDefinition sequence, int frame, boolean alternate, RSPlayerAppearance playerComposition)
+	{
+		if (frame != -1 && client.isInterpolateWidgetAnimations())
+		{
+			frame = frame | getModelFrameCycle() << 16 | Integer.MIN_VALUE;
+		}
+		return rs$getModel(sequence, frame, alternate, playerComposition);
 	}
 }

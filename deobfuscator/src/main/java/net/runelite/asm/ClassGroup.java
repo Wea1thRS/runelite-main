@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.runelite.asm.attributes.Code;
+import net.runelite.asm.signature.Signature;
+import static net.runelite.deob.DeobAnnotations.*;
 
 public class ClassGroup
 {
@@ -106,5 +108,52 @@ public class ClassGroup
 				code.getInstructions().lookup();
 			}
 		}
+	}
+
+	public Method findStaticMethod(String name, Signature type)
+	{
+		Method m = null;
+
+		for (ClassFile cf : classes)
+		{
+			m = cf.findStaticMethod(name, type);
+
+			if (m != null)
+			{
+				break;
+			}
+		}
+
+		return m;
+	}
+
+	public Method findStaticMethod(String name)
+	{
+		Method m = null;
+
+		for (ClassFile cf : classes)
+		{
+			m = cf.findStaticMethod(name);
+
+			if (m != null)
+			{
+				break;
+			}
+		}
+
+		return m;
+	}
+
+	public ClassFile findObfuscatedName(String name)
+	{
+		for (ClassFile cf : classes)
+		{
+			if (name.equals(getObfuscatedName(cf.getAnnotations())))
+			{
+				return cf;
+			}
+		}
+
+		return findClass(name);
 	}
 }

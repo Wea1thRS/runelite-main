@@ -26,110 +26,37 @@
  */
 package net.runelite.client.plugins.runeliteplus;
 
-import com.google.inject.Provides;
-
 import java.awt.event.KeyEvent;
 import javax.inject.Inject;
-
+import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import static net.runelite.api.ScriptID.BANK_PIN_OP;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.ScriptCallbackEvent;
 import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
-import net.runelite.client.RuneLiteProperties;
+import static net.runelite.api.widgets.WidgetInfo.*;
 import net.runelite.client.callback.ClientThread;
-import net.runelite.client.config.ConfigManager;
-import net.runelite.client.discord.DiscordService;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.config.RuneLitePlusConfig;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.input.KeyListener;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.ClientUI;
 
 @PluginDescriptor(
-		loadWhenOutdated = true, // prevent users from disabling
-		hidden = true, // prevent users from disabling
-		name = "RuneLitePlus",
-		description = "Configures various aspects of RuneLitePlus",
-		type = PluginType.EXTERNAL
+	loadWhenOutdated = true, // prevent users from disabling
+	hidden = true, // prevent users from disabling
+	name = "RunelitePlus"
 )
-
+@Singleton
 @Slf4j
 public class RuneLitePlusPlugin extends Plugin
 {
-	private class RuneLitePlusKeyListener implements KeyListener
-	{
-		private int lastKeyCycle;
-
-		@Override
-		public void keyTyped(KeyEvent keyEvent)
-		{
-			if (!Character.isDigit(keyEvent.getKeyChar()))
-			{
-				return;
-			}
-
-			if (client.getGameCycle() - lastKeyCycle <= 5)
-			{
-				keyEvent.consume();
-				return;
-			}
-
-			lastKeyCycle = client.getGameCycle();
-
-			clientThread.invoke(() -> handleKey(keyEvent.getKeyChar()));
-			keyEvent.consume();
-		}
-
-		@Override
-		public void keyPressed(KeyEvent keyEvent)
-		{
-		}
-
-		@Override
-		public void keyReleased(KeyEvent keyEvent)
-		{
-		}
-	}
-
-	/* Can't feed this as args to runscript?
-	private static final int[] widgetArgs = new int[]
-		{
-			WidgetInfo.BANK_PIN_EXIT_BUTTON.getId(),
-			WidgetInfo.BANK_PIN_FORGOT_BUTTON.getId(),
-			WidgetInfo.BANK_PIN_1.getId(),
-			WidgetInfo.BANK_PIN_2.getId(),
-			WidgetInfo.BANK_PIN_3.getId(),
-			WidgetInfo.BANK_PIN_4.getId(),
-			WidgetInfo.BANK_PIN_5.getId(),
-			WidgetInfo.BANK_PIN_6.getId(),
-			WidgetInfo.BANK_PIN_7.getId(),
-			WidgetInfo.BANK_PIN_8.getId(),
-			WidgetInfo.BANK_PIN_9.getId(),
-			WidgetInfo.BANK_PIN_0.getId(),
-			WidgetInfo.BANK_PIN_EXIT_BUTTON.getId(),
-			WidgetInfo.BANK_PIN_FORGOT_BUTTON.getId(),
-			WidgetInfo.BANK_PIN_FIRST_ENTERED.getId(),
-			WidgetInfo.BANK_PIN_SECOND_ENTERED.getId(),
-			WidgetInfo.BANK_PIN_THIRD_ENTERED.getId(),
-			WidgetInfo.BANK_PIN_FOURTH_ENTERED.getId(),
-			WidgetInfo.BANK_PIN_INSTRUCTION_TEXT.getId()
-		};*/
-	public static boolean customPresenceEnabled = false;
-	public static final String rlPlusDiscordApp = "560644885250572289";
-	public static final String rlDiscordApp = "409416265891971072";
-
+	private final RuneLitePlusKeyListener keyListener = new RuneLitePlusKeyListener();
 	@Inject
-	public RuneLitePlusConfig config;
-
-	@Inject
-	private ConfigManager configManager;
-
-	@Inject
-	public DiscordService discordService;
+	private RuneLitePlusConfig config;
 
 	@Inject
 	private KeyManager keyManager;
@@ -140,13 +67,8 @@ public class RuneLitePlusPlugin extends Plugin
 	@Inject
 	private ClientThread clientThread;
 
-	@Provides
-	RuneLitePlusConfig getConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(RuneLitePlusConfig.class);
-	}
-
-	private RuneLitePlusKeyListener keyListener = new RuneLitePlusKeyListener();
+	@Inject
+	private EventBus eventbus;
 	private int entered = -1;
 	private int enterIdx;
 	private boolean expectInput;
@@ -154,46 +76,31 @@ public class RuneLitePlusPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		if (config.customPresence())
-		{
-			ClientUI.currentPresenceName = ("RuneLitePlus");
-			ClientUI.frame.setTitle(ClientUI.currentPresenceName);
-			RuneLiteProperties.discordAppID = rlPlusDiscordApp;
-			discordService.close();
-			discordService.init();
-		}
+		addSubscriptions();
+		ClientUI.currentPresenceName = ("RuneLitePlus");
+		ClientUI.frame.setTitle(ClientUI.currentPresenceName);
 
 		entered = -1;
 		enterIdx = 0;
 		expectInput = false;
 	}
 
-	@Subscribe
-	protected void onConfigChanged(ConfigChanged event)
+	@Override
+	protected void shutDown() throws Exception
+	{
+		eventbus.unregister(this);
+
+		entered = 0;
+		enterIdx = 0;
+		expectInput = false;
+		keyManager.unregisterKeyListener(keyListener);
+	}
+
+	private void onConfigChanged(ConfigChanged event)
 	{
 		if (!event.getGroup().equals("runeliteplus"))
 		{
 			return;
-		}
-
-		if (event.getKey().equals("customPresence"))
-		{
-			if (config.customPresence())
-			{
-				ClientUI.currentPresenceName = ("RuneLitePlus");
-				ClientUI.frame.setTitle(ClientUI.currentPresenceName);
-				RuneLiteProperties.discordAppID = rlPlusDiscordApp;
-				discordService.close();
-				discordService.init();
-			}
-			else
-			{
-				ClientUI.currentPresenceName = ("RuneLite");
-				ClientUI.frame.setTitle(ClientUI.currentPresenceName);
-				RuneLiteProperties.discordAppID = rlDiscordApp;
-				discordService.close();
-				discordService.init();
-			}
 		}
 
 		else if (!config.keyboardPin())
@@ -205,16 +112,12 @@ public class RuneLitePlusPlugin extends Plugin
 		}
 	}
 
-	@Override
-	protected void shutDown() throws Exception
+	private void addSubscriptions()
 	{
-		entered = 0;
-		enterIdx = 0;
-		expectInput = false;
-		keyManager.unregisterKeyListener(keyListener);
+		eventbus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
+		eventbus.subscribe(ScriptCallbackEvent.class, this, this::onScriptCallbackEvent);
 	}
 
-	@Subscribe
 	private void onScriptCallbackEvent(ScriptCallbackEvent e)
 	{
 		if (!config.keyboardPin())
@@ -252,13 +155,11 @@ public class RuneLitePlusPlugin extends Plugin
 
 	private void handleKey(char c)
 	{
-		if (client.getWidget(WidgetID.BANK_PIN_GROUP_ID, 0) == null
-				|| !client.getWidget(WidgetInfo.BANK_PIN_TOP_LEFT_TEXT).getText().equals("Bank of Gielinor")
-				&& !client.getWidget(WidgetInfo.BANK_PIN_TOP_LEFT_TEXT).getText().equals("Chambers of Xeric")
-				&& !client.getWidget(WidgetInfo.BANK_PIN_TOP_LEFT_TEXT).getText().equals("Grand Exchange")
-				&& !client.getWidget(WidgetInfo.BANK_PIN_TOP_LEFT_TEXT).getText().equals("Housing Security System")
-				&& !client.getWidget(WidgetInfo.BANK_PIN_TOP_LEFT_TEXT).getText().equals("Dominic's Coffer")
-				&& !client.getWidget(WidgetInfo.BANK_PIN_TOP_LEFT_TEXT).getText().equals("Dominic's Reward Shop"))
+		if (client.getWidget(WidgetID.BANK_PIN_GROUP_ID, BANK_PIN_INSTRUCTION_TEXT.getChildId()) == null
+			|| !client.getWidget(BANK_PIN_INSTRUCTION_TEXT).getText().equals("First click the FIRST digit.")
+			&& !client.getWidget(BANK_PIN_INSTRUCTION_TEXT).getText().equals("Now click the SECOND digit.")
+			&& !client.getWidget(BANK_PIN_INSTRUCTION_TEXT).getText().equals("Time for the THIRD digit.")
+			&& !client.getWidget(BANK_PIN_INSTRUCTION_TEXT).getText().equals("Finally, the FOURTH digit."))
 
 		{
 			entered = 0;
@@ -280,7 +181,7 @@ public class RuneLitePlusPlugin extends Plugin
 
 		// Script 685 will call 653, which in turn will set expectInput to true
 		expectInput = false;
-		client.runScript(685, num, enterIdx, entered, 13959181, 13959183, 13959184, 13959186, 13959188, 13959190, 13959192, 13959194, 13959196, 13959198, 13959200, 13959202, 13959171, 13959172, 13959173, 13959174, 13959178);
+		client.runScript(BANK_PIN_OP, num, enterIdx, entered, BANK_PIN_EXIT_BUTTON.getId(), BANK_PIN_FORGOT_BUTTON.getId(), BANK_PIN_1.getId(), BANK_PIN_2.getId(), BANK_PIN_3.getId(), BANK_PIN_4.getId(), BANK_PIN_5.getId(), BANK_PIN_6.getId(), BANK_PIN_7.getId(), BANK_PIN_8.getId(), BANK_PIN_9.getId(), BANK_PIN_0.getId(), BANK_PIN_FIRST_ENTERED.getId(), BANK_PIN_SECOND_ENTERED.getId(), BANK_PIN_THIRD_ENTERED.getId(), BANK_PIN_FOURTH_ENTERED.getId(), BANK_PIN_INSTRUCTION_TEXT.getId());
 
 		if (oldEnterIdx == 0)
 		{
@@ -293,6 +194,41 @@ public class RuneLitePlusPlugin extends Plugin
 		else if (oldEnterIdx == 2)
 		{
 			entered += num * 10;
+		}
+	}
+
+	private class RuneLitePlusKeyListener implements KeyListener
+	{
+		private int lastKeyCycle;
+
+		@Override
+		public void keyTyped(KeyEvent keyEvent)
+		{
+			if (!Character.isDigit(keyEvent.getKeyChar()))
+			{
+				return;
+			}
+
+			if (client.getGameCycle() - lastKeyCycle <= 5)
+			{
+				keyEvent.consume();
+				return;
+			}
+
+			lastKeyCycle = client.getGameCycle();
+
+			clientThread.invoke(() -> handleKey(keyEvent.getKeyChar()));
+			keyEvent.consume();
+		}
+
+		@Override
+		public void keyPressed(KeyEvent keyEvent)
+		{
+		}
+
+		@Override
+		public void keyReleased(KeyEvent keyEvent)
+		{
 		}
 	}
 }

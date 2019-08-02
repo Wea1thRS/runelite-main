@@ -28,8 +28,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,10 +47,11 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.ProjectileMoved;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
+import net.runelite.client.plugins.alchemicalhydra.Hydra.AttackStyle;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
@@ -59,6 +62,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 	enabledByDefault = false
 )
 @Slf4j
+@Singleton
 public class HydraPlugin extends Plugin
 {
 	@Getter(AccessLevel.PACKAGE)
@@ -87,9 +91,13 @@ public class HydraPlugin extends Plugin
 	@Inject
 	private HydraSceneOverlay poisonOverlay;
 
+	@Inject
+	private EventBus eventBus;
+
 	@Override
 	protected void startUp()
 	{
+		eventBus.subscribe(GameStateChanged.class, this, this::onGameStateChanged);
 		inHydraInstance = checkArea();
 		lastAttackTick = -1;
 		poisonProjectiles.clear();
@@ -98,6 +106,10 @@ public class HydraPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		eventBus.unregister(this);
+		eventBus.unregister("fight");
+		eventBus.unregister("npcSpawned");
+
 		inHydraInstance = false;
 		hydra = null;
 		poisonProjectiles.clear();
@@ -105,7 +117,13 @@ public class HydraPlugin extends Plugin
 		lastAttackTick = -1;
 	}
 
-	@Subscribe
+	private void addFightSubscriptions()
+	{
+		eventBus.subscribe(AnimationChanged.class, "fight", this::onAnimationChanged);
+		eventBus.subscribe(ProjectileMoved.class, "fight", this::onProjectileMoved);
+		eventBus.subscribe(ChatMessage.class, "fight", this::onChatMessage);
+	}
+
 	private void onGameStateChanged(GameStateChanged state)
 	{
 		if (state.getGameState() != GameState.LOGGED_IN)
@@ -123,14 +141,20 @@ public class HydraPlugin extends Plugin
 				removeOverlays();
 				hydra = null;
 			}
+
+			eventBus.unregister("npcSpawned");
+			eventBus.unregister("fight");
 			return;
 		}
+
+		eventBus.subscribe(NpcSpawned.class, "npcSpawned", this::onNpcSpawned);
 
 		for (NPC npc : client.getNpcs())
 		{
 			if (npc.getId() == NpcID.ALCHEMICAL_HYDRA)
 			{
 				hydra = new Hydra(npc);
+				addFightSubscriptions();
 				break;
 			}
 		}
@@ -138,20 +162,20 @@ public class HydraPlugin extends Plugin
 		addOverlays();
 	}
 
-	@Subscribe
 	private void onNpcSpawned(NpcSpawned event)
 	{
-		if (!inHydraInstance || event.getNpc().getId() != NpcID.ALCHEMICAL_HYDRA)
+		if (event.getNpc().getId() != NpcID.ALCHEMICAL_HYDRA)
 		{
 			return;
 		}
 
+		eventBus.unregister("npcSpawned");
 		hydra = new Hydra(event.getNpc());
+		addFightSubscriptions();
 		addOverlays();
 	}
 
-	@Subscribe
-	public void onAnimationChanged(AnimationChanged animationChanged)
+	private void onAnimationChanged(AnimationChanged animationChanged)
 	{
 		Actor actor = animationChanged.getActor();
 
@@ -181,6 +205,8 @@ public class HydraPlugin extends Plugin
 				case FOUR:
 					hydra = null;
 					poisonProjectiles.clear();
+					eventBus.unregister("fight");
+					eventBus.subscribe(NpcSpawned.class, "npcSpawned", this::onNpcSpawned);
 					removeOverlays();
 					return;
 				default:
@@ -200,7 +226,7 @@ public class HydraPlugin extends Plugin
 		}
 
 		Set<LocalPoint> exPoisonProjectiles = new HashSet<>();
-		for (Map.Entry<LocalPoint, Projectile> entry : poisonProjectiles.entrySet())
+		for (Entry<LocalPoint, Projectile> entry : poisonProjectiles.entrySet())
 		{
 			if (entry.getValue().getEndCycle() < client.getGameCycle())
 			{
@@ -213,8 +239,7 @@ public class HydraPlugin extends Plugin
 		}
 	}
 
-	@Subscribe
-	public void onProjectileMoved(ProjectileMoved event)
+	private void onProjectileMoved(ProjectileMoved event)
 	{
 		if (!inHydraInstance || hydra == null
 			|| client.getGameCycle() >= event.getProjectile().getStartMovementCycle())
@@ -236,15 +261,14 @@ public class HydraPlugin extends Plugin
 			poisonProjectiles.put(event.getPosition(), projectile);
 		}
 		else if (client.getTickCount() != lastAttackTick
-			&& (id == Hydra.AttackStyle.MAGIC.getProjectileID() || id == Hydra.AttackStyle.RANGED.getProjectileID()))
+			&& (id == AttackStyle.MAGIC.getProjectileID() || id == AttackStyle.RANGED.getProjectileID()))
 		{
 			hydra.handleAttack(id);
 			lastAttackTick = client.getTickCount();
 		}
 	}
 
-	@Subscribe
-	public void onChatMessage(ChatMessage event)
+	private void onChatMessage(ChatMessage event)
 	{
 		if (!event.getMessage().equals("The chemicals neutralise the Alchemical Hydra's defences!"))
 		{

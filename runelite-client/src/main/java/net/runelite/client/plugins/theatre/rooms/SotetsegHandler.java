@@ -1,62 +1,68 @@
 package net.runelite.client.plugins.theatre.rooms;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
-import net.runelite.api.*;
+import net.runelite.api.Client;
+import net.runelite.api.GroundObject;
+import net.runelite.api.NPC;
+import net.runelite.api.NpcID;
 import net.runelite.api.Point;
+import net.runelite.api.Projectile;
+import net.runelite.api.Tile;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GroundObjectSpawned;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
-import net.runelite.api.events.ProjectileMoved;
+import net.runelite.api.events.ProjectileSpawned;
 import net.runelite.client.plugins.theatre.RoomHandler;
-import net.runelite.client.plugins.theatre.TheatreConfig;
 import net.runelite.client.plugins.theatre.TheatreConstant;
 import net.runelite.client.plugins.theatre.TheatrePlugin;
 import net.runelite.client.plugins.theatre.TheatreRoom;
 import net.runelite.client.ui.overlay.OverlayUtil;
-
-import java.awt.*;
-import java.util.*;
-import java.util.List;
 
 public class SotetsegHandler extends RoomHandler
 {
 
 	@Getter(AccessLevel.PUBLIC)
 	private final Map<GroundObject, Tile> redTiles = new LinkedHashMap<>();
-
+	//My variables
+	private int playerX;
+	private int playerY;
 	@Getter(AccessLevel.PUBLIC)
 	private List<WorldPoint> redOverworld = new ArrayList<>();
-
-	private List<WorldPoint> blackOverworld = new ArrayList<>();
-
-	private List<WorldPoint> blackUnderworld = new ArrayList<>();
-
-	private List<WorldPoint> redUnderworld = new ArrayList<>();
-
-	private List<Point> gridPath = new ArrayList<>();
-
-	//My variables
-	int playerX;
-	int playerY;
-	private Map<Projectile, WorldPoint> soteyProjectiles = new HashMap<>();
+	private final List<WorldPoint> blackOverworld = new ArrayList<>();
+	private final List<WorldPoint> blackUnderworld = new ArrayList<>();
+	private final List<WorldPoint> redUnderworld = new ArrayList<>();
+	private final List<Point> gridPath = new ArrayList<>();
+	private final Set<Projectile> soteyProjectiles = new HashSet<>();
 	private NPC npc;
-	private long startTime = 0;
-	public SotetsegHandler(Client client, TheatrePlugin plugin, TheatreConfig config)
+
+	public SotetsegHandler(final Client client, final TheatrePlugin plugin)
 	{
-		super(client, plugin, config);
+		super(client, plugin);
 	}
 
 	@Override
 	public void onStart()
 	{
 		if (this.plugin.getRoom() == TheatreRoom.SOTETSEG)
+		{
 			return;
+		}
 
 		this.reset();
 		this.plugin.setRoom(TheatreRoom.SOTETSEG);
-		System.out.println("Starting Sotetseg Room");
 	}
 
 	@Override
@@ -64,12 +70,10 @@ public class SotetsegHandler extends RoomHandler
 	{
 		this.reset();
 		this.plugin.setRoom(TheatreRoom.UNKNOWN);
-		System.out.println("Stopping Sotetseg Room");
 	}
 
-	public void reset()
+	private void reset()
 	{
-		startTime = 0;
 		npc = null;
 		soteyProjectiles.clear();
 		redTiles.clear();
@@ -82,7 +86,7 @@ public class SotetsegHandler extends RoomHandler
 
 	public void render(Graphics2D graphics)
 	{
-		if (config.showSotetsegMaze())
+		if (plugin.isShowSotetsegMaze())
 		{
 			int i = 1;
 			for (GroundObject o : redTiles.keySet())
@@ -91,7 +95,7 @@ public class SotetsegHandler extends RoomHandler
 
 				if (poly != null)
 				{
-					graphics.setColor(config.mazeTileColour());
+					graphics.setColor(plugin.getMazeTileColour());
 					graphics.setStroke(new BasicStroke(2));
 					graphics.draw(poly);
 				}
@@ -106,99 +110,46 @@ public class SotetsegHandler extends RoomHandler
 			}
 		}
 
-		if (config.showSotetsegSolo())
+		if (plugin.isShowSotetsegSolo())
 		{
 			for (WorldPoint p : redOverworld)
 			{
-				drawTile(graphics, p, config.mazeTileColour(), 2, 255, 10);
+				drawTile(graphics, p, plugin.getMazeTileColour(), 2, 255, 10);
 			}
 		}
 
-		if (config.showSotetsegAttacks())
+		if (plugin.isShowSotetsegAttacks())
 		{
 
 			Map<Projectile, String> projectileMap = new HashMap<>();
-			for (Projectile p : soteyProjectiles.keySet())
+			for (Projectile p : soteyProjectiles)
 			{
 				final int ticksRemaining = p.getRemainingCycles() / 30;
 				int id = p.getId();
 				String countdownStr;
 				if (id == 1607)
 				{
-					countdownStr = "R " + String.valueOf(ticksRemaining);
+					countdownStr = "R " + ticksRemaining;
 				}
 				else
 				{
-					countdownStr = "M " + String.valueOf(ticksRemaining);
+					countdownStr = "M " + ticksRemaining;
 				}
 
 				projectileMap.put(p, countdownStr);
 			}
 			renderProjectiles(graphics, projectileMap);
-			//Legacy code from yuri, works great but shows all projectiles not just ones targetting local player
-			/**
-			 for (Projectile projectile : client.getProjectiles())
-			 {
-			 int id = projectile.getId();
-
-			 String name = null;
-			 Color color = null;
-
-			 double millis = projectile.getRemainingCycles();
-			 double ticks = millis / 60; // 10 millis per cycle, 0.6 ticks per second, 10/0.6 = 60
-			 double round = Math.round(ticks * 10d) / 10d;
-			 if (id == TheatreConstant.SOTETSEG_BOMB)
-			 {
-			 name = "" + round;
-			 color = Color.WHITE;
-			 } 
-			 else if (id == TheatreConstant.SOTETSEG_MAGE)
-			 {
-
-			 name = "" + round;
-			 color = new Color(64, 224, 208, 255);
-			 } 
-			 else if (id == TheatreConstant.SOTETSEG_RANGE)
-			 {
-			 name = "" + round;
-			 color = new Color(57, 255, 20, 255);
-			 }
-
-			 if (name != null)
-			 {
-			 int x = (int) projectile.getX();
-			 int y = (int) projectile.getY();
-
-			 LocalPoint point = new LocalPoint(x, y);
-			 Point loc = Perspective.getCanvasTextLocation(client, graphics, point, name, 0);
-
-			 if (loc != null)
-			 {
-			 if (id == TheatreConstant.SOTETSEG_BOMB)
-			 {
-			 graphics.setFont(new Font("Arial", Font.BOLD, 20));
-			 }
-			 else
-			 {
-			 graphics.setFont(new Font("Arial", Font.BOLD, 17));
-			 }
-
-			 OverlayUtil.renderTextLocation(graphics, loc, name, color);
-			 }
-			 }
-			 }**/
 		}
 	}
 
-	public void onProjectileMoved(ProjectileMoved event)
+	public void onProjectileSpawned(ProjectileSpawned event)
 	{
-		Projectile projectile = event.getProjectile();
+		final Projectile projectile = event.getProjectile();
 
 		//1604 ball
-		if (event.getPosition().getX() == playerX && event.getPosition().getY() == playerY || event.getProjectile().getId() == 1604)
+		if (projectile.getId() == 1604 && projectile.getInteracting() == client.getLocalPlayer())
 		{
-			WorldPoint p = WorldPoint.fromLocal(client, event.getPosition());
-			soteyProjectiles.put(projectile, p);
+			soteyProjectiles.add(projectile);
 		}
 	}
 
@@ -242,12 +193,16 @@ public class SotetsegHandler extends RoomHandler
 			if (t.getPlane() == 0)
 			{
 				if (!blackOverworld.contains(p))
+				{
 					blackOverworld.add(p);
+				}
 			}
 			else
 			{
 				if (!blackUnderworld.contains(p))
+				{
 					blackUnderworld.add(p);
+				}
 			}
 		}
 
@@ -265,7 +220,9 @@ public class SotetsegHandler extends RoomHandler
 			else
 			{
 				if (!redUnderworld.contains(p))
+				{
 					redUnderworld.add(p);
+				}
 			}
 		}
 	}
@@ -282,19 +239,10 @@ public class SotetsegHandler extends RoomHandler
 		playerY = client.getLocalPlayer().getLocalLocation().getY();
 
 
-
-
 		//Remove projectiles that are about to die
 		if (!soteyProjectiles.isEmpty())
 		{
-			for (Iterator<Projectile> it = soteyProjectiles.keySet().iterator(); it.hasNext(); )
-			{
-				Projectile projectile = it.next();
-				if (projectile.getRemainingCycles() < 1)
-				{
-					it.remove();
-				}
-			}
+			soteyProjectiles.removeIf(p -> p.getRemainingCycles() <= 0);
 		}
 
 		boolean sotetsegFighting = false;
@@ -338,7 +286,7 @@ public class SotetsegHandler extends RoomHandler
 					WorldPoint pW = new WorldPoint(p.getX() - 1, p.getY(), p.getPlane());
 
 					if (!((redUnderworld.contains(pN) && redUnderworld.contains(pS)) ||
-							(redUnderworld.contains(pE) && redUnderworld.contains(pW))))
+						(redUnderworld.contains(pE) && redUnderworld.contains(pW))))
 					{
 						gridPath.add(new Point(p.getX() - minX, p.getY() - minY));
 						if (!messageSent)

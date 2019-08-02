@@ -34,14 +34,14 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.RuneLite;
 
 @Slf4j
 @Singleton
 public class ClientLoader
 {
 	private final ClientConfigLoader clientConfigLoader;
-	private ClientUpdateCheckMode updateCheckMode;
-	public static boolean useLocalInjected = false;
+	private final ClientUpdateCheckMode updateCheckMode;
 
 	@Inject
 	private ClientLoader(
@@ -67,30 +67,36 @@ public class ClientLoader
 					return loadVanilla(config);
 				case NONE:
 					return null;
+				case RSPS:
+					RuneLite.allowPrivateServer = true;
+					return loadRLPlus(config);
 			}
 		}
-		catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException e)
+		catch (IOException | InstantiationException | IllegalAccessException e)
 		{
-			if (e instanceof ClassNotFoundException)
-			{
-				log.error("Unable to load client - class not found. This means you"
-					+ " are not running RuneLite with Maven as the injected client"
-					+ " is not in your classpath.");
-			}
+			log.error("Error loading RS!", e);
+			return null;
+		}
+		catch (ClassNotFoundException e)
+		{
+			log.error("Unable to load client - class not found. This means you"
+				+ " are not running RuneLite with Maven as the injected client"
+				+ " is not in your classpath.");
 
 			log.error("Error loading RS!", e);
 			return null;
 		}
 	}
 
-	private static Applet loadRLPlus(final RSConfig config) throws ClassNotFoundException, InstantiationException, IllegalAccessException
+	private static Applet loadRLPlus(final RSConfig config)
+	throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
-		// the injected client is a runtime scoped dependency
 		final Class<?> clientClass = ClientLoader.class.getClassLoader().loadClass(config.getInitialClass());
 		return loadFromClass(config, clientClass);
 	}
 
-	private static Applet loadVanilla(final RSConfig config) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	private static Applet loadVanilla(final RSConfig config)
+	throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		final String codebase = config.getCodeBase();
 		final String initialJar = config.getInitialJar();
@@ -104,7 +110,8 @@ public class ClientLoader
 		return loadFromClass(config, clientClass);
 	}
 
-	private static Applet loadFromClass(final RSConfig config, final Class<?> clientClass) throws IllegalAccessException, InstantiationException
+	private static Applet loadFromClass(final RSConfig config, final Class<?> clientClass)
+	throws IllegalAccessException, InstantiationException
 	{
 		final Applet rs = (Applet) clientClass.newInstance();
 		rs.setStub(new RSAppletStub(config));

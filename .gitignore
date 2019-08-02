@@ -15,3 +15,9 @@ classes/artifacts/client_jar/client.jar
 *.log
 *.bak
 *.jar
+.live/
+**/build/*
+*/out/
+.gradle/
+runelite-client/src/main/resources/runelite/*
+.staging/

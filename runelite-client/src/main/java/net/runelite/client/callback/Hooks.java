@@ -50,6 +50,7 @@ import net.runelite.api.Renderable;
 import net.runelite.api.WorldMapManager;
 import net.runelite.api.events.BeforeMenuRender;
 import net.runelite.api.events.BeforeRender;
+import net.runelite.api.events.Event;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.hooks.Callbacks;
 import net.runelite.api.hooks.DrawCallbacks;
@@ -86,9 +87,6 @@ public class Hooks implements Callbacks
 	private static final Client client = injector.getInstance(Client.class);
 	private static final OverlayRenderer renderer = injector.getInstance(OverlayRenderer.class);
 	private static final OverlayManager overlayManager = injector.getInstance(OverlayManager.class);
-
-	private static final GameTick GAME_TICK = new GameTick();
-	private static final BeforeRender BEFORE_RENDER = new BeforeRender();
 
 	@Inject
 	private EventBus eventBus;
@@ -130,16 +128,41 @@ public class Hooks implements Callbacks
 	private long lastCheck;
 	private boolean shouldProcessGameTick;
 
-	@Override
-	public void post(Object event)
+	private static MainBufferProvider lastMainBufferProvider;
+	private static Graphics2D lastGraphics;
+
+	/**
+	 * Get the Graphics2D for the MainBufferProvider image
+	 * This caches the Graphics2D instance so it can be reused
+	 * @param mainBufferProvider
+	 * @return
+	 */
+	private static Graphics2D getGraphics(MainBufferProvider mainBufferProvider)
 	{
-		eventBus.post(event);
+		if (lastGraphics == null || lastMainBufferProvider != mainBufferProvider)
+		{
+			if (lastGraphics != null)
+			{
+				log.debug("Graphics reset!");
+				lastGraphics.dispose();
+			}
+
+			lastMainBufferProvider = mainBufferProvider;
+			lastGraphics = (Graphics2D) mainBufferProvider.getImage().getGraphics();
+		}
+		return lastGraphics;
 	}
 
 	@Override
-	public void postDeferred(Object event)
+	public <T> void post(Class<T> eventClass, Event event)
 	{
-		deferredEventBus.post(event);
+		eventBus.post(eventClass, event);
+	}
+
+	@Override
+	public <T> void postDeferred(Class<T> eventClass, Event event)
+	{
+		deferredEventBus.post(eventClass, event);
 	}
 
 	@Override
@@ -151,13 +174,13 @@ public class Hooks implements Callbacks
 
 			deferredEventBus.replay();
 
-			eventBus.post(GAME_TICK);
+			eventBus.post(GameTick.class, GameTick.INSTANCE);
 
 			int tick = client.getTickCount();
 			client.setTickCount(tick + 1);
 		}
 
-		eventBus.post(BEFORE_RENDER);
+		eventBus.post(BeforeRender.class, BeforeRender.INSTANCE);
 
 		clientThread.invoke();
 
@@ -295,9 +318,7 @@ public class Hooks implements Callbacks
 			return;
 		}
 
-		Image image = mainBufferProvider.getImage();
-		final Image finalImage;
-		final Graphics2D graphics2d = (Graphics2D) image.getGraphics();
+		final Graphics2D graphics2d = getGraphics(mainBufferProvider);
 
 		try
 		{
@@ -313,8 +334,6 @@ public class Hooks implements Callbacks
 		// Draw clientUI overlays
 		clientUi.paintOverlays(graphics2d);
 
-		graphics2d.dispose();
-
 		if (client.isGpu())
 		{
 			// processDrawComplete gets called on GPU by the gpu plugin at the end of its
@@ -323,6 +342,8 @@ public class Hooks implements Callbacks
 		}
 
 		// Stretch the game image if the user has that enabled
+		Image image = mainBufferProvider.getImage();
+		final Image finalImage;
 		if (client.isStretchedEnabled())
 		{
 			GraphicsConfiguration gc = clientUi.getGraphicsConfiguration();
@@ -390,8 +411,7 @@ public class Hooks implements Callbacks
 	public void drawScene()
 	{
 		MainBufferProvider bufferProvider = (MainBufferProvider) client.getBufferProvider();
-		BufferedImage image = (BufferedImage) bufferProvider.getImage();
-		Graphics2D graphics2d = image.createGraphics();
+		Graphics2D graphics2d = getGraphics(bufferProvider);
 
 		try
 		{
@@ -401,18 +421,13 @@ public class Hooks implements Callbacks
 		{
 			log.warn("Error during overlay rendering", ex);
 		}
-		finally
-		{
-			graphics2d.dispose();
-		}
 	}
 
 	@Override
 	public void drawAboveOverheads()
 	{
 		MainBufferProvider bufferProvider = (MainBufferProvider) client.getBufferProvider();
-		BufferedImage image = (BufferedImage) bufferProvider.getImage();
-		Graphics2D graphics2d = image.createGraphics();
+		Graphics2D graphics2d = getGraphics(bufferProvider);
 
 		try
 		{
@@ -422,17 +437,12 @@ public class Hooks implements Callbacks
 		{
 			log.warn("Error during overlay rendering", ex);
 		}
-		finally
-		{
-			graphics2d.dispose();
-		}
 	}
 
 	public static void drawAfterWidgets()
 	{
 		MainBufferProvider bufferProvider = (MainBufferProvider) client.getBufferProvider();
-		BufferedImage image = (BufferedImage) bufferProvider.getImage();
-		Graphics2D graphics2d = image.createGraphics();
+		Graphics2D graphics2d = getGraphics(bufferProvider);
 
 		try
 		{
@@ -442,10 +452,6 @@ public class Hooks implements Callbacks
 		catch (Exception ex)
 		{
 			log.warn("Error during overlay rendering", ex);
-		}
-		finally
-		{
-			graphics2d.dispose();
 		}
 
 		// WidgetItemOverlays render at ABOVE_WIDGETS, reset widget item
@@ -512,7 +518,7 @@ public class Hooks implements Callbacks
 	public static boolean drawMenu()
 	{
 		BeforeMenuRender event = new BeforeMenuRender();
-		client.getCallbacks().post(event);
+		client.getCallbacks().post(BeforeMenuRender.class, event);
 		return event.isConsumed();
 	}
 }

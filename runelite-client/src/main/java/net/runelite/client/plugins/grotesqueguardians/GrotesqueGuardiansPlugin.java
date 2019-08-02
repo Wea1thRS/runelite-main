@@ -25,11 +25,12 @@
 package net.runelite.client.plugins.grotesqueguardians;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.eventbus.Subscribe;
 import java.util.ArrayList;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.NPC;
@@ -46,7 +47,7 @@ import static net.runelite.api.NpcID.DUSK_7888;
 	type = PluginType.PVM,
 	enabledByDefault = false
 )
-
+@Singleton
 public class GrotesqueGuardiansPlugin extends Plugin
 {
 	private static final int GARGOYLES_REGION = 6727;
@@ -56,6 +57,8 @@ public class GrotesqueGuardiansPlugin extends Plugin
 	private OverlayManager overlayManager;
 	@Inject
 	private GrotesqueGuardiansPrayerOverlay prayerOverlay;
+	@Inject
+	private EventBus eventBus;
 	@Nullable
 	private DuskAttack prayAgainst;
 	@Nullable
@@ -75,6 +78,8 @@ public class GrotesqueGuardiansPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
+		eventBus.subscribe(GameTick.class, this, this::onGameTick);
+
 		overlayManager.add(overlay);
 		overlayManager.add(prayerOverlay);
 		dusk = null;
@@ -84,16 +89,17 @@ public class GrotesqueGuardiansPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
+		eventBus.unregister(this);
+
 		overlayManager.remove(overlay);
 		overlayManager.remove(prayerOverlay);
 		dusk = null;
 		prayAgainst = null;
 	}
 
-	@Subscribe
-	public void onGameTick(final GameTick event)
+	private void onGameTick(final GameTick event)
 	{
-		final ArrayList<Integer> regions = new ArrayList<Integer>();
+		final ArrayList<Integer> regions = new ArrayList<>();
 		for (final int intValue : client.getMapRegions())
 		{
 			regions.add(intValue);
@@ -126,14 +132,7 @@ public class GrotesqueGuardiansPlugin extends Plugin
 					{
 					prayAgainst = null;
 				}
-				if (dusk.getAnimation() == 7802)
-				{
-					needingToRun = true;
-				}
-				else
-					{
-					needingToRun = false;
-				}
+				needingToRun = dusk.getAnimation() == 7802;
 			}
 		}
 		else
