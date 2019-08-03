@@ -30,17 +30,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 @AllArgsConstructor
+public
 class LootTrackerItem
 {
-	@Getter(AccessLevel.PACKAGE)
+	@Getter(AccessLevel.PUBLIC)
 	private final int id;
-	@Getter(AccessLevel.PACKAGE)
+	@Getter(AccessLevel.PUBLIC)
 	private final String name;
-	@Getter(AccessLevel.PACKAGE)
+	@Getter(AccessLevel.PUBLIC)
 	private final int quantity;
-	@Getter(AccessLevel.PACKAGE)
+	@Getter(AccessLevel.PUBLIC)
 	private final long price;
-	@Getter(AccessLevel.PACKAGE)
+	@Getter(AccessLevel.PUBLIC)
 	@Setter(AccessLevel.PACKAGE)
 	private boolean ignored;
 }

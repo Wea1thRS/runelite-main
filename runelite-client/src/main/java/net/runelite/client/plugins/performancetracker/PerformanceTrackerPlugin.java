@@ -46,7 +46,7 @@ import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -78,6 +78,9 @@ public class PerformanceTrackerPlugin extends Plugin
 	@Inject
 	private OverlayManager overlayManager;
 
+	@Inject
+	private EventBus eventBus;
+
 	private double hpExp = 0;
 	private int region = -1;
 	private boolean loginTick = false;
@@ -94,6 +97,7 @@ public class PerformanceTrackerPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		addSubscriptions();
 		overlayManager.add(performanceTrackerOverlay);
 		if (client.getGameState().equals(GameState.LOGGED_IN))
 		{
@@ -129,7 +133,16 @@ public class PerformanceTrackerPlugin extends Plugin
 		current.incrementSeconds();
 	}
 
-	@Subscribe
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(GameStateChanged.class, this, this::onGameStateChanged);
+		eventBus.subscribe(HitsplatApplied.class, this, this::onHitsplatApplied);
+		eventBus.subscribe(ExperienceChanged.class, this, this::onExperienceChanged);
+		eventBus.subscribe(GameTick.class, this, this::onGameTick);
+		eventBus.subscribe(ScriptCallbackEvent.class, this, this::onScriptCallbackEvent);
+		eventBus.subscribe(OverlayMenuClicked.class, this, this::onOverlayMenuClicked);
+	}
+
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		switch (event.getGameState())
@@ -154,7 +167,6 @@ public class PerformanceTrackerPlugin extends Plugin
 	}
 
 	// Calculate Damage Taken
-	@Subscribe
 	protected void onHitsplatApplied(HitsplatApplied e)
 	{
 		if (!isEnabled())
@@ -169,7 +181,6 @@ public class PerformanceTrackerPlugin extends Plugin
 	}
 
 	// Calculate Damage Dealt
-	@Subscribe
 	protected void onExperienceChanged(ExperienceChanged c)
 	{
 		if (!isEnabled())
@@ -199,7 +210,6 @@ public class PerformanceTrackerPlugin extends Plugin
 		}
 	}
 
-	@Subscribe
 	public void onGameTick(GameTick tick)
 	{
 		loginTick = false;
@@ -211,7 +221,6 @@ public class PerformanceTrackerPlugin extends Plugin
 		}
 	}
 
-	@Subscribe
 	public void onScriptCallbackEvent(ScriptCallbackEvent e)
 	{
 		if (!isEnabled())
@@ -388,7 +397,6 @@ public class PerformanceTrackerPlugin extends Plugin
 			.build();
 	}
 
-	@Subscribe
 	public void onOverlayMenuClicked(OverlayMenuClicked c)
 	{
 		if (!c.getOverlay().equals(performanceTrackerOverlay))

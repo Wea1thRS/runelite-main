@@ -7,7 +7,7 @@
  * for writing the original Runelite Metronome, which inspired this plugin.
  */
 
-package net.runelite.client.plugins.ztickindicator;
+package net.runelite.client.plugins.tickindicator;
 
 import java.awt.event.KeyEvent;
 import javax.inject.Inject;
@@ -15,36 +15,36 @@ import net.runelite.client.input.KeyListener;
 
 public class TickIndicatorInput implements KeyListener
 {
-    private static final int HOTKEY = KeyEvent.VK_SHIFT;
+	private static final int HOTKEY = KeyEvent.VK_SHIFT;
 
-    @Inject
-    private TickIndicatorPlugin plugin;
+	@Inject
+	private TickIndicatorPlugin plugin;
 
-    @Override
-    public void keyTyped(KeyEvent e)
-    {
+	@Override
+	public void keyTyped(KeyEvent e)
+	{
 
-    }
+	}
 
-    @Override
-    public void keyPressed(KeyEvent e)
-    {
-        switch (e.getKeyCode())
-        {
-            case HOTKEY:
-                plugin.updateHotkey(true);
-                break;
-        }
-    }
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+		switch (e.getKeyCode())
+		{
+			case HOTKEY:
+				plugin.updateHotkey(true);
+				break;
+		}
+	}
 
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
-        switch (e.getKeyCode())
-        {
-            case HOTKEY:
-                plugin.updateHotkey(false);
-                break;
-        }
-    }
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
+		switch (e.getKeyCode())
+		{
+			case HOTKEY:
+				plugin.updateHotkey(false);
+				break;
+		}
+	}
 }

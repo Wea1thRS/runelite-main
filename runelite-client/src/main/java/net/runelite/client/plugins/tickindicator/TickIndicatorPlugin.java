@@ -7,91 +7,98 @@
  * for writing the original Runelite Metronome, which inspired this plugin.
  */
 
-package net.runelite.client.plugins.ztickindicator;
+package net.runelite.client.plugins.tickindicator;
 
-import net.runelite.client.eventbus.Subscribe;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
 @PluginDescriptor(
-        name = "TickIndicator",
-        description = "Play a sound on tick to get big rhythm",
-        tags = {"ticks"},
-        enabledByDefault = false
+		name = "TickIndicator",
+		description = "Play a sound on tick to get big rhythm",
+		tags = {"ticks"},
+		enabledByDefault = false
 )
 public class TickIndicatorPlugin extends Plugin
 {
-    private boolean hotkey;
-    private int counter;
+	private boolean hotkey;
+	private int counter;
 
-    @Inject
-    private Client client;
+	@Inject
+	private Client client;
 
-    @Inject
-    private TickIndicatorConfig config;
+	@Inject
+	private TickIndicatorConfig config;
 
-    @Inject
-    private TickIndicatorInput inputListener;
+	@Inject
+	private TickIndicatorInput inputListener;
 
-    @Inject
-    private KeyManager keyManager;
+	@Inject
+	private KeyManager keyManager;
 
-    @Provides
-    TickIndicatorConfig provideConfig(ConfigManager configManager)
-    {
-        return configManager.getConfig(TickIndicatorConfig.class);
-    }
+	@Inject
+	private EventBus eventBus;
 
-    @Override
-    protected void startUp()
-    {
-        hotkey = false;
-        keyManager.registerKeyListener(inputListener);
-    }
+	@Provides
+	TickIndicatorConfig provideConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(TickIndicatorConfig.class);
+	}
 
-    @Override
-    protected void shutDown()
-    {
-        keyManager.unregisterKeyListener(inputListener);
-    }
+	@Override
+	protected void startUp()
+	{
+		addSubscriptions();
+		hotkey = false;
+		keyManager.registerKeyListener(inputListener);
+	}
 
+	@Override
+	protected void shutDown()
+	{
+		keyManager.unregisterKeyListener(inputListener);
+	}
 
-    @Subscribe
-    public void onGameTick(GameTick event)
-    {
-        if (config.tickCount() == 0 || counter != 0)
-        {
-            for (int volume = 0; volume < config.Volume1(); volume++)
-            {
-                client.playSoundEffect(config.SoundEffect1());
-            }
-        }
-        else
-        {
-            for (int volume = 0; volume < config.Volume2(); volume++)
-            {
-                client.playSoundEffect(config.SoundEffect2());
-            }
-        }
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(GameTick.class, this, this::onGameTick);
+	}
 
-        counter++;
-        if (config.tickCount() > 0)
-        {
-            counter = counter % config.tickCount();
-        }
-    }
+	public void onGameTick(GameTick event)
+	{
+		if (config.tickCount() == 0 || counter != 0)
+		{
+			for (int volume = 0; volume < config.Volume1(); volume++)
+			{
+				client.playSoundEffect(config.SoundEffect1());
+			}
+		}
+		else
+		{
+			for (int volume = 0; volume < config.Volume2(); volume++)
+			{
+				client.playSoundEffect(config.SoundEffect2());
+			}
+		}
 
-    void updateHotkey(boolean pressed)
-    {
-        if (pressed)
-        {
-            counter = 0;
-        }
-    }
+		counter++;
+		if (config.tickCount() > 0)
+		{
+			counter = counter % config.tickCount();
+		}
+	}
+
+	void updateHotkey(boolean pressed)
+	{
+		if (pressed)
+		{
+			counter = 0;
+		}
+	}
 }

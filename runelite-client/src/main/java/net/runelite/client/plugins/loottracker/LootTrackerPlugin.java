@@ -39,30 +39,6 @@ import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
 import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
 import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
 import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
-import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -122,15 +98,25 @@ import net.runelite.http.api.loottracker.LootTrackerClient;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
@@ -214,15 +200,6 @@ public class LootTrackerPlugin extends Plugin
 	private LootTrackerConfig config;
 
 	@Inject
-	public Client client;
-
-	@Provides
-	LootTrackerConfig getConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(LootTrackerConfig.class);
-	}
-
-	@Inject
 	private ClientThread clientThread;
 	@Inject
 	private SessionManager sessionManager;
@@ -230,8 +207,6 @@ public class LootTrackerPlugin extends Plugin
 	private ScheduledExecutorService executor;
 	@Inject
 	private EventBus eventBus;
-	@Inject
-	private LootRecordWriter writer;
 	private LootTrackerPanel panel;
 	private NavigationButton navButton;
 	private String eventType;
@@ -505,7 +480,7 @@ public class LootTrackerPlugin extends Plugin
 		}
 	}
 
-	private void onNpcLootReceived(final NpcLootReceived npcLootReceived)
+	private void onNpcLootReceived(final NpcLootReceived npcLootReceived) throws SQLException
 	{
 		final NPC npc = npcLootReceived.getNpc();
 		final Collection<ItemStack> items = npcLootReceived.getItems();
@@ -594,11 +569,6 @@ public class LootTrackerPlugin extends Plugin
 		if (lootTrackerClient != null && this.saveLoot)
 		{
 			lootTrackerClient.submit(lootRecord);
-
-			if (config.saveLocalLoot())
-			{
-				writer.addLootTrackerRecordToDB(name, entries);
-			}
 		}
 		if (config.localPersistence())
 		{
@@ -708,11 +678,6 @@ public class LootTrackerPlugin extends Plugin
 		if (lootTrackerClient != null && this.saveLoot)
 		{
 			lootTrackerClient.submit(lootRecord);
-
-			if (config.saveLocalLoot())
-			{
-				writer.addLootTrackerRecord(lootRecord);
-			}
 		}
 		if (config.localPersistence())
 		{

@@ -33,15 +33,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Provides;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,14 +42,10 @@ import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemDefinition;
 import net.runelite.api.MenuAction;
-import static net.runelite.api.MenuAction.MENU_ACTION_DEPRIORITIZE_OFFSET;
-import static net.runelite.api.MenuAction.WALK;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
-import static net.runelite.api.Varbits.BUILDING_MODE;
-import net.runelite.api.WorldType;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.FocusChanged;
@@ -80,7 +67,6 @@ import net.runelite.client.menus.ComparableEntry;
 import net.runelite.client.menus.MenuManager;
 import net.runelite.client.menus.WidgetMenuOption;
 import net.runelite.client.plugins.Plugin;
-import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.plugins.PluginType;
@@ -103,12 +89,24 @@ import net.runelite.client.plugins.menuentryswapper.util.RingOfWealthMode;
 import net.runelite.client.plugins.menuentryswapper.util.SkillsNecklaceMode;
 import net.runelite.client.plugins.menuentryswapper.util.SlayerRingMode;
 import net.runelite.client.plugins.menuentryswapper.util.XericsTalismanMode;
-import net.runelite.client.plugins.pvptools.PvpToolsConfig;
-import net.runelite.client.plugins.pvptools.PvpToolsPlugin;
-import static net.runelite.client.util.MenuUtil.swap;
 import net.runelite.client.util.MiscUtils;
 import net.runelite.client.util.Text;
 import org.apache.commons.lang3.ArrayUtils;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import static net.runelite.api.MenuAction.MENU_ACTION_DEPRIORITIZE_OFFSET;
+import static net.runelite.api.MenuAction.WALK;
+import static net.runelite.api.Varbits.BUILDING_MODE;
+import static net.runelite.client.util.MenuUtil.swap;
 
 @PluginDescriptor(
 	name = "Menu Entry Swapper",
@@ -118,7 +116,6 @@ import org.apache.commons.lang3.ArrayUtils;
 	enabledByDefault = false
 )
 @Singleton
-@PluginDependency(PvpToolsPlugin.class)
 public class MenuEntrySwapperPlugin extends Plugin
 {
 	private static final String CONFIGURE = "Configure";
@@ -172,10 +169,6 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private ItemManager itemManager;
 	@Inject
 	private EventBus eventBus;
-	@Inject
-	private PvpToolsPlugin pvpTools;
-	@Inject
-	private PvpToolsConfig pvpToolsConfig;
 	private MenuEntry[] entries;
 	private final Set<String> leftClickConstructionItems = new HashSet<>();
 	private boolean buildingMode;
@@ -1769,15 +1762,8 @@ public class MenuEntrySwapperPlugin extends Plugin
 	{
 		clientThread.invoke(() ->
 		{
-			if (client.getVar(Varbits.IN_WILDERNESS) == 1 || WorldType.isAllPvpWorld(client.getWorldType()) && pluginManager.isPluginEnabled(pvpTools) && pvpToolsConfig.hideCast())
-			{
-				pvpTools.setCastOptions();
-			}
-			else
-			{
-				client.setHideFriendCastOptions(false);
-				client.setHideClanmateCastOptions(false);
-			}
+			client.setHideFriendCastOptions(false);
+			client.setHideClanmateCastOptions(false);
 		});
 	}
 

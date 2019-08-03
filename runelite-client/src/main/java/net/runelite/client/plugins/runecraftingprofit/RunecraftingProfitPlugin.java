@@ -36,7 +36,7 @@ import net.runelite.api.Player;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.task.Schedule;
@@ -78,6 +78,9 @@ public class RunecraftingProfitPlugin extends Plugin
 	@Inject
 	private RunecraftingProfitConfig config;
 
+	@Inject
+	private EventBus eventBus;
+
 	@Provides
 	RunecraftingProfitConfig getConfig(ConfigManager configManager)
 	{
@@ -87,6 +90,7 @@ public class RunecraftingProfitPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		addSubscriptions();
 		overlayManager.add(overlay);
 		lastRunecraftingAnimation = Instant.now();
 	}
@@ -100,7 +104,12 @@ public class RunecraftingProfitPlugin extends Plugin
 		this.displayOverlay = false;
 	}
 
-	@Subscribe
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(GameTick.class, this, this::onGameTick);
+		eventBus.subscribe(AnimationChanged.class, this, this::onAnimationChanged);
+	}
+
 	public void onGameTick(GameTick event)
 	{
 		if (ChronoUnit.MINUTES.between(this.lastRunecraftingAnimation, Instant.now()) >= config.overlayTimeout())
@@ -116,8 +125,6 @@ public class RunecraftingProfitPlugin extends Plugin
 		lastTickAnimationWasRunecrafting = localPlayer.getAnimation() == AnimationID.RUNECRAFTING_ANIMATION;
 	}
 
-
-	@Subscribe
 	private void onAnimationChanged(AnimationChanged anim)
 	{
 		if (anim.getActor() == client.getLocalPlayer() && anim.getActor().getAnimation() == AnimationID.RUNECRAFTING_ANIMATION)

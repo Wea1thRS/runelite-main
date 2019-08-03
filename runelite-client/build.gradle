@@ -9,6 +9,7 @@ plugins {
 description = 'RuneLite Client'
 
 dependencies {
+    implementation 'com.github.MrPowerGamerBR:TemmieWebhook:master'
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.0.1'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
@@ -61,6 +62,7 @@ dependencies {
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
     testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
     compileOnly group: 'net.runelite', name: 'orange-extensions', version: '1.0'
+    compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
 }
 
 static def getDate() {

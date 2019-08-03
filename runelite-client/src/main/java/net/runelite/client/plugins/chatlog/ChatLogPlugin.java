@@ -30,12 +30,18 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -43,8 +49,8 @@ import static net.runelite.client.RuneLite.CHATLOG_DIR;
 
 @PluginDescriptor
 		(
-		name = "Chat Log",
-		enabledByDefault = false
+				name = "Chat Log",
+				enabledByDefault = false
 		)
 
 @Slf4j
@@ -56,6 +62,9 @@ public class ChatLogPlugin extends Plugin
 	@Inject
 	private ChatLogConfig config;
 
+	@Inject
+	private EventBus eventBus;
+
 	@Provides
 	ChatLogConfig getConfig(ConfigManager configManager)
 	{
@@ -65,10 +74,15 @@ public class ChatLogPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		addSubscriptions();
 		CHATLOG_DIR.mkdirs();
 	}
 
-	@Subscribe
+	private void addSubscriptions()
+	{
+		eventBus.subscribe(ChatMessage.class, this, this::onChatMessage);
+	}
+
 	public void onChatMessage(ChatMessage event)
 	{
 		if (!saveMessage(event.getType()))
@@ -90,8 +104,8 @@ public class ChatLogPlugin extends Plugin
 		File file = new File(playerFolder, "chatlog.txt");
 
 		try (FileWriter fw = new FileWriter(file.getPath(), true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			PrintWriter out = new PrintWriter(bw))
+				BufferedWriter bw = new BufferedWriter(fw);
+				PrintWriter out = new PrintWriter(bw))
 		{
 			if (!file.canRead() || file.length() == 0) //Adding data headers to new or empty files, so that people can more easily interpret the chat logs.
 			//noinspection CheckStyle,CheckStyle

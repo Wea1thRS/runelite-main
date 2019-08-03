@@ -85,8 +85,8 @@ public class RuneLite
 	public static final File PLUGIN_DIR = new File(RUNELITE_DIR, "plugins");
 	public static final File SCREENSHOT_DIR = new File(RUNELITE_DIR, "screenshots");
 	public static final File CHATLOG_DIR = new File(RUNELITE_DIR, "chatlog");
-	private static final File LOGS_DIR = new File(RUNELITE_DIR, "logs");
-	private static final File LOGS_FILE_NAME = new File(LOGS_DIR, "application");
+	public static final File LOGS_DIR = new File(RUNELITE_DIR, "logs");
+	public static final File LOGS_FILE_NAME = new File(LOGS_DIR, "application");
 	static final RuneLiteSplashScreen splashScreen = new RuneLiteSplashScreen();
 	public static boolean allowPrivateServer = false;
 	
