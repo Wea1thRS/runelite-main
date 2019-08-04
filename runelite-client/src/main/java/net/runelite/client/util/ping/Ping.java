@@ -58,6 +58,11 @@ public class Ping
 			}
 			return tcpPing(address);
 		}
+		catch (UnknownHostException e)
+		{
+			log.warn("Unkown host: " + address);
+			return -1;
+		}
 		catch (IOException ex)
 		{
 			log.warn("error pinging", ex);
