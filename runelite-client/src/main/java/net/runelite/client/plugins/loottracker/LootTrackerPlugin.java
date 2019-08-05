@@ -60,9 +60,11 @@ import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.LocalPlayerDeath;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.PlayerSpawned;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.WidgetID;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.RuneLite;
 import net.runelite.client.account.AccountSession;
 import net.runelite.client.account.SessionManager;
@@ -547,7 +549,7 @@ public class LootTrackerPlugin extends Plugin
 		if (this.sendLootValueMessages)
 		{
 			if (WorldType.isDeadmanWorld(client.getWorldType()) || WorldType.isHighRiskWorld(client.getWorldType()) ||
-					WorldType.isPvpWorld(client.getWorldType()) || client.getVar(Varbits.IN_WILDERNESS) == 1)
+				WorldType.isPvpWorld(client.getWorldType()) || client.getVar(Varbits.IN_WILDERNESS) == 1)
 			{
 				final String totalValue = StackFormatter.quantityToRSStackSize(playerLootReceived.getItems().stream()
 					.mapToInt(itemStack -> itemManager.getItemPrice(itemStack.getId()) * itemStack.getQuantity()).sum());
@@ -880,10 +882,7 @@ public class LootTrackerPlugin extends Plugin
 		{
 			BufferedWriter bufferedWriter = Files.newBufferedWriter(LOOT_RECORDS_FILE.toPath());
 
-			GsonBuilder gsonBuilder = new GsonBuilder();
-			gsonBuilder.setPrettyPrinting();
-			Gson gson = gsonBuilder.create();
-			bufferedWriter.append(gson.toJson(lootRecords));
+			bufferedWriter.append(RuneLiteAPI.GSON.toJson(lootRecords));
 			bufferedWriter.close();
 		}
 		catch (IOException e)
@@ -1011,7 +1010,8 @@ public class LootTrackerPlugin extends Plugin
 
 	/**
 	 * Toggles the hidden status for a particular record
-	 * @param name - The String name of the record to toggle the hidden status of
+	 *
+	 * @param name   - The String name of the record to toggle the hidden status of
 	 * @param ignore - true to ignore, false to remove
 	 */
 	void toggleNPC(String name, boolean ignore)
@@ -1032,6 +1032,7 @@ public class LootTrackerPlugin extends Plugin
 
 	/**
 	 * Checks to see if a record name is in the list of ignored NPCs
+	 *
 	 * @param name - The String of the name to check
 	 * @return - true if it is being ignored, false otherwise
 	 */
@@ -1068,12 +1069,13 @@ public class LootTrackerPlugin extends Plugin
 	private LootTrackerItem[] buildEntries(final Collection<ItemStack> itemStacks)
 	{
 		return itemStacks.stream()
-		.map(itemStack -> buildLootTrackerItem(itemStack.getId(), itemStack.getQuantity()))
-		.toArray(LootTrackerItem[]::new);
+			.map(itemStack -> buildLootTrackerItem(itemStack.getId(), itemStack.getQuantity()))
+			.toArray(LootTrackerItem[]::new);
 	}
 
 	private void handleDrops(LootTrackerItem[] drops, String name)
 	{
+		log.debug("Drops: " + Arrays.toString(drops) + "\nEventType: " + name);
 		for (LootTrackerItem item : drops)
 		{
 			if (item.getPrice() >= config.lootPrice())
