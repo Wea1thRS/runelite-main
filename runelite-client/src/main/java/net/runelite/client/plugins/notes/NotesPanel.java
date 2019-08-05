@@ -26,18 +26,27 @@
 package net.runelite.client.plugins.notes;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import javax.inject.Singleton;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +57,7 @@ import net.runelite.client.ui.PluginPanel;
 @Singleton
 class NotesPanel extends PluginPanel
 {
-	private final JTextArea notesEditor = new JTextArea();
+	private final JTextPane notesEditor = new JTextPane();
 	private final UndoManager undoRedo = new UndoManager();
 
 	void init(final NotesConfig config)
@@ -62,9 +71,9 @@ class NotesPanel extends PluginPanel
 		setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		notesEditor.setTabSize(2);
-		notesEditor.setLineWrap(true);
-		notesEditor.setWrapStyleWord(true);
+//		notesEditor.setTabSize(2);
+//		notesEditor.setLineWrap(true);
+//		notesEditor.setWrapStyleWord(true);
 
 		JPanel notesContainer = new JPanel();
 		notesContainer.setLayout(new BorderLayout());
@@ -84,6 +93,10 @@ class NotesPanel extends PluginPanel
 
 		notesEditor.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
 		notesEditor.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
+		notesEditor.getInputMap().put(KeyStroke.getKeyStroke("control B"), "Bold");
+		notesEditor.getInputMap().put(KeyStroke.getKeyStroke("control I"), "Italic");
+		notesEditor.getInputMap().put(KeyStroke.getKeyStroke("control U"), "Underline");
+		notesEditor.getInputMap().put(KeyStroke.getKeyStroke("control S"), "Strikethrough");
 
 		notesEditor.getActionMap().put("Undo", new AbstractAction("Undo")
 		{
@@ -123,6 +136,126 @@ class NotesPanel extends PluginPanel
 			}
 		});
 
+		notesEditor.getActionMap().put("Bold", new AbstractAction("Bold")
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				StyledDocument doc = (StyledDocument) notesEditor.getDocument();
+				try
+				{
+					int selection = notesEditor.getSelectionStart();
+					if (selection != notesEditor.getSelectionEnd())
+					{
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes().copyAttributes());
+						StyleConstants.setBold(set, !StyleConstants.isBold(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes()));
+						doc.setCharacterAttributes(notesEditor.getSelectionStart(), notesEditor.getSelectedText().length(), set, true);
+					}
+					else
+					{
+						selection = notesEditor.getCaretPosition();
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(selection).getAttributes().copyAttributes());
+						StyleConstants.setBold(set, false);
+						doc.setCharacterAttributes(selection, 1, set, true);
+					}
+				}
+				catch (NullPointerException ex)
+				{
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		notesEditor.getActionMap().put("Italic", new AbstractAction("Italic")
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				StyledDocument doc = (StyledDocument) notesEditor.getDocument();
+				try
+				{
+					int selection = notesEditor.getSelectionStart();
+					if (selection != notesEditor.getSelectionEnd())
+					{
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes().copyAttributes());
+						StyleConstants.setItalic(set, !StyleConstants.isItalic(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes()));
+						doc.setCharacterAttributes(notesEditor.getSelectionStart(), notesEditor.getSelectedText().length(), set, true);
+					}
+					else
+					{
+						selection = notesEditor.getCaretPosition();
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(selection).getAttributes().copyAttributes());
+						StyleConstants.setItalic(set, false);
+						doc.setCharacterAttributes(selection, 1, set, true);
+					}
+				}
+				catch (NullPointerException ex)
+				{
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		notesEditor.getActionMap().put("Underline", new AbstractAction("Underline")
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				StyledDocument doc = (StyledDocument) notesEditor.getDocument();
+				try
+				{
+					int selection = notesEditor.getSelectionStart();
+					if (selection != notesEditor.getSelectionEnd())
+					{
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes().copyAttributes());
+						StyleConstants.setUnderline(set, !StyleConstants.isUnderline(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes()));
+						doc.setCharacterAttributes(notesEditor.getSelectionStart(), notesEditor.getSelectedText().length(), set, true);
+					}
+					else
+					{
+						selection = notesEditor.getCaretPosition();
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(selection).getAttributes().copyAttributes());
+						StyleConstants.setUnderline(set, false);
+						doc.setCharacterAttributes(selection, 1, set, true);
+					}
+				}
+				catch (NullPointerException ex)
+				{
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		notesEditor.getActionMap().put("Strikethrough", new AbstractAction("Strikethrough")
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				StyledDocument doc = (StyledDocument) notesEditor.getDocument();
+				try
+				{
+					int selection = notesEditor.getSelectionStart();
+					if (selection != notesEditor.getSelectionEnd())
+					{
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes().copyAttributes());
+						StyleConstants.setStrikeThrough(set, !StyleConstants.isStrikeThrough(doc.getCharacterElement(notesEditor.getSelectionStart()).getAttributes()));
+						doc.setCharacterAttributes(notesEditor.getSelectionStart(), notesEditor.getSelectedText().length(), set, true);
+					}
+					else
+					{
+						selection = notesEditor.getCaretPosition();
+						MutableAttributeSet set = new SimpleAttributeSet(doc.getCharacterElement(selection).getAttributes().copyAttributes());
+						StyleConstants.setStrikeThrough(set, false);
+						doc.setCharacterAttributes(selection, 1, set, true);
+					}
+				}
+				catch (NullPointerException ex)
+				{
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		notesEditor.addFocusListener(new FocusListener()
 		{
 			@Override
@@ -145,7 +278,7 @@ class NotesPanel extends PluginPanel
 					String data = doc.getText(0, doc.getLength());
 					config.notesData(data);
 				}
-				catch (BadLocationException ex)
+				catch (Exception ex)
 				{
 					log.warn("Notes Document Bad Location: " + ex);
 				}
