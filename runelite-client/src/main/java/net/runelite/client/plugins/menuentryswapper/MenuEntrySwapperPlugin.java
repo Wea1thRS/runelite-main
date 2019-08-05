@@ -1275,9 +1275,13 @@ public class MenuEntrySwapperPlugin extends Plugin
 
 		if (this.swapAdmire)
 		{
-			menuManager.addPriorityEntry("Teleport");
-			menuManager.addPriorityEntry("Spellbook");
-			menuManager.addPriorityEntry("Perks");
+			menuManager.addPriorityEntry("Teleport", "Mounted Strength Cape");
+			menuManager.addPriorityEntry("Teleport", "Mounted Construction Cape");
+			menuManager.addPriorityEntry("Teleport", "Mounted Crafting Cape");
+			menuManager.addPriorityEntry("Teleport", "Mounted Hunter Cape");
+			menuManager.addPriorityEntry("Teleport", "Mounted Fishing Cape");
+			menuManager.addPriorityEntry("Spellbook", "Mounted Magic Cape");
+			menuManager.addPriorityEntry("Perks", "Mounted Max Cape");
 		}
 
 		if (this.swapPrivate)
@@ -1334,7 +1338,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 				menuManager.removeSwaps("Tree");
 				break;
 			case CONFIGURE:
-				menuManager.addPriorityEntry("Configure");
+				menuManager.addPriorityEntry("Configure", "Fairy ring");
 				break;
 			case LAST_DESTINATION:
 				menuManager.addPriorityEntry("Last-destination");
@@ -1583,7 +1587,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 				menuManager.removeSwaps("Tree");
 				break;
 			case CONFIGURE:
-				menuManager.removePriorityEntry("Configure");
+				menuManager.removePriorityEntry("Configure", "Fairy ring");
 				break;
 			case LAST_DESTINATION:
 				menuManager.removePriorityEntry("Last-destination");
