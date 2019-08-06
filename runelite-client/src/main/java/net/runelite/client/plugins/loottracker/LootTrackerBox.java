@@ -151,7 +151,7 @@ class LootTrackerBox extends JPanel
 	 */
 	boolean matches(final LootTrackerRecord record)
 	{
-		return record.getTitle().equals(id);
+		return record.getTitle().equals(this.id);
 	}
 
 	/**
