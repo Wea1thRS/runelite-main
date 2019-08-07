@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
 
@@ -62,7 +63,7 @@ public class InventorySetupBankOverlay extends WidgetItemOverlay
 				return;
 			}
 
-			if (IntStream.of(ids).noneMatch(x -> x == itemId))
+			if (IntStream.of(ids).noneMatch(x -> (ItemVariationMapping.map(x) == ItemVariationMapping.map(itemId))))
 			{
 				return;
 			}
