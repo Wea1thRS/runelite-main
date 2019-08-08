@@ -31,7 +31,6 @@ import net.runelite.client.plugins.loottracker.LootTrackerRecord;
 import net.runelite.client.plugins.loottracker.localstorage.events.LTNameChange;
 import net.runelite.client.plugins.loottracker.localstorage.events.LTRecordStored;
 import net.runelite.http.api.RuneLiteAPI;
-import net.runelite.http.api.loottracker.LootRecord;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
