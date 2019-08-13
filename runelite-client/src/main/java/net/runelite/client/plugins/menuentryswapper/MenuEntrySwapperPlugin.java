@@ -298,6 +298,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private boolean hideDestroyHerbsack;
 	private boolean hideDestroyBoltpouch;
 	private boolean hideDestroyGembag;
+	private boolean hideDestroyLootingBag;
 	private boolean hideDropRunecraftingPouch;
 	private boolean hideCastToB;
 	private Set<String> hideCastIgnoredToB;
@@ -559,6 +560,10 @@ public class MenuEntrySwapperPlugin extends Plugin
 					continue;
 				}
 				if (this.hideDestroyBoltpouch && entry.getTarget().contains("Bolt pouch"))
+				{
+					continue;
+				}
+				if (this.hideDestroyLootingBag && entry.getTarget().contains("Looting bag"))
 				{
 					continue;
 				}
@@ -1910,6 +1915,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 		this.hideDestroyCoalbag = config.hideDestroyCoalbag();
 		this.hideDestroyHerbsack = config.hideDestroyHerbsack();
 		this.hideDestroyBoltpouch = config.hideDestroyBoltpouch();
+		this.hideDestroyLootingBag = config.hideDestroyLootingBag();
 		this.hideDestroyGembag = config.hideDestroyGembag();
 		this.hideDropRunecraftingPouch = config.hideDropRunecraftingPouch();
 		this.hideCastToB = config.hideCastToB();

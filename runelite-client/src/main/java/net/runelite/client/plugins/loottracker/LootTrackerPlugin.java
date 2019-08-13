@@ -37,6 +37,31 @@ import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
 import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
 import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
 import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
+import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -1184,18 +1209,17 @@ public class LootTrackerPlugin extends Plugin
 
 	private Collection<LootTrackerRecord> convertToLootTrackerRecord(final Collection<LootRecord> records)
 	{
-		Collection<LootTrackerRecord> trackerRecords = new ArrayList<>();
-		for (LootRecord record : records)
-		{
-			LootTrackerItem[] drops = record.getDrops().stream().map(itemStack ->
+		return records.stream()
+			.sorted(Comparator.comparing(LootRecord::getTime))
+			.map(record ->
+			{
+				LootTrackerItem[] drops = record.getDrops().stream().map(itemStack ->
 					buildLootTrackerItem(itemStack.getId(), itemStack.getQty())
-			).toArray(LootTrackerItem[]::new);
-
-			trackerRecords.add(new LootTrackerRecord(record.getEventId(), record.getUsername(),
-					"", drops, record.getTime()));
-		}
-
-		return trackerRecords;
+				).toArray(LootTrackerItem[]::new);
+				return new LootTrackerRecord(record.getEventId(), record.getUsername(),
+					"", drops, record.getTime());
+			})
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private LootTrackerRecord convertToLootTrackerRecord(final LootRecord record)
