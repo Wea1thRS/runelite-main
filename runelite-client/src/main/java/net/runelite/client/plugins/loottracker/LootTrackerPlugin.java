@@ -33,35 +33,6 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
-import com.mrpowergamerbr.temmiewebhook.DiscordEmbed;
-import com.mrpowergamerbr.temmiewebhook.DiscordMessage;
-import com.mrpowergamerbr.temmiewebhook.TemmieWebhook;
-import com.mrpowergamerbr.temmiewebhook.embed.ThumbnailEmbed;
-import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -137,6 +108,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -244,7 +216,6 @@ public class LootTrackerPlugin extends Plugin
 	private NavigationButton navButton;
 	private String eventType;
 
-	TemmieWebhook temmie = new TemmieWebhook("https://discordapp.com/api/webhooks/478488367093514280/CmaXv7dof2psRgV07lGPkYw9cYzwO2wVAM8s1easN9afwotbuA0cKLsAlDd3BBpQCREJ");
 	private boolean chestLooted;
 
 	private List<String> ignoredItems = new ArrayList<>();
@@ -1193,33 +1164,19 @@ public class LootTrackerPlugin extends Plugin
 				.toArray(LootTrackerItem[]::new);
 	}
 
-	private void sendDiscordMessage(String a, int b, int c, String d)
-	{
-		String userName = client.getLocalPlayer().getName();
-		DiscordEmbed de = new DiscordEmbed("" + d, userName + " has just received " + c + "x " + a + " as a drop!");
-		ThumbnailEmbed te = new ThumbnailEmbed();
-		te.setUrl("https://api.runelite.net/runelite-" + RuneLiteAPI.getVersion() + "/item/" + b + "/icon");
-		te.setHeight(96);
-		te.setWidth(96);
-		de.setThumbnail(te);
-		DiscordMessage dm = new DiscordMessage("OSRS", "", "https://img04.deviantart.net/360e/i/2015/300/9/d/temmie_by_ilovegir64-d9elpal.png");
-		dm.getEmbeds().add(de);
-		temmie.sendMessage(dm);
-	}
-
 	private Collection<LootTrackerRecord> convertToLootTrackerRecord(final Collection<LootRecord> records)
 	{
 		return records.stream()
-			.sorted(Comparator.comparing(LootRecord::getTime))
-			.map(record ->
-			{
-				LootTrackerItem[] drops = record.getDrops().stream().map(itemStack ->
-					buildLootTrackerItem(itemStack.getId(), itemStack.getQty())
-				).toArray(LootTrackerItem[]::new);
-				return new LootTrackerRecord(record.getEventId(), record.getUsername(),
-					"", drops, record.getTime());
-			})
-			.collect(Collectors.toCollection(ArrayList::new));
+				.sorted(Comparator.comparing(LootRecord::getTime))
+				.map(record ->
+				{
+					LootTrackerItem[] drops = record.getDrops().stream().map(itemStack ->
+							buildLootTrackerItem(itemStack.getId(), itemStack.getQty())
+					).toArray(LootTrackerItem[]::new);
+					return new LootTrackerRecord(record.getEventId(), record.getUsername(),
+							"", drops, record.getTime());
+				})
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private LootTrackerRecord convertToLootTrackerRecord(final LootRecord record)
