@@ -24,25 +24,23 @@
  */
 package net.runelite.client.plugins.inferno;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Actor;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.HeadIcon;
 import net.runelite.api.NPC;
-import net.runelite.api.NpcID;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
@@ -69,6 +67,14 @@ import org.apache.commons.lang3.ArrayUtils;
 public class InfernoPlugin extends Plugin
 {
 	private static final int INFERNO_REGION = 9043;
+	private static final int ZUK_SHIELD = 7707;
+	private static List<String> NPCS_HIDDEN_ON_DEATH;
+	static
+	{
+		ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
+		builder.add("Jal-Nib");
+		NPCS_HIDDEN_ON_DEATH = builder.build();
+	}
 
 	@Inject
 	private Client client;
@@ -83,13 +89,10 @@ public class InfernoPlugin extends Plugin
 	private InfernoWaveOverlay waveOverlay;
 
 	@Inject
-	private InfernoJadOverlay jadOverlay;
+	private InfernoInfoBoxOverlay jadOverlay;
 
 	@Inject
-	private InfernoPrayerOverlay prayerOverlay;
-
-	@Inject
-	private InfernoNibblerOverlay nibblerOverlay;
+	private InfernoOverlay prayerOverlay;
 
 	@Inject
 	private InfernoConfig config;
@@ -98,33 +101,40 @@ public class InfernoPlugin extends Plugin
 	private EventBus eventBus;
 
 	@Getter(AccessLevel.PACKAGE)
+	private InfernoConfig.FontStyle fontStyle = InfernoConfig.FontStyle.BOLD;
+
+	@Getter(AccessLevel.PACKAGE)
+	private int textSize = 32;
+
+	//TODO: Why are there 2 waveNumbers ???
+	@Getter(AccessLevel.PACKAGE)
 	private int currentWave = -1;
-
-	@Getter(AccessLevel.PACKAGE)
-	private final Map<NPC, InfernoNPC> monsters = new HashMap<>();
-
-	@Getter(AccessLevel.PACKAGE)
-	private final Map<Integer, ArrayList<InfernoNPC>> monsterCurrentAttackMap = new HashMap<>(6);
-
-	@Getter(AccessLevel.PACKAGE)
-	private final List<NPC> nibblers = new ArrayList<>();
-
-	@Getter(AccessLevel.PACKAGE)
-	private final InfernoNPC[] priorityNPC = new InfernoNPC[4];
-
-	@Getter(AccessLevel.PACKAGE)
-	private final List<InfernoJad> jads = new ArrayList<>();
-
-	@Getter(AccessLevel.PACKAGE)
-	private final List<NPC> activeHealers = new ArrayList<>();
-
-	@Getter
-	private long lastTick;
 
 	@Getter(AccessLevel.PACKAGE)
 	private int currentWaveNumber;
 
-	private final List<Actor> waveMonsters = new ArrayList<>();
+	@Getter(AccessLevel.PACKAGE)
+	private final Map<NPC, InfernoNPC> infernoNpcs = new HashMap<>();
+
+	@Getter(AccessLevel.PACKAGE)
+	private List<WorldPoint> obstacles = new ArrayList<>();
+
+	private NPC zukShield = null;
+	private WorldPoint zukShieldLastPosition = null;
+	private int zukShieldCornerTicks = -2;
+	@Getter(AccessLevel.PACKAGE)
+	private List<WorldPoint> zukShieldSafespots = new ArrayList<>();
+	@Getter(AccessLevel.PACKAGE)
+	private boolean finalPhase = false;
+
+	//@Getter(AccessLevel.PACKAGE)
+	//private final Map<Integer, ArrayList<InfernoNPC>> monsterCurrentAttackMap = new HashMap<>(6);
+
+	//@Getter(AccessLevel.PACKAGE)
+	//private final InfernoNPC[] priorityNPC = new InfernoNPC[4];
+
+	@Getter
+	private long lastTick;
 
 	@Getter(AccessLevel.PACKAGE)
 	private boolean displayNibblerOverlay;
@@ -132,15 +142,37 @@ public class InfernoPlugin extends Plugin
 	private boolean showPrayerHelp;
 	@Getter(AccessLevel.PACKAGE)
 	private InfernoPrayerOverlayMode prayerOverlayMode;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean descendingBoxes;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean ticksOnNpc;
 	private InfernoWaveDisplayMode waveDisplay;
 	private Color getWaveOverlayHeaderColor;
 	private Color getWaveTextColor;
 	@Getter(AccessLevel.PACKAGE)
-	private boolean descendingBoxes;
-	@Getter(AccessLevel.PACKAGE)
 	private boolean indicateWhenPrayingCorrectly;
 	@Getter(AccessLevel.PACKAGE)
 	private boolean indicateActiveHealers;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateNonSafespotted;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateTemporarySafespotted;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateSafespotted;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateObstacles;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateNpcPosition;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateZukShieldSafespots;
+	@Getter(AccessLevel.PACKAGE)
+	private Color zukShieldSafespotsColor;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateNibblers;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateNonPriorityDescendingBoxes;
+	@Getter(AccessLevel.PACKAGE)
+	private boolean indicateBlobDetectionTick;
 
 	@Provides
 	InfernoConfig provideConfig(ConfigManager configManager)
@@ -155,11 +187,12 @@ public class InfernoPlugin extends Plugin
 		addSubscriptions();
 
 		waveOverlay.setDisplayMode(this.waveDisplay);
+		waveOverlay.setWaveHeaderColor(this.getWaveOverlayHeaderColor);
+		waveOverlay.setWaveTextColor(this.getWaveTextColor);
 
 		if (isInInferno())
 		{
 			overlayManager.add(infernoOverlay);
-			overlayManager.add(nibblerOverlay);
 
 			if (this.waveDisplay != InfernoWaveDisplayMode.NONE)
 			{
@@ -169,14 +202,6 @@ public class InfernoPlugin extends Plugin
 			overlayManager.add(jadOverlay);
 			overlayManager.add(prayerOverlay);
 		}
-
-		waveOverlay.setWaveHeaderColor(this.getWaveOverlayHeaderColor);
-		waveOverlay.setWaveTextColor(this.getWaveTextColor);
-
-		for (int i = 1; i <= 6; i++)
-		{
-			monsterCurrentAttackMap.put(i, new ArrayList<>());
-		}
 	}
 
 	@Override
@@ -185,10 +210,10 @@ public class InfernoPlugin extends Plugin
 		eventBus.unregister(this);
 
 		overlayManager.remove(infernoOverlay);
-		overlayManager.remove(nibblerOverlay);
 		overlayManager.remove(waveOverlay);
 		overlayManager.remove(jadOverlay);
 		overlayManager.remove(prayerOverlay);
+
 		currentWaveNumber = -1;
 	}
 
@@ -230,74 +255,131 @@ public class InfernoPlugin extends Plugin
 		}
 	}
 
-	private void onNpcSpawned(NpcSpawned event)
+	private WorldPoint lastLocation = new WorldPoint(0, 0, 0);
+
+	private void onGameTick(GameTick GameTickEvent)
 	{
-		if (client.getMapRegions()[0] != 9043)
+		if (!isInInferno())
 		{
 			return;
 		}
 
-		NPC npc = event.getNpc();
-		if (isValidInfernoMob(npc))
+		lastTick = System.currentTimeMillis();
+
+		zukShieldSafespots.clear();
+		if (zukShield != null)
 		{
-			monsters.put(npc, new InfernoNPC(npc));
-			log.debug(String.valueOf(monsters.size()));
+			for (int x = zukShield.getWorldLocation().getX() - 1; x <= zukShield.getWorldLocation().getX() + 3; x++)
+			{
+				for (int y = zukShield.getWorldLocation().getY() - 4; y <= zukShield.getWorldLocation().getY() - 2; y++)
+				{
+					zukShieldSafespots.add(new WorldPoint(x, y, client.getPlane()));
+				}
+			}
+
+			final WorldPoint zukShieldCurrentPosition = zukShield.getWorldLocation();
+
+			if (zukShieldLastPosition != null && zukShieldLastPosition.getX() != zukShieldCurrentPosition.getX()
+				&& zukShieldCornerTicks == -2)
+			{
+				zukShieldCornerTicks = -1;
+			}
+
+			zukShieldLastPosition = zukShield.getWorldLocation();
 		}
 
-		if (npc.getId() == NpcID.JALNIB)
+		obstacles.clear();
+		for (NPC npc : client.getNpcs())
 		{
-			nibblers.add(npc);
+			for (WorldPoint worldPoint : npc.getWorldArea().toWorldPointList())
+			{
+				obstacles.add(worldPoint);
+			}
 		}
 
-		final int id = event.getNpc().getId();
-
-		if (id == NpcID.JALTOKJAD || id == NpcID.JALTOKJAD_7704)
+		for (InfernoNPC infernoNPC : infernoNpcs.values())
 		{
-			jads.add(new InfernoJad(npc));
+			infernoNPC.gameTick(client, lastLocation, finalPhase);
+
+			if (infernoNPC.getType() == InfernoNPC.Type.ZUK && zukShieldCornerTicks == -1)
+			{
+				infernoNPC.updateNextAttack(InfernoNPC.Attack.UNKNOWN, 12);
+				zukShieldCornerTicks = 0;
+			}
 		}
 
-		final Actor actor = event.getActor();
+		lastLocation = client.getLocalPlayer().getWorldLocation();
+	}
 
-		if (actor != null)
+	private void onNpcSpawned(NpcSpawned event)
+	{
+		if (!isInInferno())
 		{
-			waveMonsters.add(actor);
+			return;
 		}
+
+		if (event.getNpc().getId() == ZUK_SHIELD)
+		{
+			zukShield = event.getNpc();
+		}
+
+		final InfernoNPC.Type infernoNPCType = InfernoNPC.Type.typeFromId(event.getNpc().getId());
+
+		if (infernoNPCType == null)
+		{
+			return;
+		}
+
+		if (infernoNPCType == InfernoNPC.Type.ZUK)
+		{
+			System.out.println("Zuk spawn detected, not in final phase");
+			finalPhase = false;
+			zukShieldCornerTicks = -2;
+			zukShieldLastPosition = null;
+		}
+		if (infernoNPCType == InfernoNPC.Type.HEALER_ZUK)
+		{
+			System.out.println("Final phase detected!");
+			finalPhase = true;
+		}
+
+		infernoNpcs.put(event.getNpc(), new InfernoNPC(event.getNpc()));
 	}
 
 	private void onNpcDespawned(NpcDespawned event)
 	{
-		if (client.getMapRegions()[0] != 9043)
+		if (!isInInferno())
 		{
 			return;
 		}
 
-		NPC npc = event.getNpc();
-		if (monsters.containsKey(npc))
+		if (event.getNpc().getId() == ZUK_SHIELD)
 		{
-			monsters.remove(npc);
-			log.debug(String.valueOf(monsters.size()));
+			zukShield = null;
 		}
 
-		if (npc.getId() == NpcID.JALNIB)
+		if (infernoNpcs.containsKey(event.getNpc()))
 		{
-			nibblers.remove(npc);
+			infernoNpcs.remove(event.getNpc());
+		}
+	}
+
+	private void onAnimationChanged(AnimationChanged event)
+	{
+		if (!isInInferno())
+		{
+			return;
 		}
 
-		final ListIterator<InfernoJad> iter = jads.listIterator();
-		while (iter.hasNext())
+		if (event.getActor() instanceof NPC)
 		{
-			final InfernoJad possibleJad = iter.next();
+			final NPC npc = (NPC) event.getActor();
 
-			if (possibleJad.getNpc() == npc)
+			if (ArrayUtils.contains(InfernoNPC.Type.NIBBLER.getNpcIds(), npc.getId())
+				&& npc.getAnimation() == 7576)
 			{
-				iter.remove();
+				infernoNpcs.remove(npc);
 			}
-		}
-
-		final Actor actor = event.getActor();
-		if (actor != null)
-		{
-			waveMonsters.remove(actor);
 		}
 	}
 
@@ -311,8 +393,8 @@ public class InfernoPlugin extends Plugin
 		if (!isInInferno())
 		{
 			currentWaveNumber = -1;
+
 			overlayManager.remove(infernoOverlay);
-			overlayManager.remove(nibblerOverlay);
 			overlayManager.remove(waveOverlay);
 			overlayManager.remove(jadOverlay);
 			overlayManager.remove(prayerOverlay);
@@ -320,16 +402,17 @@ public class InfernoPlugin extends Plugin
 		else if (currentWaveNumber == -1)
 		{
 			currentWaveNumber = 1;
+
 			overlayManager.add(infernoOverlay);
-			overlayManager.add(nibblerOverlay);
+			overlayManager.add(jadOverlay);
+
+			//TODO: Only add if prayhelper is on. Also check in configChanged and in srartUp/shutDown
+			overlayManager.add(prayerOverlay);
 
 			if (this.waveDisplay != InfernoWaveDisplayMode.NONE)
 			{
 				overlayManager.add(waveOverlay);
 			}
-
-			overlayManager.add(jadOverlay);
-			overlayManager.add(prayerOverlay);
 		}
 	}
 
@@ -349,190 +432,9 @@ public class InfernoPlugin extends Plugin
 		}
 	}
 
-	private void onGameTick(GameTick event)
-	{
-		if (client.getMapRegions()[0] != 9043)
-		{
-			return;
-		}
-
-		clearMapAndPriority();
-
-		lastTick = System.currentTimeMillis();
-
-		for (InfernoJad jad : jads)
-		{
-			jad.gameTick();
-		}
-
-		activeHealers.clear();
-		for (NPC npc : client.getNpcs())
-		{
-			if (npc.getId() != NpcID.YTHURKOT_7701 || npc.getInteracting() == client.getLocalPlayer())
-			{
-				continue;
-			}
-
-			activeHealers.add(npc);
-		}
-
-		for (InfernoNPC monster : monsters.values())
-		{
-			calculateDistanceToPlayer(monster);
-
-			NPC npc = monster.getNpc();
-
-			// if they are not attacking but are still attacking
-			if (monster.isAttacking())
-			{
-				monster.setTicksTillAttack(monster.getTicksTillAttack() - 1);
-
-				// sets the blobs attack style
-				if (monster.getName().equals("blob") && monster.getTicksTillAttack() == 3 && monster.getDistanceToPlayer() <= 15)
-				{
-					if (client.getLocalPlayer().getOverheadIcon() == null)
-					{
-						monster.setAttackstyle(InfernoNPC.Attackstyle.RANDOM);
-					}
-					else if (client.getLocalPlayer().getOverheadIcon().equals(HeadIcon.MAGIC))
-					{
-						monster.setAttackstyle(InfernoNPC.Attackstyle.RANGE);
-					}
-					else if (client.getLocalPlayer().getOverheadIcon().equals(HeadIcon.RANGED))
-					{
-						monster.setAttackstyle(InfernoNPC.Attackstyle.MAGE);
-					}
-				}
-
-				// we know the monster is not attacking because it should have attacked and is idling
-				if (monster.getTicksTillAttack() == 0)
-				{
-					if (npc.getAnimation() == -1)
-					{
-						monster.setAttacking(false);
-					}
-					else
-					{
-						// want to reset the monsters attack back to attacking
-						monster.attacked();
-					}
-				}
-			}
-			else
-			{
-				// they've just attacked
-				if (npc.getAnimation() == monster.getAttackAnimation() || npc.getAnimation() == 7581) // special case for blob
-				{
-					monster.attacked();
-				}
-			}
-
-			if (monster.getTicksTillAttack() >= 1)
-			{
-				monsterCurrentAttackMap.get(monster.getTicksTillAttack()).add(monster);
-			}
-		}
-
-		calculatePriorityNPC();
-	}
-
-	private void onAnimationChanged(final AnimationChanged event)
-	{
-		InfernoJad jad = null;
-
-		for (InfernoJad possibleJad : jads)
-		{
-			if (possibleJad.getNpc() == event.getActor())
-			{
-				jad = possibleJad;
-			}
-		}
-
-		if (jad != null)
-		{
-			if (event.getActor().getAnimation() == InfernoJad.Attack.MAGIC.getAnimation())
-			{
-				jad.updateNextAttack(InfernoJad.Attack.MAGIC);
-			}
-			else if (event.getActor().getAnimation() == InfernoJad.Attack.RANGE.getAnimation())
-			{
-				jad.updateNextAttack(InfernoJad.Attack.RANGE);
-			}
-		}
-	}
-
-	private void calculatePriorityNPC()
-	{
-		for (int i = 0; i < priorityNPC.length; i++)
-		{
-			ArrayList<InfernoNPC> monsters = monsterCurrentAttackMap.get(i + 1);
-
-			if (monsters.size() == 0)
-			{
-				continue;
-			}
-
-			int priority = monsters.get(0).getPriority();
-
-			InfernoNPC infernoNPC = monsters.get(0);
-
-			for (InfernoNPC npc : monsters)
-			{
-				if (npc.getPriority() < priority)
-				{
-					priority = npc.getPriority();
-					infernoNPC = npc;
-				}
-			}
-
-			priorityNPC[i] = infernoNPC;
-
-			log.debug("i: " + i + " " + infernoNPC.getName());
-		}
-	}
-
-	// TODO: blob calculator
-	private void calculateDistanceToPlayer(InfernoNPC monster)
-	{
-		monster.setDistanceToPlayer(client.getLocalPlayer().getWorldLocation().distanceTo(monster.getNpc().getWorldArea()));
-	}
-
-	private void clearMapAndPriority()
-	{
-		for (List<InfernoNPC> l : monsterCurrentAttackMap.values())
-		{
-			l.clear();
-		}
-
-		for (int i = 0; i < priorityNPC.length; i++)
-		{
-			priorityNPC[i] = null;
-		}
-	}
-
-	private boolean isValidInfernoMob(NPC npc)
-	{
-		// we only want the bat, blob, melee, ranger and mager
-		return npc.getId() == NpcID.JALMEJRAH ||
-			npc.getId() == NpcID.JALAK ||
-			npc.getId() == NpcID.JALIMKOT ||
-			npc.getId() == NpcID.JALXIL ||
-			npc.getId() == NpcID.JALZEK;
-	}
-
 	private boolean isInInferno()
 	{
 		return ArrayUtils.contains(client.getMapRegions(), INFERNO_REGION);
-	}
-
-	boolean isNotFinalWave()
-	{
-		return currentWaveNumber <= 68;
-	}
-
-	List<Actor> getWaveMonsters()
-	{
-		return waveMonsters;
 	}
 
 	int getNextWaveNumber()
@@ -545,11 +447,22 @@ public class InfernoPlugin extends Plugin
 		this.displayNibblerOverlay = config.displayNibblerOverlay();
 		this.showPrayerHelp = config.showPrayerHelp();
 		this.prayerOverlayMode = config.prayerOverlayMode();
+		this.ticksOnNpc = config.ticksOnNpc();
 		this.waveDisplay = config.waveDisplay();
 		this.getWaveOverlayHeaderColor = config.getWaveOverlayHeaderColor();
 		this.getWaveTextColor = config.getWaveTextColor();
 		this.descendingBoxes = config.descendingBoxes();
 		this.indicateWhenPrayingCorrectly = config.indicateWhenPrayingCorrectly();
 		this.indicateActiveHealers = config.indicateActiveHealers();
+		this.indicateNonSafespotted = config.indicateNonSafespotted();
+		this.indicateTemporarySafespotted = config.indicateTemporarySafespotted();
+		this.indicateSafespotted = config.indicateSafespotted();
+		this.indicateObstacles = config.indicateObstacles();
+		this.indicateNpcPosition = config.indicateNpcPosition();
+		this.indicateZukShieldSafespots = config.indicateZukShieldSafespots();
+		this.zukShieldSafespotsColor = config.zukShieldSafespotsColor();
+		this.indicateNibblers = config.indicateNibblers();
+		this.indicateNonPriorityDescendingBoxes = config.indicateNonPriorityDescendingBoxes();
+		this.indicateBlobDetectionTick = config.indicateBlobDetectionTick();
 	}
 }
