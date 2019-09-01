@@ -29,11 +29,11 @@
 package net.runelite.rs.api;
 
 import java.math.BigInteger;
+import java.util.Map;
 import net.runelite.api.Client;
 import net.runelite.api.Sprite;
 import net.runelite.api.World;
 import net.runelite.api.widgets.Widget;
-import java.util.Map;
 import net.runelite.mapping.Construct;
 import net.runelite.mapping.Import;
 
@@ -308,25 +308,25 @@ public interface RSClient extends RSGameShell, Client
 	@Import("menuActions")
 	String[] getMenuOptions();
 
-	@Import("menuTargetNames")
+	@Import("menuTargets")
 	String[] getMenuTargets();
 
-	@Import("menuArguments0")
+	@Import("menuIdentifiers")
 	int[] getMenuIdentifiers();
 
 	@Import("menuOpcodes")
-	int[] getMenuTypes();
+	int[] getMenuOpcodes();
 
 	@Import("menuArguments1")
-	int[] getMenuActionParams0();
+	int[] getMenuArguments1();
 
 	@Import("menuArguments2")
-	int[] getMenuActionParams1();
+	int[] getMenuArguments2();
 
 	@Import("menuShiftClick")
 	boolean[] getMenuForceLeftClick();
 
-	@Import("worlds")
+	@Import("World_worlds")
 	@Override
 	RSWorld[] getWorldList();
 
@@ -384,7 +384,7 @@ public interface RSClient extends RSGameShell, Client
 	@Import("itemContainers")
 	RSNodeHashTable getItemContainers();
 
-	@Import("getItemDefinition")
+	@Import("ItemDefinition_get")
 	@Override
 	RSItemDefinition getItemDefinition(int itemId);
 
@@ -597,20 +597,21 @@ public interface RSClient extends RSGameShell, Client
 	@Override
 	int getKeyboardIdleTicks();
 
+	@Import("KeyHandler_pressedKeys")
+	@Override
+	boolean[] getPressedKeys();
+
 	@Import("isLowDetail")
 	void setLowMemory(boolean lowMemory);
 
 	@Import("Scene_isLowDetail")
 	void setSceneLowMemory(boolean lowMemory);
 
-	@Import("isStereo")
+	@Import("PcmPlayer_stereo")
 	void setAudioHighMemory(boolean highMemory);
 
 	@Import("ObjectDefinition_isLowDetail")
 	void setObjectDefinitionLowDetail(boolean lowDetail);
-
-	@Construct
-	RSTileItem createItem();
 
 	@Import("Interpreter_intStackSize")
 	@Override

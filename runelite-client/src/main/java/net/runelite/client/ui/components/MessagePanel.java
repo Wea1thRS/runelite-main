@@ -80,7 +80,7 @@ public class MessagePanel extends JPanel
 		c.gridy++;
 
 		// alternate message action
-		messageArea = new JLabel("<html><div style='text-align:center;'>Fork of RuneLite that provides more functionality and less restrictions while staying open source.</div></html>")
+		messageArea = new JLabel("<html><div style='text-align:center;'>Fork of RuneLite that provides more functionality and less restrictions whilst staying open source.</div></html>")
 		{
 			@Override
 			public Dimension getPreferredSize()
@@ -145,11 +145,18 @@ public class MessagePanel extends JPanel
 	{
 		if (!content.startsWith("<html"))
 		{
-			content = "<html><div style='text-align:center;'>" + content + "</div></html>";
+			content = "<html><div style='width: 100%; text-align:center;'>" + content + "</div></html>";
 		}
 
 		messageArea.setText(content);
 		messageArea.revalidate();
 		messageArea.repaint();
+	}
+
+	public void setMessageTitle(String text)
+	{
+		titleLabel.setText(text);
+		titleLabel.revalidate();
+		titleLabel.repaint();
 	}
 }

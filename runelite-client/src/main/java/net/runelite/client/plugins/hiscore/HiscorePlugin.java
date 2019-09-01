@@ -39,7 +39,7 @@ import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.MenuAction;
+import net.runelite.api.MenuOpcode;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ConfigChanged;
@@ -54,7 +54,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.Text;
+import net.runelite.api.util.Text;
 import org.apache.commons.lang3.ArrayUtils;
 
 @PluginDescriptor(
@@ -202,7 +202,7 @@ public class HiscorePlugin extends Plugin
 			final MenuEntry lookup = new MenuEntry();
 			lookup.setOption(LOOKUP);
 			lookup.setTarget(event.getTarget());
-			lookup.setType(MenuAction.RUNELITE.getId());
+			lookup.setOpcode(MenuOpcode.RUNELITE.getId());
 			lookup.setParam0(event.getActionParam0());
 			lookup.setParam1(event.getActionParam1());
 			lookup.setIdentifier(event.getIdentifier());

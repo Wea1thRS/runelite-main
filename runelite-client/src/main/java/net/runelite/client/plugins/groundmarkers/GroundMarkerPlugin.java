@@ -47,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import static net.runelite.api.Constants.CHUNK_SIZE;
 import net.runelite.api.GameState;
-import net.runelite.api.MenuAction;
+import net.runelite.api.MenuOpcode;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.Tile;
 import net.runelite.api.coords.LocalPoint;
@@ -64,7 +64,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ColorUtil;
-import net.runelite.client.util.Text;
+import net.runelite.api.util.Text;
 
 @Slf4j
 @PluginDescriptor(
@@ -144,6 +144,7 @@ public class GroundMarkerPlugin extends Plugin
 	{
 	}
 
+	private GroundMarkerConfig.amount amount;
 	@Getter(AccessLevel.PACKAGE)
 	private Color markerColor;
 	@Getter(AccessLevel.PACKAGE)
@@ -152,6 +153,14 @@ public class GroundMarkerPlugin extends Plugin
 	private Color markerColor3;
 	@Getter(AccessLevel.PACKAGE)
 	private Color markerColor4;
+	@Getter(AccessLevel.PACKAGE)
+	private Color markerColor5;
+	@Getter(AccessLevel.PACKAGE)
+	private Color markerColor6;
+	@Getter(AccessLevel.PACKAGE)
+	private Color markerColor7;
+	@Getter(AccessLevel.PACKAGE)
+	private Color markerColor8;
 	@Getter(AccessLevel.PACKAGE)
 	private boolean showMinimap;
 	@Getter(AccessLevel.PACKAGE)
@@ -299,9 +308,17 @@ public class GroundMarkerPlugin extends Plugin
 	{
 		if (hotKeyPressed && event.getOption().equals(WALK_HERE))
 		{
+			final Tile selectedSceneTile = client.getSelectedSceneTile();
+
+			if (selectedSceneTile == null)
+			{
+				return;
+			}
+
 			MenuEntry[] menuEntries = client.getMenuEntries();
+
 			int lastIndex = menuEntries.length;
-			menuEntries = Arrays.copyOf(menuEntries, lastIndex + 4);
+			menuEntries = Arrays.copyOf(menuEntries, lastIndex + this.amount.toInt());
 
 			final Tile tile = client.getSelectedSceneTile();
 			if (tile == null)
@@ -311,7 +328,7 @@ public class GroundMarkerPlugin extends Plugin
 			final WorldPoint loc = WorldPoint.fromLocalInstance(client, tile.getLocalLocation());
 			final int regionId = loc.getRegionID();
 
-			for (int i = 4; i > 0; i--)
+			for (int i = this.amount.toInt(); i > 0; i--)
 			{
 				MenuEntry menuEntry = menuEntries[lastIndex] = new MenuEntry();
 
@@ -320,7 +337,7 @@ public class GroundMarkerPlugin extends Plugin
 				final String option = (stream.isPresent() && stream.get().getGroup() == i) ? UNMARK : MARK;
 				menuEntry.setOption(ColorUtil.prependColorTag(Text.removeTags(option + (i == 1 ? "" : " (Group " + i + ")")), getColor(i)));
 				menuEntry.setTarget(event.getTarget());
-				menuEntry.setType(MenuAction.RUNELITE.getId());
+				menuEntry.setOpcode(MenuOpcode.RUNELITE.getId());
 
 				lastIndex++;
 			}
@@ -430,6 +447,18 @@ public class GroundMarkerPlugin extends Plugin
 				break;
 			case 4:
 				color = this.markerColor4;
+				break;
+			case 5:
+				color = this.markerColor5;
+				break;
+			case 6:
+				color = this.markerColor6;
+				break;
+			case 7:
+				color = this.markerColor7;
+				break;
+			case 8:
+				color = this.markerColor8;
 		}
 
 		return color;
@@ -445,10 +474,15 @@ public class GroundMarkerPlugin extends Plugin
 
 	private void updateConfig()
 	{
+		this.amount = config.getAmount();
 		this.markerColor = config.markerColor();
 		this.markerColor2 = config.markerColor2();
 		this.markerColor3 = config.markerColor3();
 		this.markerColor4 = config.markerColor4();
+		this.markerColor5 = config.markerColor5();
+		this.markerColor6 = config.markerColor6();
+		this.markerColor7 = config.markerColor7();
+		this.markerColor8 = config.markerColor8();
 		this.showMinimap = config.showMinimap();
 		this.minimapOverlayOpacity = config.minimapOverlayOpacity();
 	}

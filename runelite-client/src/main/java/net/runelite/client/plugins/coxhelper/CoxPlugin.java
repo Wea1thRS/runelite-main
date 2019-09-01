@@ -70,7 +70,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.util.Text;
+import net.runelite.api.util.Text;
 
 @PluginDescriptor(
 	name = "CoX Helper",
@@ -141,6 +141,7 @@ public class CoxPlugin extends Plugin
 	private boolean timers;
 	private boolean tpOverlay;
 	private boolean olmTick;
+	private int prayAgainstSize;
 	private Color muttaColor;
 	private Color guardColor;
 	private Color tektonColor;
@@ -162,7 +163,6 @@ public class CoxPlugin extends Plugin
 	{
 		updateConfig();
 		addSubscriptions();
-
 		overlayManager.add(coxOverlay);
 		overlayManager.add(coxInfoBox);
 		handCripple = false;
@@ -651,5 +651,6 @@ public class CoxPlugin extends Plugin
 		this.fontStyle = config.fontStyle();
 		this.textSize = config.textSize();
 		this.shadows = config.shadows();
+		this.prayAgainstSize = config.prayAgainstOlmSize();
 	}
 }

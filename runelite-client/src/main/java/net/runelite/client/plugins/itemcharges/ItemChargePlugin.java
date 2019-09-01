@@ -62,7 +62,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
-import net.runelite.client.util.Text;
+import net.runelite.api.util.Text;
 
 import static net.runelite.api.ItemID.RING_OF_RECOIL;
 
@@ -953,5 +953,6 @@ public class ItemChargePlugin extends Plugin
 		this.showXericTalismanCharges = config.showXericTalismanCharges();
 		this.showrecoil = config.showrecoil();
 		this.chronicle = config.chronicle();
+		this.showSackCharges = config.showSackCharges();
 	}
 }

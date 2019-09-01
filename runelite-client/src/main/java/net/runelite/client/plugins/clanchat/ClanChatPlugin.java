@@ -80,7 +80,7 @@ import static net.runelite.client.ui.JagexColors.CHAT_CLAN_NAME_TRANSPARENT_BACK
 import static net.runelite.client.ui.JagexColors.CHAT_CLAN_TEXT_OPAQUE_BACKGROUND;
 import static net.runelite.client.ui.JagexColors.CHAT_CLAN_TEXT_TRANSPARENT_BACKGROUND;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
-import net.runelite.client.util.Text;
+import net.runelite.api.util.Text;
 
 @PluginDescriptor(
 	name = "Clan Chat",
@@ -259,14 +259,13 @@ public class ClanChatPlugin extends Plugin
 		if (member.getWorld() == client.getWorld())
 		{
 			final String memberName = Text.toJagexName(member.getUsername());
-			final Iterator<Player> each = clanMembers.iterator();
 
-			while (each.hasNext())
+			List<Player> toRemove = new ArrayList<>();
+			for (Player each : clanMembers)
 			{
-				if (memberName.equals(Text.toJagexName(each.next().getName())))
+				if (memberName.equals(Text.toJagexName(each.getName())))
 				{
-					each.remove();
-
+					toRemove.add(each);
 					if (clanMembers.isEmpty())
 					{
 						removeClanCounter();
@@ -275,6 +274,7 @@ public class ClanChatPlugin extends Plugin
 					break;
 				}
 			}
+			clanMembers.removeAll(toRemove);
 		}
 
 		if (!this.showJoinLeave ||
