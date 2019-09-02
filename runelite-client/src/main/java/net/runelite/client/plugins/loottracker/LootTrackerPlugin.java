@@ -33,32 +33,6 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -83,6 +57,7 @@ import net.runelite.api.events.LocalPlayerDeath;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.PlayerSpawned;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.util.Text;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.RuneLite;
@@ -95,10 +70,6 @@ import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.database.DatabaseManager;
-import static net.runelite.client.database.data.Tables.LOOTTRACKEREVENTS;
-import static net.runelite.client.database.data.Tables.LOOTTRACKERLINK;
-import static net.runelite.client.database.data.Tables.LOOTTRACKERLOOT;
-import static net.runelite.client.database.data.Tables.USER;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.events.NpcLootReceived;
 import net.runelite.client.events.PlayerLootReceived;
@@ -117,7 +88,6 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.StackFormatter;
-import net.runelite.api.util.Text;
 import net.runelite.http.api.RuneLiteAPI;
 import net.runelite.http.api.loottracker.GameItem;
 import net.runelite.http.api.loottracker.LootRecord;
@@ -129,21 +99,20 @@ import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
-import static org.jooq.impl.DSL.constraint;
 import org.jooq.impl.SQLDataType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -154,10 +123,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static net.runelite.client.database.data.Tables.LOOTTRACKEREVENTS;
+import static net.runelite.client.database.data.Tables.LOOTTRACKERLINK;
+import static net.runelite.client.database.data.Tables.LOOTTRACKERLOOT;
+import static net.runelite.client.database.data.Tables.USER;
+import static org.jooq.impl.DSL.constraint;
 
 @PluginDescriptor(
 		name = "Loot Tracker",
@@ -233,7 +209,6 @@ public class LootTrackerPlugin extends Plugin
 	private ClientToolbar clientToolbar;
 	@Inject
 	private LootRecordWriter writer;
-
 	@Inject
 	private ItemManager itemManager;
 	@Inject
@@ -251,8 +226,6 @@ public class LootTrackerPlugin extends Plugin
 	private ScheduledExecutorService executor;
 	@Inject
 	private EventBus eventBus;
-	@Inject
-	private LootRecordWriter writer;
 	@Inject
 	private DatabaseManager databaseManager;
 	private LootTrackerPanel panel;

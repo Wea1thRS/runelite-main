@@ -28,7 +28,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
-import net.runelite.api.MenuAction;
+
+import net.runelite.api.MenuOpcode;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -54,8 +55,8 @@ public class PerformanceTrackerOverlay extends Overlay
 		setPriority(OverlayPriority.LOW);
 		this.tracker = tracker;
 
-		getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_OVERLAY, "Pause", "Performance Tracker"));
-		getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_OVERLAY, "Reset", "Performance Tracker"));
+		getMenuEntries().add(new OverlayMenuEntry(MenuOpcode.RUNELITE_OVERLAY, "Pause", "Performance Tracker"));
+		getMenuEntries().add(new OverlayMenuEntry(MenuOpcode.RUNELITE_OVERLAY, "Reset", "Performance Tracker"));
 	}
 
 	@Override

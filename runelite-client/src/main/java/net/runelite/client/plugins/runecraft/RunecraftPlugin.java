@@ -26,11 +26,6 @@ package net.runelite.client.plugins.runecraft;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.ChatMessageType;
@@ -55,20 +50,28 @@ import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.menus.BaseComparableEntry;
-import static net.runelite.client.menus.ComparableEntries.newBaseComparableEntry;
 import net.runelite.client.menus.MenuManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginType;
 import net.runelite.client.plugins.menuentryswapper.BankComparableEntry;
 import net.runelite.client.plugins.menuentryswapper.EquipmentComparableEntry;
 import net.runelite.client.ui.overlay.OverlayManager;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static net.runelite.client.menus.ComparableEntries.newBaseComparableEntry;
+
 
 @PluginDescriptor(
-	name = "Runecraft",
-	description = "Show minimap icons and clickboxes for abyssal rifts",
-	tags = {"abyssal", "minimap", "overlay", "rifts", "rc", "runecrafting"},
-	type = PluginType.SKILLING
+		name = "Runecraft",
+		description = "Show minimap icons and clickboxes for abyssal rifts",
+		tags = {"abyssal", "minimap", "overlay", "rifts", "rc", "runecrafting"},
+		type = PluginType.SKILLING
 )
 @Singleton
 @Getter(AccessLevel.PACKAGE)
@@ -85,9 +88,9 @@ public class RunecraftPlugin extends Plugin
 	private static final String POUCH_DECAYED_NOTIFICATION_MESSAGE = "Your rune pouch has decayed.";
 	private static final int FIRE_ALTAR = 10315;
 	private static final Set<Integer> DEGRADED_POUCHES = ImmutableSet.of(
-		ItemID.MEDIUM_POUCH_5511,
-		ItemID.LARGE_POUCH_5513,
-		ItemID.GIANT_POUCH_5515
+			ItemID.MEDIUM_POUCH_5511,
+			ItemID.LARGE_POUCH_5513,
+			ItemID.GIANT_POUCH_5515
 	);
 	@Inject
 	@Getter(AccessLevel.NONE)
