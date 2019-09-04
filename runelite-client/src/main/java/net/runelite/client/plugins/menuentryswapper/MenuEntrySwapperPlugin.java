@@ -86,7 +86,6 @@ import net.runelite.client.plugins.menuentryswapper.util.SlayerRingMode;
 import net.runelite.client.plugins.menuentryswapper.util.XericsTalismanMode;
 import net.runelite.client.util.HotkeyListener;
 import net.runelite.client.util.MiscUtils;
-import net.runelite.api.util.Text;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
