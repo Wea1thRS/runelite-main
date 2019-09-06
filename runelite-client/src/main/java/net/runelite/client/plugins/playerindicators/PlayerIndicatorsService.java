@@ -42,18 +42,15 @@ public class PlayerIndicatorsService
 	private final Client client;
 	private final PlayerIndicatorsPlugin plugin;
 
-	public Predicate<Player> self;
-	public Predicate<Player> friend;
-	public Predicate<Player> clan;
-	public Predicate<Player> team;
-	public Predicate<Player> target;
-	public Predicate<Player> other;
-	public Predicate<Player> caller;
-	public Predicate<Player> callerTarget;
-
-
-	private List<Actor> piles = new ArrayList<>();
-
+	private final Predicate<Player> self;
+	private final Predicate<Player> friend;
+	private final Predicate<Player> clan;
+	private final Predicate<Player> team;
+	private final Predicate<Player> target;
+	private final Predicate<Player> other;
+	private final Predicate<Player> caller;
+	private final Predicate<Player> callerTarget;
+	private final List<Actor> piles = new ArrayList<>();
 
 	@Inject
 	private PlayerIndicatorsService(final Client client, final PlayerIndicatorsPlugin plugin)
@@ -63,15 +60,28 @@ public class PlayerIndicatorsService
 
 		self = (player) -> Objects.equals(client.getLocalPlayer(), player);
 		friend = (player) -> (!player.equals(client.getLocalPlayer()) && client.isFriended(player.getName(), false));
-		clan = Player::isClanMember;
+		clan = (player) -> (player.isClanMember() && !client.isFriended(player.getName(), false));
 		team = (player) -> (Objects.requireNonNull(client.getLocalPlayer()).getTeam() != 0 &&
 			client.getLocalPlayer().getTeam() == player.getTeam());
-		target = (player) -> PvPUtil.isAttackable(client, player);
-		other = Objects::nonNull;
+		target = (player ->
+		{
+			if (nonFriendly(player))
+			{
+				return false;
+			}
+			return plugin.isHighlightTargets() && PvPUtil.isAttackable(client, player);
+		});
 		caller = plugin::isCaller;
 		callerTarget = piles::contains;
+		other = (player ->
+		{
+			if (nonFriendly(player))
+			{
+				return false;
+			}
+			return true;
+		});
 	}
-
 
 	public void forEachPlayer(final BiConsumer<Player, PlayerRelation> consumer)
 	{
@@ -126,11 +136,21 @@ public class PlayerIndicatorsService
 		}
 	}
 
-
 	private boolean highlight()
 	{
 		return plugin.isHighlightOwnPlayer() || plugin.isHighlightClan()
 			|| plugin.isHighlightFriends() || plugin.isHighlightOther() || plugin.isHighlightTargets()
 			|| plugin.isHighlightCallers() || plugin.isHighlightTeam() || plugin.isHighlightCallerTargets();
+	}
+
+	private boolean nonFriendly(Player player)
+	{
+		return player == null
+			|| (plugin.isHighlightClan() && player.isClanMember())
+			|| (plugin.isHighlightFriends() && client.isFriended(player.getName(), false))
+			|| (plugin.isHighlightCallers() && plugin.isCaller(player))
+			|| (plugin.isHighlightCallerTargets() && piles.contains(player))
+			|| (plugin.isHighlightTeam() && Objects.requireNonNull(client.getLocalPlayer()).getTeam() != 0
+			&& client.getLocalPlayer().getTeam() == player.getTeam());
 	}
 }

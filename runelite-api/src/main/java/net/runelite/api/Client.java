@@ -1493,6 +1493,13 @@ public interface Client extends GameShell
 	void setAttackersHidden(boolean state);
 
 	/**
+	 * Hides players input here.
+	 *
+	 * @param names the names of the players
+	 */
+	void setHideSpecificPlayers(List<String> names);
+
+	/**
 	 * Sets whether projectiles are hidden.
 	 *
 	 * @param state new projectile hidden state
@@ -1737,12 +1744,6 @@ public interface Client extends GameShell
 	void setUnhiddenCasts(Set<String> casts);
 
 	/**
-	 * Sorts the current menu entries in the same way the client does this.
-	 * The last entry will be the left click one after this.
-	 */
-	void sortMenuEntries();
-
-	/**
 	 * Add player to friendlist
 	 */
 	void addFriend(String name);
@@ -1756,8 +1757,13 @@ public interface Client extends GameShell
 
 	void setModulus(BigInteger modulus);
 
-	/*
+	/**
 	 * Returns the max item index + 1 from cache
 	 */
 	int getItemCount();
+
+	/**
+	 * Adds a MenuEntry to the current menu.
+	 */
+	void insertMenuItem(String action, String target, int opcode, int identifier, int argument1, int argument2, boolean forceLeftClick);
 }
