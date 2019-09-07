@@ -53,6 +53,9 @@ import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
+import net.runelite.client.plugins.inferno.displaymodes.InfernoPrayerOverlayMode;
+import net.runelite.client.plugins.inferno.displaymodes.InfernoWaveDisplayMode;
+import net.runelite.client.plugins.inferno.displaymodes.SafespotDisplayMode;
 import net.runelite.client.ui.overlay.OverlayManager;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -113,7 +116,6 @@ public class InfernoPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	private int currentWaveNumber;
 
-	@Getter(AccessLevel.PACKAGE)
 	private final Map<NPC, InfernoNPC> infernoNpcs = new HashMap<>();
 
 	@Getter(AccessLevel.PACKAGE)
@@ -186,6 +188,8 @@ public class InfernoPlugin extends Plugin
 	private boolean indicateNonPriorityDescendingBoxes;
 	@Getter(AccessLevel.PACKAGE)
 	private boolean indicateBlobDetectionTick;
+	@Getter(AccessLevel.PACKAGE)
+	private SafespotDisplayMode indicateSafespots;
 
 	@Provides
 	InfernoConfig provideConfig(ConfigManager configManager)
@@ -545,6 +549,33 @@ public class InfernoPlugin extends Plugin
 		}
 	}
 
+	HashMap<NPC, InfernoNPC> getInfernoNpcs()
+	{
+		final HashMap<NPC, InfernoNPC> sortedInfernoNpcs = new HashMap<>();
+
+		for (Map.Entry<NPC, InfernoNPC> entry : infernoNpcs.entrySet())
+		{
+			if (entry.getValue().getType() == InfernoNPC.Type.BLOB)
+			{
+				continue;
+			}
+
+			sortedInfernoNpcs.put(entry.getKey(), entry.getValue());
+		}
+
+		for (Map.Entry<NPC, InfernoNPC> entry : infernoNpcs.entrySet())
+		{
+			if (entry.getValue().getType() != InfernoNPC.Type.BLOB)
+			{
+				continue;
+			}
+
+			sortedInfernoNpcs.put(entry.getKey(), entry.getValue());
+		}
+
+		return sortedInfernoNpcs;
+	}
+
 	private boolean isInInferno()
 	{
 		return ArrayUtils.contains(client.getMapRegions(), INFERNO_REGION);
@@ -577,5 +608,6 @@ public class InfernoPlugin extends Plugin
 		this.indicateNibblers = config.indicateNibblers();
 		this.indicateNonPriorityDescendingBoxes = config.indicateNonPriorityDescendingBoxes();
 		this.indicateBlobDetectionTick = config.indicateBlobDetectionTick();
+		this.indicateSafespots = config.indicateSafespots();
 	}
 }

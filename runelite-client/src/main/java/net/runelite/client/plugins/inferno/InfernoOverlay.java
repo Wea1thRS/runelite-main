@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import javax.inject.Inject;
 import net.runelite.api.Client;
@@ -17,7 +16,8 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
-import net.runelite.client.game.WorldLocation;
+import net.runelite.client.plugins.inferno.displaymodes.InfernoPrayerOverlayMode;
+import net.runelite.client.plugins.inferno.displaymodes.SafespotDisplayMode;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -71,8 +71,7 @@ public class InfernoOverlay extends Overlay
 		}
 
 		// Indicate safespots (indicate entire area)
-		// TODO: Config options
-		if (true)
+		if (plugin.getIndicateSafespots() == SafespotDisplayMode.AREA)
 		{
 			for (int safeSpotId : plugin.getSafeSpotAreas().keySet())
 			{
@@ -201,10 +200,8 @@ public class InfernoOverlay extends Overlay
 
 			}
 		}
-
 		// Indicate safespots (every tile individually indicated)
-		// TODO: Config options
-		if (false)
+		else if (plugin.getIndicateSafespots() == SafespotDisplayMode.INDIVIDUAL_TILES)
 		{
 			for (WorldPoint worldPoint : plugin.getSafeSpotMap().keySet())
 			{
@@ -350,9 +347,17 @@ public class InfernoOverlay extends Overlay
 				if (plugin.isIndicateBlobDetectionTick() && infernoNPC.getType() == InfernoNPC.Type.BLOB
 					&& infernoNPC.getTicksTillNextAttack() >= 4)
 				{
+					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack()))
+					{
+						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack() , new HashMap<>());
+					}
 					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack() - 3))
 					{
 						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack() - 3, new HashMap<>());
+					}
+					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack() - 4))
+					{
+						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack() - 4, new HashMap<>());
 					}
 
 					// If there's already a magic attack on the detection tick, group them
@@ -369,6 +374,28 @@ public class InfernoOverlay extends Overlay
 						if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.RANGED) > 6)
 						{
 							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.RANGED, 6);
+						}
+					}
+					// If there's going to be a magic attack on the blob attack tick, pray range on the detect tick so magic is prayed on the attack tick
+					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(InfernoNPC.Attack.MAGIC)
+							|| (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.MAGIC)
+							&& upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).get(InfernoNPC.Attack.MAGIC) < InfernoNPC.Type.BLOB.getPriority()))
+					{
+						if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.RANGED)
+								|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.RANGED) > 6)
+						{
+							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.RANGED, 6);
+						}
+					}
+					// If there's going to be a ranged attack on the blob attack tick, pray magic on the detect tick so range is prayed on the attack tick
+					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(InfernoNPC.Attack.RANGED)
+							|| (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.RANGED)
+							&& upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).get(InfernoNPC.Attack.RANGED) < InfernoNPC.Type.BLOB.getPriority()))
+					{
+						if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.MAGIC)
+								|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.MAGIC) > 6)
+						{
+							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.MAGIC, 6);
 						}
 					}
 					// If there's no magic or ranged attack on the detection tick, create a magic pray blob
