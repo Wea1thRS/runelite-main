@@ -316,6 +316,17 @@ public interface InfernoConfig extends Config
 		return SafespotDisplayMode.OFF;
 	}
 
+	@ConfigItem(
+			position = 25,
+			keyName = "safespotsCheckSize",
+			name = "Safespots Check Size",
+			description = "The size of the area around the player that should be checked for safespots (SIZE x SIZE area)"
+	)
+	default int safespotsCheckSize()
+	{
+		return 10;
+	}
+
 	@Getter
 	@AllArgsConstructor
 	enum FontStyle

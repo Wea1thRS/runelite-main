@@ -190,6 +190,8 @@ public class InfernoPlugin extends Plugin
 	private boolean indicateBlobDetectionTick;
 	@Getter(AccessLevel.PACKAGE)
 	private SafespotDisplayMode indicateSafespots;
+	@Getter(AccessLevel.PACKAGE)
+	private int safespotsCheckSize;
 
 	@Provides
 	InfernoConfig provideConfig(ConfigManager configManager)
@@ -325,11 +327,12 @@ public class InfernoPlugin extends Plugin
 			}
 		}
 
-		//TODO: Config value
+		int checkSize = (int) Math.floor(safespotsCheckSize / 2.0);
+
 		safeSpotMap.clear();
-		for (int x = -5; x <= 5; x++)
+		for (int x = -checkSize; x <= checkSize; x++)
 		{
-			for (int y = -5; y <= 5; y++)
+			for (int y = -checkSize; y <= checkSize; y++)
 			{
 				final WorldPoint checkLoc = client.getLocalPlayer().getWorldLocation().dx(x).dy(y);
 
@@ -609,5 +612,6 @@ public class InfernoPlugin extends Plugin
 		this.indicateNonPriorityDescendingBoxes = config.indicateNonPriorityDescendingBoxes();
 		this.indicateBlobDetectionTick = config.indicateBlobDetectionTick();
 		this.indicateSafespots = config.indicateSafespots();
+		this.safespotsCheckSize = config.safespotsCheckSize();
 	}
 }
