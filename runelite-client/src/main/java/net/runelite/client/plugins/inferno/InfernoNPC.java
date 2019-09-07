@@ -84,7 +84,7 @@ public class InfernoNPC
 		}
 
 		boolean attack = target.distanceTo(this.getNpc().getWorldArea()) <= this.getType().getRange()
-			&& this.getNpc().getWorldArea().hasLineOfSightTo(client, target);
+			&& new WorldArea(target, 1, 1).hasLineOfSightTo(client, this.getNpc().getWorldArea());
 
 		if (attack)
 		{
@@ -96,6 +96,15 @@ public class InfernoNPC
 
 	boolean canMoveToAttack(Client client, WorldPoint target, List<WorldPoint> obstacles)
 	{
+		//System.out.println("");
+		//System.out.println("CHECKING TARGET: " + target.getX() + ", " + target.getY());
+
+		if (safeSpotCache.containsKey(target))
+		{
+			//System.out.println("Already in cache, can walk to: " + String.valueOf(safeSpotCache.get(target) == 1));
+			return safeSpotCache.get(target) == 1;
+		}
+
 		final List<WorldPoint> realObstacles = new ArrayList<>();
 		for (WorldPoint obstacle : obstacles)
 		{
@@ -119,6 +128,8 @@ public class InfernoNPC
 				return false;
 			}
 
+			//System.out.println("Step " + steps + ": ");
+
 			final int dx = Integer.signum(target.getX() - currentPosition.getX());
 			final int dy = Integer.signum(target.getY() - currentPosition.getY());
 
@@ -131,16 +142,15 @@ public class InfernoNPC
 			WorldArea bestNexArea = null;
 			for (WorldPoint possibleNextLocation : possibleNextLocations)
 			{
+				//System.out.println("Checking loc: " + possibleNextLocation.getX() + ", " + possibleNextLocation.getY());
 				if (possibleNextLocation.getX() == currentPosition.getX() && possibleNextLocation.getY() == currentPosition.getY())
 				{
+					//System.out.println("Position is the same, continuing");
 					continue;
-				}
-				if (safeSpotCache.containsKey(possibleNextLocation))
-				{
-					return safeSpotCache.get(possibleNextLocation) == 1;
 				}
 				if (possibleNextLocation.getX() == target.getX() && possibleNextLocation.getY() == target.getY())
 				{
+					//System.out.println("At target position, can walk to: true");
 					safeSpotCache.put(possibleNextLocation, 1);
 					return true;
 				}
@@ -153,7 +163,7 @@ public class InfernoNPC
 				{
 					if (possibleNextArea.intersectsWith(new WorldArea(obstacle, 1, 1)))
 					{
-						safeSpotCache.put(possibleNextLocation, 0);
+						//System.out.println("Intersected with obstacle, discarding position");
 						stillPossible = false;
 						break;
 					}
@@ -168,9 +178,11 @@ public class InfernoNPC
 
 			if (bestNextLocation != null && bestNexArea != null)
 			{
-				if (bestNexArea.hasLineOfSightTo(client, target)
+				//System.out.println("Found a move location");
+				if (new WorldArea(target, 1, 1).hasLineOfSightTo(client, bestNexArea)
 					&& target.distanceTo(this.getNpc().getWorldArea()) <= this.getType().getRange())
 				{
+					//System.out.println("Move location has LOS, can walk to: true");
 					safeSpotCache.put(bestNextLocation, 1);
 					return true;
 				}
@@ -179,6 +191,7 @@ public class InfernoNPC
 			}
 			else
 			{
+				//System.out.println("Could not find a move location, can walk to: false");
 				return false;
 			}
 		}
@@ -186,7 +199,7 @@ public class InfernoNPC
 
 	boolean couldAttackPrevTick(Client client, WorldPoint lastPlayerLocation)
 	{
-		return this.getNpc().getWorldArea().hasLineOfSightTo(client, lastPlayerLocation);
+		return new WorldArea(lastPlayerLocation, 1, 1).hasLineOfSightTo(client, this.getNpc().getWorldArea());
 	}
 
 	void gameTick(Client client, WorldPoint lastPlayerLocation, boolean finalPhase)
