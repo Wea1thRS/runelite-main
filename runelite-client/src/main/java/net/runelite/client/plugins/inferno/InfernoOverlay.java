@@ -61,7 +61,7 @@ public class InfernoOverlay extends Overlay
 
 				final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
 
-				if (localPoint == null)
+				if (tilePoly == null)
 				{
 					continue;
 				}
@@ -136,7 +136,7 @@ public class InfernoOverlay extends Overlay
 
 					final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
 
-					if (localPoint == null)
+					if (tilePoly == null)
 					{
 						continue;
 					}
@@ -221,7 +221,7 @@ public class InfernoOverlay extends Overlay
 
 				final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
 
-				if (localPoint == null)
+				if (tilePoly == null)
 				{
 					continue;
 				}
@@ -264,7 +264,7 @@ public class InfernoOverlay extends Overlay
 
 				final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
 
-				if (localPoint == null)
+				if (tilePoly == null)
 				{
 					continue;
 				}
@@ -550,7 +550,7 @@ public class InfernoOverlay extends Overlay
 
 			final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
 
-			if (localPoint == null)
+			if (tilePoly == null)
 			{
 				continue;
 			}
