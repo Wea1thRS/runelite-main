@@ -381,28 +381,6 @@ public class InfernoPlugin extends Plugin
 								}
 							}
 
-							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.RANGED
-									|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
-									&& safeSpotMap.get(checkLoc) != 3 &&  safeSpotMap.get(checkLoc) != 5))
-							{
-								if (safeSpotMap.get(checkLoc) == 0)
-								{
-									safeSpotMap.put(checkLoc, 2);
-								}
-								else if (safeSpotMap.get(checkLoc) == 1)
-								{
-									safeSpotMap.put(checkLoc, 4);
-								}
-								else if (safeSpotMap.get(checkLoc) == 3)
-								{
-									safeSpotMap.put(checkLoc, 6);
-								}
-								else if (safeSpotMap.get(checkLoc) == 4)
-								{
-									safeSpotMap.put(checkLoc, 7);
-								}
-							}
-
 							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MAGIC
 									|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
 									&& safeSpotMap.get(checkLoc) != 2 &&  safeSpotMap.get(checkLoc) != 4))
@@ -420,6 +398,28 @@ public class InfernoPlugin extends Plugin
 									safeSpotMap.put(checkLoc, 6);
 								}
 								else if (safeSpotMap.get(checkLoc) == 5)
+								{
+									safeSpotMap.put(checkLoc, 7);
+								}
+							}
+
+							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.RANGED
+									|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
+									&& safeSpotMap.get(checkLoc) != 3 &&  safeSpotMap.get(checkLoc) != 5))
+							{
+								if (safeSpotMap.get(checkLoc) == 0)
+								{
+									safeSpotMap.put(checkLoc, 2);
+								}
+								else if (safeSpotMap.get(checkLoc) == 1)
+								{
+									safeSpotMap.put(checkLoc, 4);
+								}
+								else if (safeSpotMap.get(checkLoc) == 3)
+								{
+									safeSpotMap.put(checkLoc, 6);
+								}
+								else if (safeSpotMap.get(checkLoc) == 4)
 								{
 									safeSpotMap.put(checkLoc, 7);
 								}

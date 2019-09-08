@@ -190,11 +190,6 @@ public class InfernoNPC
 
 				currentPosition = bestNextLocation;
 			}
-			else
-			{
-				//System.out.println("Could not find a move location, can walk to: false");
-				return false;
-			}
 		}
 	}
 
