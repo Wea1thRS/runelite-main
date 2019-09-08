@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -205,6 +206,10 @@ public class InfernoPlugin extends Plugin
 	{
 		updateConfig();
 		addSubscriptions();
+
+		//TODO: Config options
+		String NibblerDeaths = "Jal-Nib, Jal-AkRek-Xil, Jal-AkRek-Mej, Jal-AkRek-Ket";
+		client.setNPCsHiddenOnDeath(Collections.singletonList(NibblerDeaths));
 
 		waveOverlay.setDisplayMode(this.waveDisplay);
 		waveOverlay.setWaveHeaderColor(this.getWaveOverlayHeaderColor);

@@ -95,6 +95,76 @@ public class InfernoNPC
 
 	boolean canMoveToAttack(Client client, WorldPoint target, List<WorldPoint> obstacles)
 	{
+		if (safeSpotCache.containsKey(target))
+		{
+			return safeSpotCache.get(target) == 1 || safeSpotCache.get(target) == 2;
+		}
+
+		final List<WorldPoint> realObstacles = new ArrayList<>();
+		for (WorldPoint obstacle : obstacles)
+		{
+			if (this.getNpc().getWorldArea().toWorldPointList().contains(obstacle))
+			{
+				continue;
+			}
+
+			realObstacles.add(obstacle);
+		}
+
+		final WorldArea targetArea = new WorldArea(target, 1, 1);
+		WorldArea currentWorldArea = this.getNpc().getWorldArea();
+
+		int steps = 0;
+		while (true)
+		{
+			// Prevent infinite loop in case of pathfinding failure
+			steps++;
+			if (steps > 30)
+			{
+				return false;
+			}
+
+			final WorldArea predictedWorldArea = currentWorldArea.calculateNextTravellingPoint(client, targetArea, true, x ->
+			{
+				for (WorldPoint obstacle : realObstacles)
+				{
+					if (new WorldArea(x, 1, 1).intersectsWith(new WorldArea(obstacle, 1, 1)))
+					{
+						return false;
+					}
+				}
+				return true;
+			});
+
+			// Will only happen when NPC is underneath player or moving out of scene (but this will never show on overlay)
+			if (predictedWorldArea == null)
+			{
+				safeSpotCache.put(target, 1);
+				return true;
+			}
+
+			if (predictedWorldArea == currentWorldArea)
+			{
+				safeSpotCache.put(target, 0);
+				return false;
+			}
+
+			boolean hasLos = new WorldArea(target, 1, 1).hasLineOfSightTo(client, predictedWorldArea);
+			boolean hasRange = this.getType().getDefaultAttack() == Attack.MELEE ? predictedWorldArea.isInMeleeDistance(target)
+					: predictedWorldArea.distanceTo(target) <= this.getType().getRange();
+
+			if (hasLos && hasRange)
+			{
+				safeSpotCache.put(target, 1);
+				return true;
+			}
+
+			currentWorldArea = predictedWorldArea;
+		}
+	}
+
+	boolean canMoveToAttack2(Client client, WorldPoint target, List<WorldPoint> obstacles)
+	{
 		//System.out.println("");
 		//System.out.println("CHECKING TARGET: " + target.getX() + ", " + target.getY());
 
@@ -134,11 +204,11 @@ public class InfernoNPC
 
 			final List<WorldPoint> possibleNextLocations = new ArrayList<>();
 			possibleNextLocations.add(currentPosition.dx(dx).dy(dy));
+			possibleNextLocations.add(currentPosition.dx(dx));
 
 			if (Math.abs(target.getX() - currentPosition.getX()) != Math.abs(target.getY() - currentPosition.getY())
 					|| new WorldArea(currentPosition, npc.getTransformedDefinition().getSize(),	npc.getTransformedDefinition().getSize()).distanceTo(target) != 1)
 			{
-				possibleNextLocations.add(currentPosition.dx(dx));
 				possibleNextLocations.add(currentPosition.dy(dy));
 			}
 
@@ -151,12 +221,6 @@ public class InfernoNPC
 				{
 					//System.out.println("Position is the same, continuing");
 					continue;
-				}
-				if (possibleNextLocation.getX() == target.getX() && possibleNextLocation.getY() == target.getY())
-				{
-					//System.out.println("At target position, can walk to: true");
-					safeSpotCache.put(possibleNextLocation, 1);
-					return true;
 				}
 
 				final WorldArea possibleNextArea = new WorldArea(possibleNextLocation, npc.getTransformedDefinition().getSize(),
@@ -183,8 +247,8 @@ public class InfernoNPC
 			if (bestNextLocation != null && bestNexArea != null)
 			{
 				boolean hasLos = new WorldArea(target, 1, 1).hasLineOfSightTo(client, bestNexArea);
-				boolean hasRange = this.getType().getDefaultAttack() == Attack.MELEE ? this.getNpc().getWorldArea().isInMeleeDistance(target)
-						: this.getNpc().getWorldArea().distanceTo(target) <= this.getType().getRange();
+				boolean hasRange = this.getType().getDefaultAttack() == Attack.MELEE ? bestNexArea.isInMeleeDistance(target)
+						: bestNexArea.distanceTo(target) <= this.getType().getRange();
 
 				if (hasLos && hasRange)
 				{
