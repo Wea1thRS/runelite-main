@@ -144,16 +144,16 @@ public class InfernoOverlay extends Overlay
 					OverlayUtil.renderAreaTilePolygon(graphics, tilePoly, colorFill);
 
 					final int[][] edge1 = new int[][]{{tilePoly.xpoints[0], tilePoly.ypoints[0]}, {tilePoly.xpoints[1], tilePoly.ypoints[1]}};
-					edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[0] - tilePoly.xpoints[1], 2) + Math.pow(tilePoly.ypoints[0] - tilePoly.ypoints[1], 2));
+					edgeSizeSquared += Math.pow(tilePoly.xpoints[0] - tilePoly.xpoints[1], 2) + Math.pow(tilePoly.ypoints[0] - tilePoly.ypoints[1], 2);
 					allEdges.add(edge1);
 					final int[][] edge2 = new int[][]{{tilePoly.xpoints[1], tilePoly.ypoints[1]}, {tilePoly.xpoints[2], tilePoly.ypoints[2]}};
-					edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[1] - tilePoly.xpoints[2], 2) + Math.pow(tilePoly.ypoints[1] - tilePoly.ypoints[2], 2));
+					edgeSizeSquared += Math.pow(tilePoly.xpoints[1] - tilePoly.xpoints[2], 2) + Math.pow(tilePoly.ypoints[1] - tilePoly.ypoints[2], 2);
 					allEdges.add(edge2);
 					final int[][] edge3 = new int[][]{{tilePoly.xpoints[2], tilePoly.ypoints[2]}, {tilePoly.xpoints[3], tilePoly.ypoints[3]}};
-					edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[2] - tilePoly.xpoints[3], 2) + Math.pow(tilePoly.ypoints[2] - tilePoly.ypoints[3], 2));
+					edgeSizeSquared += Math.pow(tilePoly.xpoints[2] - tilePoly.xpoints[3], 2) + Math.pow(tilePoly.ypoints[2] - tilePoly.ypoints[3], 2);
 					allEdges.add(edge3);
 					final int[][] edge4 = new int[][]{{tilePoly.xpoints[3], tilePoly.ypoints[3]}, {tilePoly.xpoints[0], tilePoly.ypoints[0]}};
-					edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[3] - tilePoly.xpoints[0], 2) + Math.pow(tilePoly.ypoints[3] - tilePoly.ypoints[0], 2));
+					edgeSizeSquared += Math.pow(tilePoly.xpoints[3] - tilePoly.xpoints[0], 2) + Math.pow(tilePoly.ypoints[3] - tilePoly.ypoints[0], 2);
 					allEdges.add(edge4);
 				}
 
@@ -533,79 +533,6 @@ public class InfernoOverlay extends Overlay
 		return null;
 	}
 
-	private List<int[][]> renderArea(List<WorldPoint> worldPoints)
-	{
-		final List<int[][]> allEdges = new ArrayList<>();
-		int edgeSizeSquared = 0;
-
-		//Add all edges and calculate average edgeSize
-		for (WorldPoint worldPoint : worldPoints)
-		{
-			final LocalPoint localPoint = LocalPoint.fromWorld(client, worldPoint);
-
-			if (localPoint == null)
-			{
-				continue;
-			}
-
-			final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
-
-			if (tilePoly == null)
-			{
-				continue;
-			}
-
-			final int[][] edge1 = new int[][]{{tilePoly.xpoints[0], tilePoly.ypoints[0]}, {tilePoly.xpoints[1], tilePoly.ypoints[1]}};
-			edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[0] - tilePoly.xpoints[1], 2) + Math.pow(tilePoly.ypoints[0] - tilePoly.ypoints[1], 2));
-			allEdges.add(edge1);
-			final int[][] edge2 = new int[][]{{tilePoly.xpoints[1], tilePoly.ypoints[1]}, {tilePoly.xpoints[2], tilePoly.ypoints[2]}};
-			edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[1] - tilePoly.xpoints[2], 2) + Math.pow(tilePoly.ypoints[1] - tilePoly.ypoints[2], 2));
-			allEdges.add(edge2);
-			final int[][] edge3 = new int[][]{{tilePoly.xpoints[2], tilePoly.ypoints[2]}, {tilePoly.xpoints[3], tilePoly.ypoints[3]}};
-			edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[2] - tilePoly.xpoints[3], 2) + Math.pow(tilePoly.ypoints[2] - tilePoly.ypoints[3], 2));
-			allEdges.add(edge3);
-			final int[][] edge4 = new int[][]{{tilePoly.xpoints[3], tilePoly.ypoints[3]}, {tilePoly.xpoints[0], tilePoly.ypoints[0]}};
-			edgeSizeSquared += Math.sqrt(Math.pow(tilePoly.xpoints[3] - tilePoly.xpoints[0], 2) + Math.pow(tilePoly.ypoints[3] - tilePoly.ypoints[0], 2));
-			allEdges.add(edge4);
-		}
-
-		edgeSizeSquared /= allEdges.size();
-
-		//Remove duplicate edges
-		final List<int[][]> uniqueEdges = new ArrayList<>();
-		final int toleranceSquared = (int) Math.ceil(edgeSizeSquared / 6);
-
-		for (int i = 0; i < allEdges.size(); i++)
-		{
-			int[][] baseEdge = allEdges.get(i);
-
-			boolean duplicate = false;
-
-			for (int j = 0; j < allEdges.size(); j++)
-			{
-				if (i == j)
-				{
-					continue;
-				}
-
-				int[][] checkEdge = allEdges.get(j);
-
-				if (edgeEqualsEdge(baseEdge, checkEdge, toleranceSquared))
-				{
-					duplicate = true;
-					break;
-				}
-			}
-
-			if (!duplicate)
-			{
-				uniqueEdges.add(baseEdge);
-			}
-		}
-
-		return uniqueEdges;
-	}
-
 	private boolean edgeEqualsEdge(int[][] edge1, int[][] edge2, int toleranceSquared)
 	{
 		if ((pointEqualsPoint(edge1[0], edge2[0], toleranceSquared) && pointEqualsPoint(edge1[1], edge2[1], toleranceSquared))
@@ -619,7 +546,7 @@ public class InfernoOverlay extends Overlay
 
 	private boolean pointEqualsPoint(int[] point1, int[] point2, int toleranceSquared)
 	{
-		double distanceSquared = Math.sqrt(Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2));
+		double distanceSquared = Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2);
 
 		return distanceSquared <= toleranceSquared;
 	}
