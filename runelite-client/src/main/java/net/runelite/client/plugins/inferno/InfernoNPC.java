@@ -134,8 +134,13 @@ public class InfernoNPC
 
 			final List<WorldPoint> possibleNextLocations = new ArrayList<>();
 			possibleNextLocations.add(currentPosition.dx(dx).dy(dy));
-			possibleNextLocations.add(currentPosition.dx(dx));
-			possibleNextLocations.add(currentPosition.dy(dy));
+
+			if (Math.abs(target.getX() - currentPosition.getX()) != Math.abs(target.getY() - currentPosition.getY())
+					|| new WorldArea(currentPosition, npc.getTransformedDefinition().getSize(),	npc.getTransformedDefinition().getSize()).distanceTo(target) != 1)
+			{
+				possibleNextLocations.add(currentPosition.dx(dx));
+				possibleNextLocations.add(currentPosition.dy(dy));
+			}
 
 			WorldPoint bestNextLocation = null;
 			WorldArea bestNexArea = null;
