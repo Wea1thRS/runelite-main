@@ -157,10 +157,12 @@ public class InfernoOverlay extends Overlay
 					allEdges.add(edge4);
 				}
 
-				edgeSizeSquared /= allEdges.size();
+				if (allEdges.size() <= 0)
+				{
+					continue;
+				}
 
-				System.out.println("Found " + allEdges.size() + " edges");
-				System.out.println("edgeSizeSquared: " + edgeSizeSquared);
+				edgeSizeSquared /= allEdges.size();
 
 				//Find and indicate unique edges
 				final int toleranceSquared = (int) Math.ceil(edgeSizeSquared / 6);
@@ -378,8 +380,7 @@ public class InfernoOverlay extends Overlay
 					}
 					// If there's going to be a magic attack on the blob attack tick, pray range on the detect tick so magic is prayed on the attack tick
 					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(InfernoNPC.Attack.MAGIC)
-							|| (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.MAGIC)
-							&& upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).get(InfernoNPC.Attack.MAGIC) < InfernoNPC.Type.BLOB.getPriority()))
+							|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.MAGIC))
 					{
 						if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.RANGED)
 								|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.RANGED) > 6)
@@ -389,8 +390,7 @@ public class InfernoOverlay extends Overlay
 					}
 					// If there's going to be a ranged attack on the blob attack tick, pray magic on the detect tick so range is prayed on the attack tick
 					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(InfernoNPC.Attack.RANGED)
-							|| (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.RANGED)
-							&& upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).get(InfernoNPC.Attack.RANGED) < InfernoNPC.Type.BLOB.getPriority()))
+							|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.RANGED))
 					{
 						if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.MAGIC)
 								|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.MAGIC) > 6)
@@ -571,9 +571,6 @@ public class InfernoOverlay extends Overlay
 
 		edgeSizeSquared /= allEdges.size();
 
-		System.out.println("Found " + allEdges.size() + " edges");
-		System.out.println("edgeSizeSquared: " + edgeSizeSquared);
-
 		//Remove duplicate edges
 		final List<int[][]> uniqueEdges = new ArrayList<>();
 		final int toleranceSquared = (int) Math.ceil(edgeSizeSquared / 6);
@@ -605,8 +602,6 @@ public class InfernoOverlay extends Overlay
 				uniqueEdges.add(baseEdge);
 			}
 		}
-
-		System.out.println("Found " + uniqueEdges.size() + " unique edges");
 
 		return uniqueEdges;
 	}

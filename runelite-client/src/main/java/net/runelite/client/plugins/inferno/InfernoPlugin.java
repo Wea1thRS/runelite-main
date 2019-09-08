@@ -329,87 +329,89 @@ public class InfernoPlugin extends Plugin
 
 		int checkSize = (int) Math.floor(safespotsCheckSize / 2.0);
 
-		safeSpotMap.clear();
-		for (int x = -checkSize; x <= checkSize; x++)
+		if (indicateSafespots != SafespotDisplayMode.OFF)
 		{
-			for (int y = -checkSize; y <= checkSize; y++)
+			safeSpotMap.clear();
+			for (int x = -checkSize; x <= checkSize; x++)
 			{
-				final WorldPoint checkLoc = client.getLocalPlayer().getWorldLocation().dx(x).dy(y);
-
-				if (obstacles.contains(checkLoc))
+				for (int y = -checkSize; y <= checkSize; y++)
 				{
-					continue;
-				}
+					final WorldPoint checkLoc = client.getLocalPlayer().getWorldLocation().dx(x).dy(y);
 
-				safeSpotMap.put(checkLoc, 0);
-
-				for (InfernoNPC infernoNPC : infernoNpcs.values())
-				{
-					if (infernoNPC.getType().getPriority() < 99 && infernoNPC.getType() != InfernoNPC.Type.JAD
-							&& (infernoNPC.canAttack(client, checkLoc)
-							|| infernoNPC.canMoveToAttack(client, checkLoc, obstacles)))
+					if (obstacles.contains(checkLoc))
 					{
-						if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MELEE)
-						{
-							if (safeSpotMap.get(checkLoc) == 0)
-							{
-								safeSpotMap.put(checkLoc, 1);
-							}
-							else if (safeSpotMap.get(checkLoc) == 2)
-							{
-								safeSpotMap.put(checkLoc, 4);
-							}
-							else if (safeSpotMap.get(checkLoc) == 3)
-							{
-								safeSpotMap.put(checkLoc, 5);
-							}
-							else if (safeSpotMap.get(checkLoc) == 6)
-							{
-								safeSpotMap.put(checkLoc, 7);
-							}
-						}
+						continue;
+					}
 
-						if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.RANGED
-								|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
-								&& safeSpotMap.get(checkLoc) != 3 &&  safeSpotMap.get(checkLoc) != 5))
-						{
-							if (safeSpotMap.get(checkLoc) == 0)
-							{
-								safeSpotMap.put(checkLoc, 2);
-							}
-							else if (safeSpotMap.get(checkLoc) == 1)
-							{
-								safeSpotMap.put(checkLoc, 4);
-							}
-							else if (safeSpotMap.get(checkLoc) == 3)
-							{
-								safeSpotMap.put(checkLoc, 6);
-							}
-							else if (safeSpotMap.get(checkLoc) == 4)
-							{
-								safeSpotMap.put(checkLoc, 7);
-							}
-						}
+					safeSpotMap.put(checkLoc, 0);
 
-						if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MAGIC
-								|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
-								&& safeSpotMap.get(checkLoc) != 2 &&  safeSpotMap.get(checkLoc) != 4))
+					for (InfernoNPC infernoNPC : infernoNpcs.values())
+					{
+						if (infernoNPC.getType().getPriority() < 99 && infernoNPC.getType() != InfernoNPC.Type.JAD
+								&& (infernoNPC.canAttack(client, checkLoc)))
 						{
-							if (safeSpotMap.get(checkLoc) == 0)
+							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MELEE)
 							{
-								safeSpotMap.put(checkLoc, 3);
+								if (safeSpotMap.get(checkLoc) == 0)
+								{
+									safeSpotMap.put(checkLoc, 1);
+								}
+								else if (safeSpotMap.get(checkLoc) == 2)
+								{
+									safeSpotMap.put(checkLoc, 4);
+								}
+								else if (safeSpotMap.get(checkLoc) == 3)
+								{
+									safeSpotMap.put(checkLoc, 5);
+								}
+								else if (safeSpotMap.get(checkLoc) == 6)
+								{
+									safeSpotMap.put(checkLoc, 7);
+								}
 							}
-							else if (safeSpotMap.get(checkLoc) == 1)
+
+							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.RANGED
+									|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
+									&& safeSpotMap.get(checkLoc) != 3 &&  safeSpotMap.get(checkLoc) != 5))
 							{
-								safeSpotMap.put(checkLoc, 5);
+								if (safeSpotMap.get(checkLoc) == 0)
+								{
+									safeSpotMap.put(checkLoc, 2);
+								}
+								else if (safeSpotMap.get(checkLoc) == 1)
+								{
+									safeSpotMap.put(checkLoc, 4);
+								}
+								else if (safeSpotMap.get(checkLoc) == 3)
+								{
+									safeSpotMap.put(checkLoc, 6);
+								}
+								else if (safeSpotMap.get(checkLoc) == 4)
+								{
+									safeSpotMap.put(checkLoc, 7);
+								}
 							}
-							else if (safeSpotMap.get(checkLoc) == 2)
+
+							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MAGIC
+									|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
+									&& safeSpotMap.get(checkLoc) != 2 &&  safeSpotMap.get(checkLoc) != 4))
 							{
-								safeSpotMap.put(checkLoc, 6);
-							}
-							else if (safeSpotMap.get(checkLoc) == 5)
-							{
-								safeSpotMap.put(checkLoc, 7);
+								if (safeSpotMap.get(checkLoc) == 0)
+								{
+									safeSpotMap.put(checkLoc, 3);
+								}
+								else if (safeSpotMap.get(checkLoc) == 1)
+								{
+									safeSpotMap.put(checkLoc, 5);
+								}
+								else if (safeSpotMap.get(checkLoc) == 2)
+								{
+									safeSpotMap.put(checkLoc, 6);
+								}
+								else if (safeSpotMap.get(checkLoc) == 5)
+								{
+									safeSpotMap.put(checkLoc, 7);
+								}
 							}
 						}
 					}
@@ -417,15 +419,16 @@ public class InfernoPlugin extends Plugin
 			}
 		}
 
-		safeSpotAreas.clear();
-		for (WorldPoint worldPoint : safeSpotMap.keySet())
+		if (indicateSafespots == SafespotDisplayMode.AREA)
 		{
-			if (!safeSpotAreas.containsKey(safeSpotMap.get(worldPoint)))
-			{
-				safeSpotAreas.put(safeSpotMap.get(worldPoint), new ArrayList<>());
-			}
+			safeSpotAreas.clear();
+			for (WorldPoint worldPoint : safeSpotMap.keySet()) {
+				if (!safeSpotAreas.containsKey(safeSpotMap.get(worldPoint))) {
+					safeSpotAreas.put(safeSpotMap.get(worldPoint), new ArrayList<>());
+				}
 
-			safeSpotAreas.get(safeSpotMap.get(worldPoint)).add(worldPoint);
+				safeSpotAreas.get(safeSpotMap.get(worldPoint)).add(worldPoint);
+			}
 		}
 
 		lastLocation = client.getLocalPlayer().getWorldLocation();
