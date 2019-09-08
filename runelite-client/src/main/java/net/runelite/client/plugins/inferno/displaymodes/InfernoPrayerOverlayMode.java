@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.inferno;
+package net.runelite.client.plugins.inferno.displaymodes;
 
 public enum InfernoPrayerOverlayMode
 {

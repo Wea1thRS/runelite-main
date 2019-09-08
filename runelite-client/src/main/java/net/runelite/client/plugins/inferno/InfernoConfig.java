@@ -33,6 +33,9 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Stub;
+import net.runelite.client.plugins.inferno.displaymodes.InfernoPrayerOverlayMode;
+import net.runelite.client.plugins.inferno.displaymodes.InfernoWaveDisplayMode;
+import net.runelite.client.plugins.inferno.displaymodes.SafespotDisplayMode;
 
 @ConfigGroup("inferno")
 public interface InfernoConfig extends Config
@@ -300,6 +303,28 @@ public interface InfernoConfig extends Config
 	default boolean indicateBlobDetectionTick()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+			position = 24,
+			keyName = "Indicate Safespots",
+			name = "indicateSafespots",
+			description = "Indicate safespots on the ground: safespot (white), pray melee (red), pray range (green), pray magic (blue) and combinations of those"
+	)
+	default SafespotDisplayMode indicateSafespots()
+	{
+		return SafespotDisplayMode.OFF;
+	}
+
+	@ConfigItem(
+			position = 25,
+			keyName = "safespotsCheckSize",
+			name = "Safespots Check Size",
+			description = "The size of the area around the player that should be checked for safespots (SIZE x SIZE area)"
+	)
+	default int safespotsCheckSize()
+	{
+		return 10;
 	}
 
 	@Getter
