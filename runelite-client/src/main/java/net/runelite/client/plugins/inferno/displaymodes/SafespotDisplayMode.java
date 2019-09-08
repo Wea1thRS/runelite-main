@@ -18,7 +18,8 @@ public enum SafespotDisplayMode
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return this.name;
 	}
 }

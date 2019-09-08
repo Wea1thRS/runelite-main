@@ -503,14 +503,14 @@ public class InfernoPlugin extends Plugin
 		}
 	}
 
-	private void onNpcSpawned(NpcSpawned event)
+	private void onGameStateChanged(GameStateChanged event)
 	{
-		if (!isInInferno())
+		if (event.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
 		}
 
-		if (event.getNpc().getId() == ZUK_SHIELD)
+		if (!isInInferno())
 		{
 			currentWaveNumber = -1;
 
@@ -543,20 +543,13 @@ public class InfernoPlugin extends Plugin
 			return;
 		}
 
-		if (infernoNPCType == InfernoNPC.Type.ZUK)
-		{
-			System.out.println("Zuk spawn detected, not in final phase");
-			finalPhase = false;
-			zukShieldCornerTicks = -2;
-			zukShieldLastPosition = null;
-		}
-		if (infernoNPCType == InfernoNPC.Type.HEALER_ZUK)
-		{
-			System.out.println("Final phase detected!");
-			finalPhase = true;
-		}
+		String message = event.getMessage();
 
-		infernoNpcs.put(event.getNpc(), new InfernoNPC(event.getNpc()));
+		if (event.getMessage().contains("Wave:"))
+		{
+			message = message.substring(message.indexOf(": ") + 2);
+			currentWaveNumber = Integer.parseInt(message.substring(0, message.indexOf("<")));
+		}
 	}
 
 	HashMap<NPC, InfernoNPC> getInfernoNpcs()
@@ -572,7 +565,6 @@ public class InfernoPlugin extends Plugin
 
 			sortedInfernoNpcs.put(entry.getKey(), entry.getValue());
 		}
-	}
 
 		for (Map.Entry<NPC, InfernoNPC> entry : infernoNpcs.entrySet())
 		{
