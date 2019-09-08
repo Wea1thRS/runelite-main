@@ -76,22 +76,21 @@ public class InfernoNPC
 		this.nextAttack = nextAttack;
 	}
 
-	boolean canAttack(Client client, WorldPoint target)
-	{
-		if (safeSpotCache.containsKey(target))
-		{
+	boolean canAttack(Client client, WorldPoint target) {
+		if (safeSpotCache.containsKey(target)) {
 			return safeSpotCache.get(target) == 2;
 		}
 
-		boolean attack = target.distanceTo(this.getNpc().getWorldArea()) <= this.getType().getRange()
-			&& new WorldArea(target, 1, 1).hasLineOfSightTo(client, this.getNpc().getWorldArea());
+		boolean hasLos = new WorldArea(target, 1, 1).hasLineOfSightTo(client, this.getNpc().getWorldArea());
+		boolean hasRange = this.getType().getDefaultAttack() == Attack.MELEE ? this.getNpc().getWorldArea().isInMeleeDistance(target)
+				: this.getNpc().getWorldArea().distanceTo(target) <= this.getType().getRange();
 
-		if (attack)
+		if (hasLos && hasRange)
 		{
 			safeSpotCache.put(target, 2);
 		}
 
-		return attack;
+		return hasLos && hasRange;
 	}
 
 	boolean canMoveToAttack(Client client, WorldPoint target, List<WorldPoint> obstacles)
@@ -178,9 +177,11 @@ public class InfernoNPC
 
 			if (bestNextLocation != null && bestNexArea != null)
 			{
-				//System.out.println("Found a move location");
-				if (new WorldArea(target, 1, 1).hasLineOfSightTo(client, bestNexArea)
-					&& target.distanceTo(this.getNpc().getWorldArea()) <= this.getType().getRange())
+				boolean hasLos = new WorldArea(target, 1, 1).hasLineOfSightTo(client, bestNexArea);
+				boolean hasRange = this.getType().getDefaultAttack() == Attack.MELEE ? this.getNpc().getWorldArea().isInMeleeDistance(target)
+						: this.getNpc().getWorldArea().distanceTo(target) <= this.getType().getRange();
+
+				if (hasLos && hasRange)
 				{
 					//System.out.println("Move location has LOS, can walk to: true");
 					safeSpotCache.put(bestNextLocation, 1);

@@ -40,6 +40,7 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
+import net.runelite.api.coords.WorldArea;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
@@ -318,6 +319,15 @@ public class InfernoPlugin extends Plugin
 
 		for (InfernoNPC infernoNPC : infernoNpcs.values())
 		{
+			// Start Debug
+			if (infernoNPC.getType() == InfernoNPC.Type.MELEE)
+			{
+				System.out.println("");
+				System.out.println("MELEER DISTANCE INFO: ");
+				System.out.println("- Distance to player: " + client.getLocalPlayer().getWorldLocation().distanceTo(infernoNPC.getNpc().getWorldArea()));
+				System.out.println("- Has LOS: " + new WorldArea(client.getLocalPlayer().getWorldLocation(), 1, 1).hasLineOfSightTo(client, (infernoNPC.getNpc().getWorldArea())));
+			}
+
 			infernoNPC.gameTick(client, lastLocation, finalPhase);
 
 			if (infernoNPC.getType() == InfernoNPC.Type.ZUK && zukShieldCornerTicks == -1)
@@ -348,7 +358,8 @@ public class InfernoPlugin extends Plugin
 					for (InfernoNPC infernoNPC : infernoNpcs.values())
 					{
 						if (infernoNPC.getType().getPriority() < 99 && infernoNPC.getType() != InfernoNPC.Type.JAD
-								&& (infernoNPC.canAttack(client, checkLoc)))
+								&& (infernoNPC.canAttack(client, checkLoc)
+								|| infernoNPC.canMoveToAttack(client, checkLoc, obstacles)))
 						{
 							if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MELEE)
 							{
