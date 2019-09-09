@@ -69,37 +69,14 @@ public class InfernoInfoBoxOverlay extends Overlay
 			return null;
 		}
 
-		InfernoNPC closestToAttack = null;
-
-		for (InfernoNPC infernoNPC : plugin.getInfernoNpcs().values())
-		{
-			if (infernoNPC.getTicksTillNextAttack() <= 0 || infernoNPC.getNextAttack() == InfernoNPC.Attack.UNKNOWN)
-			{
-				continue;
-			}
-
-			// Determine which NPC is about to attack next
-			if ((closestToAttack == null && infernoNPC.getTicksTillNextAttack() > 0 && infernoNPC.getType().getPriority() < 99)
-				|| (closestToAttack != null && infernoNPC.getTicksTillNextAttack() < closestToAttack.getTicksTillNextAttack()
-				&& infernoNPC.getType().getPriority() < 99)
-				|| (closestToAttack != null && infernoNPC.getTicksTillNextAttack() == closestToAttack.getTicksTillNextAttack()
-				&& infernoNPC.getType().getPriority() < closestToAttack.getType().getPriority()))
-			{
-				if (infernoNPC.getNextAttack() != InfernoNPC.Attack.UNKNOWN)
-				{
-					closestToAttack = infernoNPC;
-				}
-			}
-		}
-
 		imagePanelComponent.getChildren().clear();
 
-		if (closestToAttack != null)
+		if (plugin.getClosestAttack() != null)
 		{
-			final BufferedImage prayerImage = getPrayerImage(closestToAttack.getNextAttack());
+			final BufferedImage prayerImage = getPrayerImage(plugin.getClosestAttack());
 
 			imagePanelComponent.getChildren().add(new ImageComponent(prayerImage));
-			imagePanelComponent.setBackgroundColor(client.isPrayerActive(closestToAttack.getNextAttack().getPrayer())
+			imagePanelComponent.setBackgroundColor(client.isPrayerActive(plugin.getClosestAttack().getPrayer())
 				? ComponentConstants.STANDARD_BACKGROUND_COLOR
 				: NOT_ACTIVATED_BACKGROUND_COLOR);
 		}

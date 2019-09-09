@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
+import net.runelite.api.coords.WorldArea;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
@@ -109,23 +111,22 @@ public class InfernoPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	private int textSize = 32;
 
-	//TODO: Why are there 2 waveNumbers ???
-	@Getter(AccessLevel.PACKAGE)
-	private int currentWave = -1;
-
 	@Getter(AccessLevel.PACKAGE)
 	private int currentWaveNumber;
 
 	private final Map<NPC, InfernoNPC> infernoNpcs = new HashMap<>();
 
 	@Getter(AccessLevel.PACKAGE)
-	private List<WorldPoint> obstacles = new ArrayList<>();
+	private final HashMap<Integer, HashMap<InfernoNPC.Attack, Integer>> upcomingAttacks = new HashMap<>();
+	@Getter(AccessLevel.PACKAGE)
+	private InfernoNPC.Attack closestAttack = null;
+
+	@Getter(AccessLevel.PACKAGE)
+	private final List<WorldPoint> obstacles = new ArrayList<>();
 
 	private NPC zukShield = null;
 	private WorldPoint zukShieldLastPosition = null;
 	private int zukShieldCornerTicks = -2;
-	@Getter(AccessLevel.PACKAGE)
-	private List<WorldPoint> zukShieldSafespots = new ArrayList<>();
 	@Getter(AccessLevel.PACKAGE)
 	private boolean finalPhase = false;
 
@@ -138,9 +139,9 @@ public class InfernoPlugin extends Plugin
 	// 6 = pray range, magic
 	// 7 = pray all
 	@Getter(AccessLevel.PACKAGE)
-	final HashMap<WorldPoint, Integer> safeSpotMap = new HashMap<>();
+	private final HashMap<WorldPoint, Integer> safeSpotMap = new HashMap<>();
 	@Getter(AccessLevel.PACKAGE)
-	final HashMap<Integer, List<WorldPoint>> safeSpotAreas = new HashMap<>();
+	private final HashMap<Integer, List<WorldPoint>> safeSpotAreas = new HashMap<>();
 
 	//@Getter(AccessLevel.PACKAGE)
 	//private final Map<Integer, ArrayList<InfernoNPC>> monsterCurrentAttackMap = new HashMap<>(6);
@@ -204,6 +205,10 @@ public class InfernoPlugin extends Plugin
 	{
 		updateConfig();
 		addSubscriptions();
+
+		//TODO: Config options
+		String NibblerDeaths = "Jal-Nib, Jal-AkRek-Xil, Jal-AkRek-Mej, Jal-AkRek-Ket";
+		client.setNPCsHiddenOnDeath(Collections.singletonList(NibblerDeaths));
 
 		waveOverlay.setDisplayMode(this.waveDisplay);
 		waveOverlay.setWaveHeaderColor(this.getWaveOverlayHeaderColor);
@@ -285,28 +290,6 @@ public class InfernoPlugin extends Plugin
 
 		lastTick = System.currentTimeMillis();
 
-		zukShieldSafespots.clear();
-		if (zukShield != null)
-		{
-			for (int x = zukShield.getWorldLocation().getX() - 1; x <= zukShield.getWorldLocation().getX() + 3; x++)
-			{
-				for (int y = zukShield.getWorldLocation().getY() - 4; y <= zukShield.getWorldLocation().getY() - 2; y++)
-				{
-					zukShieldSafespots.add(new WorldPoint(x, y, client.getPlane()));
-				}
-			}
-
-			final WorldPoint zukShieldCurrentPosition = zukShield.getWorldLocation();
-
-			if (zukShieldLastPosition != null && zukShieldLastPosition.getX() != zukShieldCurrentPosition.getX()
-				&& zukShieldCornerTicks == -2)
-			{
-				zukShieldCornerTicks = -1;
-			}
-
-			zukShieldLastPosition = zukShield.getWorldLocation();
-		}
-
 		obstacles.clear();
 		for (NPC npc : client.getNpcs())
 		{
@@ -316,6 +299,7 @@ public class InfernoPlugin extends Plugin
 			}
 		}
 
+		upcomingAttacks.clear();
 		for (InfernoNPC infernoNPC : infernoNpcs.values())
 		{
 			infernoNPC.gameTick(client, lastLocation, finalPhase);
@@ -325,107 +309,269 @@ public class InfernoPlugin extends Plugin
 				infernoNPC.updateNextAttack(InfernoNPC.Attack.UNKNOWN, 12);
 				zukShieldCornerTicks = 0;
 			}
+
+			// Map all upcoming attacks and their priority + determine which NPC is about to attack next
+			if (infernoNPC.getTicksTillNextAttack() > 0 && infernoNPC.getType().getPriority() < 99
+					&& (infernoNPC.getNextAttack() != InfernoNPC.Attack.UNKNOWN
+					|| (indicateBlobDetectionTick && infernoNPC.getType() == InfernoNPC.Type.BLOB
+					&& infernoNPC.getTicksTillNextAttack() >= 4)))
+			{
+				if (indicateBlobDetectionTick && infernoNPC.getType() == InfernoNPC.Type.BLOB
+						&& infernoNPC.getTicksTillNextAttack() >= 4)
+				{
+					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack()))
+					{
+						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack() , new HashMap<>());
+					}
+					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack() - 3))
+					{
+						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack() - 3, new HashMap<>());
+					}
+					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack() - 4))
+					{
+						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack() - 4, new HashMap<>());
+					}
+
+					// If there's already a magic attack on the detection tick, group them
+					if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.MAGIC))
+					{
+						if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.MAGIC) > 6)
+						{
+							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.MAGIC, 6);
+						}
+					}
+					// If there's already a ranged attack on the detection tick, group them
+					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.RANGED))
+					{
+						if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.RANGED) > 6)
+						{
+							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.RANGED, 6);
+						}
+					}
+					// If there's going to be a magic attack on the blob attack tick, pray range on the detect tick so magic is prayed on the attack tick
+					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(InfernoNPC.Attack.MAGIC)
+							|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.MAGIC))
+					{
+						if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.RANGED)
+								|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.RANGED) > 6)
+						{
+							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.RANGED, 6);
+						}
+					}
+					// If there's going to be a ranged attack on the blob attack tick, pray magic on the detect tick so range is prayed on the attack tick
+					else if (upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(InfernoNPC.Attack.RANGED)
+							|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 4).containsKey(InfernoNPC.Attack.RANGED))
+					{
+						if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).containsKey(InfernoNPC.Attack.MAGIC)
+								|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).get(InfernoNPC.Attack.MAGIC) > 6)
+						{
+							upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.MAGIC, 6);
+						}
+					}
+					// If there's no magic or ranged attack on the detection tick, create a magic pray blob
+					else
+					{
+						upcomingAttacks.get(infernoNPC.getTicksTillNextAttack() - 3).put(InfernoNPC.Attack.MAGIC, 6);
+					}
+				}
+				else
+				{
+					if (!upcomingAttacks.containsKey(infernoNPC.getTicksTillNextAttack()))
+					{
+						upcomingAttacks.put(infernoNPC.getTicksTillNextAttack(), new HashMap<>());
+					}
+
+					final InfernoNPC.Attack attack = infernoNPC.getNextAttack();
+					final int priority = infernoNPC.getType().getPriority();
+
+					if (!upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).containsKey(attack)
+							|| upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).get(attack) > priority)
+					{
+						upcomingAttacks.get(infernoNPC.getTicksTillNextAttack()).put(attack, priority);
+					}
+				}
+			}
 		}
 
-		int checkSize = (int) Math.floor(safespotsCheckSize / 2.0);
+		closestAttack = null;
+		if (showPrayerHelp
+				&& (prayerOverlayMode == InfernoPrayerOverlayMode.PRAYER_TAB
+				|| prayerOverlayMode == InfernoPrayerOverlayMode.BOTH))
+		{
+			int closestTick = 999;
+			int closestPriority = 999;
+
+			for (Integer tick : upcomingAttacks.keySet())
+			{
+				final HashMap<InfernoNPC.Attack, Integer> attackPriority = upcomingAttacks.get(tick);
+
+				for (InfernoNPC.Attack currentAttack : attackPriority.keySet())
+				{
+					final int currentPriority = attackPriority.get(currentAttack);
+					if (tick < closestTick || (tick == closestTick && currentPriority < closestPriority))
+					{
+						closestAttack = currentAttack;
+						closestPriority = currentPriority;
+						closestTick = tick;
+					}
+				}
+			}
+		}
 
 		safeSpotMap.clear();
-		for (int x = -checkSize; x <= checkSize; x++)
+
+		//TODO: If wave is before first jad
+		//TODO: Merge this with zuk shield safespots
+		if (currentWaveNumber < 69)
 		{
-			for (int y = -checkSize; y <= checkSize; y++)
+			if (indicateSafespots != SafespotDisplayMode.OFF)
 			{
-				final WorldPoint checkLoc = client.getLocalPlayer().getWorldLocation().dx(x).dy(y);
+				int checkSize = (int) Math.floor(safespotsCheckSize / 2.0);
 
-				if (obstacles.contains(checkLoc))
+				for (int x = -checkSize; x <= checkSize; x++)
 				{
-					continue;
-				}
-
-				safeSpotMap.put(checkLoc, 0);
-
-				for (InfernoNPC infernoNPC : infernoNpcs.values())
-				{
-					if (infernoNPC.getType().getPriority() < 99 && infernoNPC.getType() != InfernoNPC.Type.JAD
-							&& (infernoNPC.canAttack(client, checkLoc)
-							|| infernoNPC.canMoveToAttack(client, checkLoc, obstacles)))
+					for (int y = -checkSize; y <= checkSize; y++)
 					{
-						if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MELEE)
+						final WorldPoint checkLoc = client.getLocalPlayer().getWorldLocation().dx(x).dy(y);
+
+						if (obstacles.contains(checkLoc))
 						{
-							if (safeSpotMap.get(checkLoc) == 0)
-							{
-								safeSpotMap.put(checkLoc, 1);
-							}
-							else if (safeSpotMap.get(checkLoc) == 2)
-							{
-								safeSpotMap.put(checkLoc, 4);
-							}
-							else if (safeSpotMap.get(checkLoc) == 3)
-							{
-								safeSpotMap.put(checkLoc, 5);
-							}
-							else if (safeSpotMap.get(checkLoc) == 6)
-							{
-								safeSpotMap.put(checkLoc, 7);
-							}
+							continue;
 						}
 
-						if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.RANGED
-								|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
-								&& safeSpotMap.get(checkLoc) != 3 &&  safeSpotMap.get(checkLoc) != 5))
-						{
-							if (safeSpotMap.get(checkLoc) == 0)
-							{
-								safeSpotMap.put(checkLoc, 2);
-							}
-							else if (safeSpotMap.get(checkLoc) == 1)
-							{
-								safeSpotMap.put(checkLoc, 4);
-							}
-							else if (safeSpotMap.get(checkLoc) == 3)
-							{
-								safeSpotMap.put(checkLoc, 6);
-							}
-							else if (safeSpotMap.get(checkLoc) == 4)
-							{
-								safeSpotMap.put(checkLoc, 7);
-							}
-						}
+						safeSpotMap.put(checkLoc, 0);
 
-						if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MAGIC
-								|| (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.UNKNOWN
-								&& safeSpotMap.get(checkLoc) != 2 &&  safeSpotMap.get(checkLoc) != 4))
+						for (InfernoNPC infernoNPC : infernoNpcs.values())
 						{
-							if (safeSpotMap.get(checkLoc) == 0)
+							if ((infernoNPC.getType().getPriority() < 99 || infernoNPC.getType() == InfernoNPC.Type.HEALER_JAD)
+									&& (infernoNPC.canAttack(client, checkLoc)
+									|| infernoNPC.canMoveToAttack(client, checkLoc, obstacles)))
 							{
-								safeSpotMap.put(checkLoc, 3);
-							}
-							else if (safeSpotMap.get(checkLoc) == 1)
-							{
-								safeSpotMap.put(checkLoc, 5);
-							}
-							else if (safeSpotMap.get(checkLoc) == 2)
-							{
-								safeSpotMap.put(checkLoc, 6);
-							}
-							else if (safeSpotMap.get(checkLoc) == 5)
-							{
-								safeSpotMap.put(checkLoc, 7);
+								if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MELEE)
+								{
+									if (safeSpotMap.get(checkLoc) == 0)
+									{
+										safeSpotMap.put(checkLoc, 1);
+									}
+									else if (safeSpotMap.get(checkLoc) == 2)
+									{
+										safeSpotMap.put(checkLoc, 4);
+									}
+									else if (safeSpotMap.get(checkLoc) == 3)
+									{
+										safeSpotMap.put(checkLoc, 5);
+									}
+									else if (safeSpotMap.get(checkLoc) == 6)
+									{
+										safeSpotMap.put(checkLoc, 7);
+									}
+								}
+
+								if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.MAGIC
+										|| (infernoNPC.getType() == InfernoNPC.Type.BLOB
+										&& safeSpotMap.get(checkLoc) != 2 &&  safeSpotMap.get(checkLoc) != 4))
+								{
+									if (safeSpotMap.get(checkLoc) == 0)
+									{
+										safeSpotMap.put(checkLoc, 3);
+									}
+									else if (safeSpotMap.get(checkLoc) == 1)
+									{
+										safeSpotMap.put(checkLoc, 5);
+									}
+									else if (safeSpotMap.get(checkLoc) == 2)
+									{
+										safeSpotMap.put(checkLoc, 6);
+									}
+									else if (safeSpotMap.get(checkLoc) == 5)
+									{
+										safeSpotMap.put(checkLoc, 7);
+									}
+								}
+
+								if (infernoNPC.getType().getDefaultAttack() == InfernoNPC.Attack.RANGED
+										|| (infernoNPC.getType() == InfernoNPC.Type.BLOB
+										&& safeSpotMap.get(checkLoc) != 3 &&  safeSpotMap.get(checkLoc) != 5))
+								{
+									if (safeSpotMap.get(checkLoc) == 0)
+									{
+										safeSpotMap.put(checkLoc, 2);
+									}
+									else if (safeSpotMap.get(checkLoc) == 1)
+									{
+										safeSpotMap.put(checkLoc, 4);
+									}
+									else if (safeSpotMap.get(checkLoc) == 3)
+									{
+										safeSpotMap.put(checkLoc, 6);
+									}
+									else if (safeSpotMap.get(checkLoc) == 4)
+									{
+										safeSpotMap.put(checkLoc, 7);
+									}
+								}
+
+								if (infernoNPC.getType() == InfernoNPC.Type.JAD
+										&& infernoNPC.getNpc().getWorldArea().isInMeleeDistance(checkLoc))
+								{
+									if (safeSpotMap.get(checkLoc) == 0)
+									{
+										safeSpotMap.put(checkLoc, 1);
+									}
+									else if (safeSpotMap.get(checkLoc) == 2)
+									{
+										safeSpotMap.put(checkLoc, 4);
+									}
+									else if (safeSpotMap.get(checkLoc) == 3)
+									{
+										safeSpotMap.put(checkLoc, 5);
+									}
+									else if (safeSpotMap.get(checkLoc) == 6)
+									{
+										safeSpotMap.put(checkLoc, 7);
+									}
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-
-		safeSpotAreas.clear();
-		for (WorldPoint worldPoint : safeSpotMap.keySet())
+		else if (currentWaveNumber == 69 && zukShield != null)
 		{
-			if (!safeSpotAreas.containsKey(safeSpotMap.get(worldPoint)))
+			final WorldPoint zukShieldCurrentPosition = zukShield.getWorldLocation();
+
+			if (zukShieldLastPosition != null && zukShieldLastPosition.getX() != zukShieldCurrentPosition.getX()
+					&& zukShieldCornerTicks == -2)
 			{
-				safeSpotAreas.put(safeSpotMap.get(worldPoint), new ArrayList<>());
+				zukShieldCornerTicks = -1;
 			}
 
-			safeSpotAreas.get(safeSpotMap.get(worldPoint)).add(worldPoint);
+			zukShieldLastPosition = zukShield.getWorldLocation();
+
+			if (indicateZukShieldSafespots && indicateSafespots != SafespotDisplayMode.OFF)
+			{
+				for (int x = zukShield.getWorldLocation().getX() - 1; x <= zukShield.getWorldLocation().getX() + 3; x++)
+				{
+					for (int y = zukShield.getWorldLocation().getY() - 4; y <= zukShield.getWorldLocation().getY() - 2; y++)
+					{
+						safeSpotMap.put(new WorldPoint(x, y, client.getPlane()), 0);
+					}
+				}
+			}
+		}
+
+		safeSpotAreas.clear();
+
+		if (indicateSafespots == SafespotDisplayMode.AREA)
+		{
+			for (WorldPoint worldPoint : safeSpotMap.keySet()) {
+				if (!safeSpotAreas.containsKey(safeSpotMap.get(worldPoint))) {
+					safeSpotAreas.put(safeSpotMap.get(worldPoint), new ArrayList<>());
+				}
+
+				safeSpotAreas.get(safeSpotMap.get(worldPoint)).add(worldPoint);
+			}
 		}
 
 		lastLocation = client.getLocalPlayer().getWorldLocation();
