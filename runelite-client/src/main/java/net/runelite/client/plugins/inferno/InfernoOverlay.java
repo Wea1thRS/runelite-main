@@ -23,7 +23,6 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.OverlayUtil;
-import org.graalvm.compiler.graph.Graph;
 
 public class InfernoOverlay extends Overlay
 {
@@ -66,15 +65,8 @@ public class InfernoOverlay extends Overlay
 			renderIndividualTilesSafespots(graphics);
 		}
 
-		// Indicate safespots for the zuk shield
-		if (plugin.isIndicateZukShieldSafespots())
-		{
-			renderZukShieldSafespotsIndividualTiles(graphics);
-		}
-
 		for (InfernoNPC infernoNPC : plugin.getInfernoNpcs().values())
 		{
-			// Indicate active healers and safespotted NPC's
 			if (infernoNPC.getNpc().getConvexHull() != null)
 			{
 				if (plugin.isIndicateNibblers() && infernoNPC.getType() == InfernoNPC.Type.NIBBLER)
@@ -107,7 +99,7 @@ public class InfernoOverlay extends Overlay
 				renderNpcLocation(graphics, infernoNPC);
 			}
 
-			if (plugin.isTicksOnNpc() && infernoNPC.getType().getPriority() > 99
+			if (plugin.isTicksOnNpc() && infernoNPC.getType().getPriority() < 100
 					&& infernoNPC.getTicksTillNextAttack() > 0)
 			{
 				renderTicksOnNpc(graphics, infernoNPC);
@@ -332,29 +324,6 @@ public class InfernoOverlay extends Overlay
 			}
 
 			OverlayUtil.renderPolygon(graphics, tilePoly, color);
-		}
-	}
-
-	//TODO: Merge with renderAreaSafespots
-	private void renderZukShieldSafespotsIndividualTiles(Graphics2D graphics)
-	{
-		for (WorldPoint worldPoint : plugin.getZukShieldSafespots())
-		{
-			final LocalPoint localPoint = LocalPoint.fromWorld(client, worldPoint);
-
-			if (localPoint == null)
-			{
-				continue;
-			}
-
-			final Polygon tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
-
-			if (tilePoly == null)
-			{
-				continue;
-			}
-
-			OverlayUtil.renderPolygon(graphics, tilePoly, plugin.getZukShieldSafespotsColor());
 		}
 	}
 
