@@ -50,6 +50,7 @@ import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
+import net.runelite.api.util.Text;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
@@ -208,7 +209,8 @@ public class InfernoPlugin extends Plugin
 
 		//TODO: Config options
 		String NibblerDeaths = "Jal-Nib, Jal-AkRek-Xil, Jal-AkRek-Mej, Jal-AkRek-Ket";
-		client.setNPCsHiddenOnDeath(Collections.singletonList(NibblerDeaths));
+		Text.fromCSV(NibblerDeaths).forEach(client::addHiddenNpcDeath);
+		//client.setNPCsHiddenOnDeath(Collections.singletonList(NibblerDeaths));
 
 		waveOverlay.setDisplayMode(this.waveDisplay);
 		waveOverlay.setWaveHeaderColor(this.getWaveOverlayHeaderColor);
