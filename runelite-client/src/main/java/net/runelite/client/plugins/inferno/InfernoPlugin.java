@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
-import net.runelite.api.coords.WorldArea;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
@@ -567,8 +565,10 @@ public class InfernoPlugin extends Plugin
 
 		if (indicateSafespots == SafespotDisplayMode.AREA)
 		{
-			for (WorldPoint worldPoint : safeSpotMap.keySet()) {
-				if (!safeSpotAreas.containsKey(safeSpotMap.get(worldPoint))) {
+			for (WorldPoint worldPoint : safeSpotMap.keySet())
+			{
+				if (!safeSpotAreas.containsKey(safeSpotMap.get(worldPoint)))
+				{
 					safeSpotAreas.put(safeSpotMap.get(worldPoint), new ArrayList<>());
 				}
 

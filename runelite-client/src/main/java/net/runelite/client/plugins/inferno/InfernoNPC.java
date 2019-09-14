@@ -76,8 +76,10 @@ public class InfernoNPC
 		this.nextAttack = nextAttack;
 	}
 
-	boolean canAttack(Client client, WorldPoint target) {
-		if (safeSpotCache.containsKey(target)) {
+	boolean canAttack(Client client, WorldPoint target)
+	{
+		if (safeSpotCache.containsKey(target))
+		{
 			return safeSpotCache.get(target) == 2;
 		}
 
