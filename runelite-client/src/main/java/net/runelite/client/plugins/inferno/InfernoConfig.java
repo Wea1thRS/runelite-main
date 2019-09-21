@@ -32,30 +32,29 @@ import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.Stub;
-import net.runelite.client.plugins.inferno.displaymodes.InfernoPrayerOverlayMode;
-import net.runelite.client.plugins.inferno.displaymodes.InfernoWaveDisplayMode;
-import net.runelite.client.plugins.inferno.displaymodes.SafespotDisplayMode;
+import net.runelite.client.config.ConfigTitleSection;
+import net.runelite.client.config.Title;
 
 @ConfigGroup("inferno")
 public interface InfernoConfig extends Config
 {
-	@ConfigItem(
-		position = 0,
+	@ConfigTitleSection(
 		keyName = "prayer",
+		position = 0,
 		name = "Prayer",
 		description = ""
 	)
-	default Stub prayer()
+	default Title prayer()
 	{
-		return new Stub();
+		return new Title();
 	}
 
 	@ConfigItem(
 		position = 1,
 		keyName = "Prayer Helper",
 		name = "Prayer Helper",
-		description = "Indicates the correct prayer"
+		description = "Indicates the correct prayer",
+		titleSection = "prayer"
 	)
 	default boolean showPrayerHelp()
 	{
@@ -66,7 +65,8 @@ public interface InfernoConfig extends Config
 		position = 2,
 		keyName = "prayerHelperMode",
 		name = "Prayer Helper Mode",
-		description = "Display prayer indicator in the prayer tab or in the bottom right corner of the screen"
+		description = "Display prayer indicator in the prayer tab or in the bottom right corner of the screen",
+		titleSection = "prayer"
 	)
 	default InfernoPrayerOverlayMode prayerOverlayMode()
 	{
@@ -88,7 +88,8 @@ public interface InfernoConfig extends Config
 		position = 4,
 		keyName = "descendingBoxes",
 		name = "Descending Boxes",
-		description = "Draws timing boxes above the prayer icons, as if you were playing Piano Tiles"
+		description = "Draws timing boxes above the prayer icons, as if you were playing Piano Tiles",
+		titleSection = "prayer"
 	)
 	default boolean descendingBoxes()
 	{
@@ -99,29 +100,31 @@ public interface InfernoConfig extends Config
 		position = 5,
 		keyName = "indicateWhenPrayingCorrectly",
 		name = "Indicate When Praying Correctly",
-		description = "Indicate the correct prayer, even if you are already praying that prayer"
+		description = "Indicate the correct prayer, even if you are already praying that prayer",
+		titleSection = "prayer"
 	)
 	default boolean indicateWhenPrayingCorrectly()
 	{
 		return false;
 	}
 
-	@ConfigItem(
-		position = 6,
+	@ConfigTitleSection(
 		keyName = "monsters",
+		position = 5,
 		name = "Monsters",
 		description = ""
 	)
-	default Stub monsters()
+	default Title monsters()
 	{
-		return new Stub();
+		return new Title();
 	}
 
 	@ConfigItem(
 		position = 7,
 		keyName = "Nibbler Overlay",
 		name = "Nibbler Overlay",
-		description = "Shows if there are any Nibblers left"
+		description = "Shows if there are any Nibblers left",
+		titleSection = "monsters"
 	)
 	default boolean displayNibblerOverlay()
 	{
@@ -132,29 +135,31 @@ public interface InfernoConfig extends Config
 		position = 8,
 		keyName = "indicateActiveHealers",
 		name = "Indicate Active Healers",
-		description = "Indicate healers that are still healing Jad"
+		description = "Indicate healers that are still healing Jad",
+		titleSection = "monsters"
 	)
 	default boolean indicateActiveHealers()
 	{
 		return true;
 	}
 
-	@ConfigItem(
-		position = 9,
+	@ConfigTitleSection(
 		keyName = "waves",
+		position = 8,
 		name = "Waves",
 		description = ""
 	)
-	default Stub waves()
+	default Title waves()
 	{
-		return new Stub();
+		return new Title();
 	}
 
 	@ConfigItem(
 		position = 10,
 		keyName = "waveDisplay",
 		name = "Wave display",
-		description = "Shows monsters that will spawn on the selected wave(s)."
+		description = "Shows monsters that will spawn on the selected wave(s).",
+		titleSection = "waves"
 	)
 	default InfernoWaveDisplayMode waveDisplay()
 	{
@@ -165,7 +170,8 @@ public interface InfernoConfig extends Config
 		position = 11,
 		keyName = "getWaveOverlayHeaderColor",
 		name = "Wave Header",
-		description = "Color for Wave Header"
+		description = "Color for Wave Header",
+		titleSection = "waves"
 	)
 	default Color getWaveOverlayHeaderColor()
 	{
@@ -176,7 +182,8 @@ public interface InfernoConfig extends Config
 		position = 12,
 		keyName = "getWaveTextColor",
 		name = "Wave Text Color",
-		description = "Color for Wave Texts"
+		description = "Color for Wave Texts",
+		titleSection = "waves"
 	)
 	default Color getWaveTextColor()
 	{
