@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.menuentryswapper.comparables;
+package net.runelite.client.plugins.menuentryswapper;
 
 import lombok.EqualsAndHashCode;
 import net.runelite.api.MenuEntry;
@@ -20,7 +20,9 @@ public class BankComparableEntry extends AbstractComparableEntry
 
 	public boolean matches(MenuEntry entry)
 	{
-		if (isNotBankWidget(entry.getParam1()))
+		final int groupId = WidgetInfo.TO_GROUP(entry.getParam1());
+
+		if (groupId != WidgetID.BANK_GROUP_ID && groupId != WidgetID.BANK_INVENTORY_GROUP_ID && groupId != WidgetID.GRAND_EXCHANGE_GROUP_ID)
 		{
 			return false;
 		}
@@ -31,14 +33,5 @@ public class BankComparableEntry extends AbstractComparableEntry
 		}
 
 		return StringUtils.containsIgnoreCase(entry.getOption(), this.getOption()) && Text.standardize(entry.getTarget()).contains(this.getTarget());
-	}
-
-	static boolean isNotBankWidget(int widgetID)
-	{
-		final int groupId = WidgetInfo.TO_GROUP(widgetID);
-
-		return groupId != WidgetID.BANK_GROUP_ID
-			&& groupId != WidgetID.BANK_INVENTORY_GROUP_ID
-			&& groupId != WidgetID.GRAND_EXCHANGE_GROUP_ID;
 	}
 }

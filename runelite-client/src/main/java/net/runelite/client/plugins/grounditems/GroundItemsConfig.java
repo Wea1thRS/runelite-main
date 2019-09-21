@@ -30,8 +30,7 @@ import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigTitleSection;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 import net.runelite.client.plugins.grounditems.config.ItemHighlightMode;
 import net.runelite.client.plugins.grounditems.config.MenuHighlightMode;
 import net.runelite.client.plugins.grounditems.config.PriceDisplayMode;
@@ -41,15 +40,15 @@ import net.runelite.client.plugins.grounditems.config.ValueCalculationMode;
 @ConfigGroup("grounditems")
 public interface GroundItemsConfig extends Config
 {
-	@ConfigTitleSection(
-		keyName = "colorsTitle",
+	@ConfigItem(
+		keyName = "colorsStub",
 		name = "Colors",
 		description = "",
 		position = 1
 	)
-	default Title colorsTitle()
+	default Stub colorsStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -57,7 +56,7 @@ public interface GroundItemsConfig extends Config
 		name = "Default items",
 		description = "Configures the color for default, non-highlighted items",
 		position = 2,
-		titleSection = "colorsTitle"
+		parent = "colorsStub"
 	)
 	@Alpha
 	default Color defaultColor()
@@ -70,7 +69,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlighted items",
 		description = "Configures the color for highlighted items",
 		position = 3,
-		titleSection = "colorsTitle"
+		parent = "colorsStub"
 	)
 	@Alpha
 	default Color highlightedColor()
@@ -83,7 +82,7 @@ public interface GroundItemsConfig extends Config
 		name = "Hidden items",
 		description = "Configures the color for hidden items in right-click menu and when holding ALT",
 		position = 4,
-		titleSection = "colorsTitle"
+		parent = "colorsStub"
 	)
 	@Alpha
 	default Color hiddenColor()
@@ -91,15 +90,15 @@ public interface GroundItemsConfig extends Config
 		return Color.GRAY;
 	}
 
-	@ConfigTitleSection(
-		keyName = "highlightedTitle",
+	@ConfigItem(
+		keyName = "highlightedStub",
 		name = "Highlighted",
 		description = "",
 		position = 5
 	)
-	default Title highlightedTitle()
+	default Stub highlightedStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -107,7 +106,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlighted Items",
 		description = "Configures specifically highlighted ground items. Format: (item), (item)",
 		position = 6,
-		titleSection = "highlightedTitle"
+		parent = "highlightedStub"
 	)
 	default String getHighlightItems()
 	{
@@ -126,7 +125,7 @@ public interface GroundItemsConfig extends Config
 		name = "Show Highlighted items only",
 		description = "Configures whether or not to draw items only on your highlighted list",
 		position = 7,
-		titleSection = "highlightedTitle"
+		parent = "highlightedStub"
 	)
 	default boolean showHighlightedOnly()
 	{
@@ -138,7 +137,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlighted Value Calculation",
 		description = "Configures which coin value is used to determine highlight color",
 		position = 8,
-		titleSection = "highlightedTitle"
+		parent = "highlightedStub"
 	)
 	default ValueCalculationMode valueCalculationMode()
 	{
@@ -150,7 +149,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlight > Value",
 		description = "Configures highlighted ground items over either GE or HA value",
 		position = 9,
-		titleSection = "highlightedTitle"
+		parent = "highlightedStub"
 	)
 	default int getHighlightOverValue()
 	{
@@ -162,22 +161,22 @@ public interface GroundItemsConfig extends Config
 		name = "Notify for Highlighted drops",
 		description = "Configures whether or not to notify for drops on your highlighted list",
 		position = 10,
-		titleSection = "highlightTitle"
+		parent = "highlightStub"
 	)
 	default boolean notifyHighlightedDrops()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "hiddenTitle",
+	@ConfigItem(
+		keyName = "hiddenStub",
 		name = "Hidden",
 		description = "",
 		position = 11
 	)
-	default Title hiddenTitle()
+	default Stub hiddenStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -185,7 +184,7 @@ public interface GroundItemsConfig extends Config
 		name = "Do not hide untradeables",
 		description = "Configures whether or not untradeable items ignore hiding under settings",
 		position = 12,
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	default boolean dontHideUntradeables()
 	{
@@ -197,7 +196,7 @@ public interface GroundItemsConfig extends Config
 		name = "Hidden Items",
 		description = "Configures hidden ground items. Format: (item), (item)",
 		position = 13,
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	default String getHiddenItems()
 	{
@@ -208,7 +207,7 @@ public interface GroundItemsConfig extends Config
 		keyName = "hiddenItems",
 		name = "",
 		description = "",
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	void setHiddenItems(String key);
 
@@ -217,7 +216,7 @@ public interface GroundItemsConfig extends Config
 		name = "Recolor Menu Hidden Items",
 		description = "Configures whether or not hidden items in right click menu will be recolored",
 		position = 14,
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	default boolean recolorMenuHiddenItems()
 	{
@@ -229,7 +228,7 @@ public interface GroundItemsConfig extends Config
 		name = "Hide < Value",
 		description = "Configures hidden ground items under both GE and HA value",
 		position = 15,
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	default int getHideUnderValue()
 	{
@@ -241,7 +240,7 @@ public interface GroundItemsConfig extends Config
 		name = "Hide Hidden",
 		description = "Remove take option for items that are on the hidden items list.",
 		position = 16,
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	default boolean removeIgnored()
 	{
@@ -253,22 +252,22 @@ public interface GroundItemsConfig extends Config
 		name = "Right click hidden items",
 		description = "Places hidden items below the 'Walk here' option, making it so that you need to right click to pick them up",
 		position = 17,
-		titleSection = "hiddenTitle"
+		parent = "hiddenStub"
 	)
 	default boolean rightClickHidden()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "highlightTitle",
+	@ConfigItem(
+		keyName = "highlightStub",
 		name = "Highlight",
 		description = "",
 		position = 18
 	)
-	default Title highlightTitle()
+	default Stub highlightStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -276,7 +275,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlight Tiles",
 		description = "Configures whether or not to highlight tiles containing ground items",
 		position = 19,
-		titleSection = "highlightTitle"
+		parent = "highlightStub"
 	)
 	default boolean highlightTiles()
 	{
@@ -288,7 +287,7 @@ public interface GroundItemsConfig extends Config
 		name = "Item Highlight Mode",
 		description = "Configures how ground items will be highlighted",
 		position = 20,
-		titleSection = "highlightTitle"
+		parent = "highlightStub"
 	)
 	default ItemHighlightMode itemHighlightMode()
 	{
@@ -300,22 +299,22 @@ public interface GroundItemsConfig extends Config
 		name = "Menu Highlight Mode",
 		description = "Configures what to highlight in right-click menu",
 		position = 21,
-		titleSection = "highlightTitle"
+		parent = "highlightStub"
 	)
 	default MenuHighlightMode menuHighlightMode()
 	{
 		return MenuHighlightMode.NAME;
 	}
 
-	@ConfigTitleSection(
-		keyName = "lowValueTitle",
+	@ConfigItem(
+		keyName = "lowValueStub",
 		name = "Low value",
 		description = "",
 		position = 22
 	)
-	default Title lowValueTitle()
+	default Stub lowValueStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -323,7 +322,7 @@ public interface GroundItemsConfig extends Config
 		name = "Low value color",
 		description = "Configures the color for low value items",
 		position = 23,
-		titleSection = "lowValueTitle"
+		parent = "lowValueStub"
 	)
 	@Alpha
 	default Color lowValueColor()
@@ -336,7 +335,7 @@ public interface GroundItemsConfig extends Config
 		name = "Low value price",
 		description = "Configures the start price for low value items",
 		position = 24,
-		titleSection = "lowValueTitle"
+		parent = "lowValueStub"
 	)
 	default int lowValuePrice()
 	{
@@ -348,22 +347,22 @@ public interface GroundItemsConfig extends Config
 		name = "Notify for low value drops",
 		description = "Configures whether or not to notify for drops of low value",
 		position = 25,
-		titleSection = "lowValueTitle"
+		parent = "lowValueStub"
 	)
 	default boolean notifyLowValueDrops()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "mediumValueTitle",
+	@ConfigItem(
+		keyName = "mediumValueStub",
 		name = "Medium value",
 		description = "",
 		position = 26
 	)
-	default Title mediumValueTitle()
+	default Stub mediumValueStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -371,7 +370,7 @@ public interface GroundItemsConfig extends Config
 		name = "Medium value color",
 		description = "Configures the color for medium value items",
 		position = 27,
-		titleSection = "mediumValueTitle"
+		parent = "mediumValueStub"
 	)
 	@Alpha
 	default Color mediumValueColor()
@@ -384,7 +383,7 @@ public interface GroundItemsConfig extends Config
 		name = "Medium value price",
 		description = "Configures the start price for medium value items",
 		position = 28,
-		titleSection = "mediumValueTitle"
+		parent = "mediumValueStub"
 	)
 	default int mediumValuePrice()
 	{
@@ -396,22 +395,22 @@ public interface GroundItemsConfig extends Config
 		name = "Notify for medium value drops",
 		description = "Configures whether or not to notify for drops of medium value",
 		position = 29,
-		titleSection = "mediumValueTitle"
+		parent = "mediumValueStub"
 	)
 	default boolean notifyMediumValueDrops()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "highValueTitle",
+	@ConfigItem(
+		keyName = "highValueStub",
 		name = "High value",
 		description = "",
 		position = 30
 	)
-	default Title highValueTitle()
+	default Stub highValueStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -419,7 +418,7 @@ public interface GroundItemsConfig extends Config
 		name = "High value color",
 		description = "Configures the color for high value items",
 		position = 31,
-		titleSection = "highValueTitle"
+		parent = "highValueStub"
 	)
 	@Alpha
 	default Color highValueColor()
@@ -432,7 +431,7 @@ public interface GroundItemsConfig extends Config
 		name = "High value price",
 		description = "Configures the start price for high value items",
 		position = 32,
-		titleSection = "highValueTitle"
+		parent = "highValueStub"
 	)
 	default int highValuePrice()
 	{
@@ -444,22 +443,22 @@ public interface GroundItemsConfig extends Config
 		name = "Notify for high value drops",
 		description = "Configures whether or not to notify for drops of high value",
 		position = 33,
-		titleSection = "highValueTitle"
+		parent = "highValueStub"
 	)
 	default boolean notifyHighValueDrops()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "insaneValueTitle",
+	@ConfigItem(
+		keyName = "insaneValueStub",
 		name = "Insane value",
 		description = "",
 		position = 34
 	)
-	default Title insaneValueTitle()
+	default Stub insaneValueStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -467,7 +466,7 @@ public interface GroundItemsConfig extends Config
 		name = "Insane value items color",
 		description = "Configures the color for insane value items",
 		position = 35,
-		titleSection = "insaneValueTitle"
+		parent = "insaneValueStub"
 	)
 	@Alpha
 	default Color insaneValueColor()
@@ -480,7 +479,7 @@ public interface GroundItemsConfig extends Config
 		name = "Insane value price",
 		description = "Configures the start price for insane value items",
 		position = 36,
-		titleSection = "insaneValueTitle"
+		parent = "insaneValueStub"
 	)
 	default int insaneValuePrice()
 	{
@@ -492,22 +491,22 @@ public interface GroundItemsConfig extends Config
 		name = "Notify for insane value drops",
 		description = "Configures whether or not to notify for drops of insane value",
 		position = 37,
-		titleSection = "insaneValueTitle"
+		parent = "insaneValueStub"
 	)
 	default boolean notifyInsaneValueDrops()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "priceTitle",
+	@ConfigItem(
+		keyName = "priceStub",
 		name = "Price",
 		description = "",
 		position = 38
 	)
-	default Title priceTitle()
+	default Stub priceStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -515,7 +514,7 @@ public interface GroundItemsConfig extends Config
 		name = "Price Display Mode",
 		description = "Configures what price types are shown alongside of ground item name",
 		position = 39,
-		titleSection = "priceTitle"
+		parent = "priceStub"
 	)
 	default PriceDisplayMode priceDisplayMode()
 	{
@@ -527,22 +526,22 @@ public interface GroundItemsConfig extends Config
 		name = "Sort by GE price",
 		description = "Sorts ground items by GE price, instead of alch value",
 		position = 40,
-		titleSection = "priceTitle"
+		parent = "priceStub"
 	)
 	default boolean sortByGEPrice()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "miscTitle",
+	@ConfigItem(
+		keyName = "miscStub",
 		name = "Miscellaneous",
 		description = "",
 		position = 41
 	)
-	default Title miscTitle()
+	default Stub miscStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -550,7 +549,7 @@ public interface GroundItemsConfig extends Config
 		name = "Show Menu Item Quantities",
 		description = "Configures whether or not to show the item quantities in the menu",
 		position = 42,
-		titleSection = "miscTitle"
+		parent = "miscStub"
 	)
 	default boolean showMenuItemQuantities()
 	{
@@ -562,7 +561,7 @@ public interface GroundItemsConfig extends Config
 		name = "Collapse ground item menu entries",
 		description = "Collapses ground item menu entries together and appends count",
 		position = 43,
-		titleSection = "miscTitle"
+		parent = "miscStub"
 	)
 	default boolean collapseEntries()
 	{
@@ -574,7 +573,7 @@ public interface GroundItemsConfig extends Config
 		name = "Only show loot",
 		description = "Only shows drops from NPCs and players",
 		position = 44,
-		titleSection = "miscTitle"
+		parent = "miscStub"
 	)
 	default boolean onlyShowLoot()
 	{
@@ -586,7 +585,7 @@ public interface GroundItemsConfig extends Config
 		name = "Show time remaining",
 		description = "Turn on a countdown timer to show how long an item will remain on the ground",
 		position = 45,
-		titleSection = "miscTitle"
+		parent = "miscStub"
 	)
 	default TimerDisplayMode showGroundItemDuration()
 	{
@@ -598,7 +597,7 @@ public interface GroundItemsConfig extends Config
 		name = "Delay for double-tap ALT to hide",
 		description = "Decrease this number if you accidentally hide ground items often. (0 = Disabled)",
 		position = 46,
-		titleSection = "miscTitle"
+		parent = "miscStub"
 	)
 	default int doubleTapDelay()
 	{
@@ -610,9 +609,21 @@ public interface GroundItemsConfig extends Config
 		name = "Text Outline",
 		description = "Use an outline around text instead of a text shadow",
 		position = 47,
-		titleSection = "miscTitle"
+		parent = "miscStub"
 	)
 	default boolean toggleOutline()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "showTimer",
+		name = "Show ground item tick countdown timer",
+		description = "Shows how many ticks left until disappearing.",
+		position = 48,
+		parent = "miscStub"
+	)
+	default boolean showTimer()
 	{
 		return false;
 	}
@@ -622,8 +633,7 @@ public interface GroundItemsConfig extends Config
 		keyName = "bordercolor",
 		name = "Border color",
 		description = "Change the border color",
-		position = 48,
-		titleSection = "miscTitle"
+		position = 49
 	)
 	default Color bordercolor()
 	{
@@ -631,26 +641,14 @@ public interface GroundItemsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "showTimer",
-		name = "Show ground item tick countdown timer",
-		description = "Shows how many ticks left until disappearing.",
-		position = 49,
-		titleSection = "miscTitle"
-	)
-	default boolean showTimer()
-	{
-		return false;
-	}
-
-	@ConfigTitleSection(
-		keyName = "xpTitle",
+		keyName = "xpStub",
 		name = "XP",
 		description = "Highlights various items that give xp",
 		position = 50
 	)
-	default Title xpTitle()
+	default Stub xpStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -658,7 +656,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlight Herblore xp",
 		description = "Highlight Herblore xp related items.",
 		position = 51,
-		titleSection = "xpTitle"
+		parent = "xpStub"
 	)
 	default boolean highlightHerblore()
 	{
@@ -670,7 +668,7 @@ public interface GroundItemsConfig extends Config
 		name = "Herblore Color",
 		description = "Color of Herblore xp items.",
 		position = 52,
-		titleSection = "xpTitle"
+		parent = "xpStub"
 	)
 	@Alpha
 	default Color herbloreColor()
@@ -683,7 +681,7 @@ public interface GroundItemsConfig extends Config
 		name = "Highlight Prayer xp",
 		description = "Highlight Prayer xp related items.",
 		position = 53,
-		titleSection = "xpTitle"
+		parent = "xpStub"
 	)
 	default boolean highlightPrayer()
 	{
@@ -695,7 +693,7 @@ public interface GroundItemsConfig extends Config
 		name = "Prayer Color",
 		description = "Color of Prayer xp items.",
 		position = 54,
-		titleSection = "xpTitle"
+		parent = "xpStub"
 	)
 	@Alpha
 	default Color prayerColor()

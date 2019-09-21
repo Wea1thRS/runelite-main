@@ -29,27 +29,26 @@ import java.awt.Color;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigTitleSection;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("raids")
 public interface RaidsConfig extends Config
 {
-	@ConfigTitleSection(
+	@ConfigItem(
 		keyName = "scouterConfig",
 		name = "Scouter Config",
 		description = "",
 		position = 0
 	)
-	default Title scouterConfig()
+	default Stub scouterConfig()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 
 	@ConfigItem(
 		position = 1,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "enhanceScouterTitle",
 		name = "Enhance scouter title",
 		description = "Adds #combat and good puzzles to scouter title"
@@ -61,7 +60,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 2,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "hideBackground",
 		name = "Hide Scouter Background",
 		description = "Removes the scouter background, and makes it transparent."
@@ -73,7 +72,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 2,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "raidsTimer",
 		name = "Display elapsed raid time",
 		description = "Display elapsed raid time"
@@ -85,7 +84,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 3,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "pointsMessage",
 		name = "Display points in chatbox after raid",
 		description = "Display a message with total points, individual points and percentage at the end of a raid"
@@ -98,7 +97,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 4,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "ptsHr",
 		name = "Enable points per hour message",
 		description = "Enable the message"
@@ -110,7 +109,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 5,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "scoutOverlay",
 		name = "Show scout overlay",
 		description = "Display an overlay that shows the current raid layout (when entering lobby)"
@@ -122,7 +121,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 6,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "scoutOverlayAtBank",
 		name = "Show scout overlay outside lobby",
 		description = "Keep the overlay active while at the raids area"
@@ -134,7 +133,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 7,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "scoutOverlayInRaid",
 		name = "Show scout overlay inside raid",
 		description = "Keep the overlay active while inside raid"
@@ -146,7 +145,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 8,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "displayFloorBreak",
 		name = "Layout floor break",
 		description = "Displays floor break in layout"
@@ -158,7 +157,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 9,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "showRecommendedItems",
 		name = "Show recommended items",
 		description = "Adds overlay with recommended items to scouter"
@@ -170,7 +169,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 10,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "recommendedItems",
 		name = "Recommended items",
 		hidden = true,
@@ -184,7 +183,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 11,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "alwaysShowWorldAndCC",
 		name = "Always show CC and World",
 		description = "The CC and World are not removed from being in the in-game scouter"
@@ -196,7 +195,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 12,
-		titleSection = "scouterConfig",
+		parent = "scouterConfig",
 		keyName = "displayLayoutMessage",
 		name = "Send raid layout message when entering raid",
 		description = "Sends game message with raid layout on entering new raid"
@@ -206,20 +205,20 @@ public interface RaidsConfig extends Config
 		return true;
 	}
 
-	@ConfigTitleSection(
+	@ConfigItem(
 		keyName = "roomConfig",
 		name = "Room Config",
 		description = "",
 		position = 13
 	)
-	default Title roomConfig()
+	default Stub roomConfig()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
 		position = 14,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "colorTightrope",
 		name = "Color tightrope",
 		description = "Colors tightrope a separate color"
@@ -231,7 +230,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 15,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "tightropeColor",
 		name = "Tightrope color",
 		description = "The color of tightropes",
@@ -245,7 +244,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 16,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "crabHandler",
 		name = "Color crabs",
 		description = "If your crabs are good, it will color them to your set color." +
@@ -258,7 +257,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 17,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "goodCrabColor",
 		name = "Good Crab color",
 		description = "The color of good crabs",
@@ -272,7 +271,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 17,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "rareCrabColor",
 		name = "Rare Crab color",
 		description = "The color of rare crabs",
@@ -286,7 +285,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 18,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "enableRotationWhitelist",
 		name = "Enable rotation whitelist",
 		description = "Enable the rotation whitelist"
@@ -298,7 +297,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 19,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "whitelistedRotations",
 		name = "Whitelisted rotations",
 		hidden = true,
@@ -312,7 +311,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 20,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "enableLayoutWhitelist",
 		name = "Enable layout whitelist",
 		description = "Enable the layout whitelist"
@@ -324,7 +323,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 21,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "whitelistedLayouts",
 		name = "Whitelisted layouts",
 		hidden = true,
@@ -338,7 +337,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 22,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "showScavsFarms",
 		name = "Show scavengers and farming",
 		description = "Adds scavengers and farming to the room breakdown"
@@ -350,7 +349,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 23,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "scavsBeforeIce",
 		name = "Show last scavs for Ice Demon",
 		description = "Highlights final scavengers before Ice Demon"
@@ -362,7 +361,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 24,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "scavsBeforeOlm",
 		name = "Show last scavs for Olm",
 		description = "Highlights final scavengers before Olm"
@@ -374,7 +373,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 25,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "scavPrepColor",
 		name = "Last scavs color",
 		description = "The color of the final scavs before Ice Demon/Olm"
@@ -386,7 +385,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 26,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "whitelistedRooms",
 		name = "Whitelisted rooms",
 		description = "Display whitelisted rooms in green on the overlay. Separate with comma (full name)",
@@ -401,7 +400,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 27,
-		titleSection = "roomConfig",
+		parent = "roomConfig",
 		keyName = "blacklistedRooms",
 		name = "Blacklisted rooms",
 		description = "Display blacklisted rooms in red on the overlay. Separate with comma (full name)",
@@ -414,20 +413,20 @@ public interface RaidsConfig extends Config
 		return "";
 	}
 
-	@ConfigTitleSection(
+	@ConfigItem(
 		keyName = "hideRooms",
 		name = "Hide Rooms",
 		description = "",
 		position = 28
 	)
-	default Title hideRooms()
+	default Stub hideRooms()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
 		position = 29,
-		titleSection = "hideRooms",
+		parent = "hideRooms",
 		keyName = "hideRopeless",
 		name = "Hide no Tightrope raids",
 		description = "Completely hides raids with no tightrope"
@@ -439,7 +438,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 30,
-		titleSection = "hideRooms",
+		parent = "hideRooms",
 		keyName = "hideVanguards",
 		name = "Hide Vanguard raids",
 		description = "Completely hides raids with Vanguards"
@@ -451,7 +450,7 @@ public interface RaidsConfig extends Config
 
 	@ConfigItem(
 		position = 31,
-		titleSection = "hideRooms",
+		parent = "hideRooms",
 		keyName = "hideUnknownCombat",
 		name = "Hide Unknown combat raids",
 		description = "Completely hides raids with Unknown combat"

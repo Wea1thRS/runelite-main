@@ -28,22 +28,10 @@ package net.runelite.client.plugins.loottracker;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigSection;
 
 @ConfigGroup("loottracker")
 public interface LootTrackerConfig extends Config
 {
-	@ConfigSection(
-		position = 1,
-		keyName = "filterSection",
-		name = "Filter",
-		description = ""
-	)
-	default boolean filterSection()
-	{
-		return false;
-	}
-
 	@ConfigItem(
 		keyName = "lootPrice",
 		name = "Discord message price cut-off:",
@@ -69,7 +57,7 @@ public interface LootTrackerConfig extends Config
 		name = "Ignored items",
 		description = "Configures which items should be ignored when calculating loot prices.",
 		position = 0,
-		section = "filterSection"
+		group = "Filters"
 	)
 	default String getIgnoredItems()
 	{
@@ -88,7 +76,7 @@ public interface LootTrackerConfig extends Config
 		name = "Ignored NPCs",
 		description = "Configures which NPCs should be ignored ",
 		position = 1,
-		section = "filterSection"
+		group = "Filters"
 	)
 	default String getIgnoredNPCs()
 	{
@@ -180,7 +168,7 @@ public interface LootTrackerConfig extends Config
 		name = "NPC Whitelist",
 		description = "Only track drops from specific NPCs",
 		position = 1,
-		section = "filterSection",
+		group = "Filters",
 		disabledBy = "blacklistEnabled"
 	)
 	default boolean whitelistEnabled()
@@ -193,7 +181,7 @@ public interface LootTrackerConfig extends Config
 		name = "Whitelist",
 		description = "Comma-separated list of NPCs to track drops from",
 		position = 2,
-		section = "filterSection",
+		group = "Filters",
 		hidden = true,
 		unhide = "whitelistEnabled"
 	)
@@ -207,7 +195,7 @@ public interface LootTrackerConfig extends Config
 		name = "NPC Blacklist",
 		description = "Track drops from all NPCs except for specified ones",
 		position = 3,
-		section = "filterSection",
+		group = "Filters",
 		disabledBy = "whitelistEnabled"
 	)
 	default boolean blacklistEnabled()
@@ -220,7 +208,7 @@ public interface LootTrackerConfig extends Config
 		name = "Blacklist",
 		description = "Comma-separated list of NPCs to not track drops from",
 		position = 4,
-		section = "filterSection",
+		group = "Filters",
 		hidden = true,
 		unhide = "blacklistEnabled"
 	)

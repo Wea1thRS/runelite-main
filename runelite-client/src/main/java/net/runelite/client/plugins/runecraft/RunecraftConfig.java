@@ -28,28 +28,27 @@ package net.runelite.client.plugins.runecraft;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigTitleSection;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("runecraft")
 public interface RunecraftConfig extends Config
 {
-	@ConfigTitleSection(
-		keyName = "utilTitle",
+	@ConfigItem(
+		keyName = "utilStub",
 		name = "Utility",
 		description = "",
 		position = 1
 	)
-	default Title utilTitle()
+	default Stub utilStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
 		keyName = "lavas",
 		name = "Lavas",
 		description = "Swaps Ring of dueling menu entry depending on location, requires fire tiara or RC cape to be worn.",
-		titleSection = "utilTitle",
+		parent = "utilStub",
 		warning = "<html><center>This config option is incompatible with menu-entry-swapper equipment swaps." +
 			"<br>Expect bugs if you use them together.</html></center>",
 		position = 2
@@ -63,7 +62,7 @@ public interface RunecraftConfig extends Config
 		keyName = "essPouch",
 		name = "Swap essence pouch",
 		description = "Makes essence pouch left-click fill in bank",
-		titleSection = "utilTitle",
+		parent = "utilStub",
 		position = 3
 	)
 	default boolean essPouch()
@@ -76,7 +75,7 @@ public interface RunecraftConfig extends Config
 		name = "Highlight Dark Mage NPC",
 		description = "Configures whether to highlight the Dark Mage when pouches are degraded",
 		position = 4,
-		titleSection = "utilTitle"
+		parent = "utilStub"
 	)
 	default boolean hightlightDarkMage()
 	{
@@ -88,22 +87,23 @@ public interface RunecraftConfig extends Config
 		name = "Notify when pouch degrades",
 		description = "Send a notification when a pouch degrades",
 		position = 5,
-		titleSection = "utilTitle"
+		parent = "utilStub"
 	)
 	default boolean degradingNotification()
 	{
 		return true;
 	}
 
-	@ConfigTitleSection(
-		keyName = "riftsTitle",
+
+	@ConfigItem(
+		keyName = "riftsStub",
 		name = "Rifts",
 		description = "",
 		position = 6
 	)
-	default Title riftsTitle()
+	default Stub riftsStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -111,7 +111,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Rifts in Abyss",
 		description = "Configures whether the rifts in the abyss will be displayed",
 		position = 7,
-		titleSection = "riftsTitle"
+		parent = "riftsStub"
 	)
 	default boolean showRifts()
 	{
@@ -123,7 +123,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Air rift",
 		description = "Configures whether to display the air rift",
 		position = 8,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -137,7 +137,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Blood rift",
 		description = "Configures whether to display the Blood rift",
 		position = 9,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -151,7 +151,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Body rift",
 		description = "Configures whether to display the Body rift",
 		position = 10,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -165,7 +165,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Chaos rift",
 		description = "Configures whether to display the Chaos rift",
 		position = 11,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -179,7 +179,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Cosmic rift",
 		description = "Configures whether to display the Cosmic rift",
 		position = 12,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -193,7 +193,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Death rift",
 		description = "Configures whether to display the Death rift",
 		position = 13,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -207,7 +207,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Earth rift",
 		description = "Configures whether to display the Earth rift",
 		position = 14,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -221,7 +221,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Fire rift",
 		description = "Configures whether to display the Fire rift",
 		position = 15,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -235,7 +235,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Law rift",
 		description = "Configures whether to display the Law rift",
 		position = 16,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -249,7 +249,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Mind rift",
 		description = "Configures whether to display the Mind rift",
 		position = 17,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -263,7 +263,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Nature rift",
 		description = "Configures whether to display the Nature rift",
 		position = 18,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -277,7 +277,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Soul rift",
 		description = "Configures whether to display the Soul rift",
 		position = 19,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -291,7 +291,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Water rift",
 		description = "Configures whether to display the Water rift",
 		position = 20,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)
@@ -305,7 +305,7 @@ public interface RunecraftConfig extends Config
 		name = "Show Rift click box",
 		description = "Configures whether to display the click box of the rift",
 		position = 21,
-		titleSection = "riftsTitle",
+		parent = "riftsStub",
 		hidden = true,
 		unhide = "showRifts"
 	)

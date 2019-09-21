@@ -47,9 +47,7 @@ public @interface ConfigItem
 
 	boolean secret() default false;
 
-	String section() default "";
-
-	String titleSection() default "";
+	String group() default "";
 
 	String unhide() default "";
 
@@ -58,6 +56,8 @@ public @interface ConfigItem
 	String hide() default "";
 
 	String hideValue() default "";
+
+	String parent() default "";
 
 	String enabledBy() default "";
 

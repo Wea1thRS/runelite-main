@@ -45,7 +45,9 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -344,26 +346,8 @@ public class ConfigManager
 			throw new IllegalArgumentException("Not a config group");
 		}
 
-		final List<ConfigSection> sections = Arrays.stream(inter.getMethods())
-			.filter(m -> m.getParameterCount() == 0 && m.isAnnotationPresent(ConfigSection.class) && m.getReturnType() == boolean.class)
-			.map(m -> m.getDeclaredAnnotation(ConfigSection.class))
-			.sorted((a, b) -> ComparisonChain.start()
-				.compare(a.position(), b.position())
-				.compare(a.name(), b.name())
-				.result())
-			.collect(Collectors.toList());
-
-		final List<ConfigTitleSection> titleSections = Arrays.stream(inter.getMethods())
-			.filter(m -> m.getParameterCount() == 0 && m.isAnnotationPresent(ConfigTitleSection.class))
-			.map(m -> m.getDeclaredAnnotation(ConfigTitleSection.class))
-			.sorted((a, b) -> ComparisonChain.start()
-				.compare(a.position(), b.position())
-				.compare(a.name(), b.name())
-				.result())
-			.collect(Collectors.toList());
-
 		final List<ConfigItemDescriptor> items = Arrays.stream(inter.getMethods())
-			.filter(m -> m.getParameterCount() == 0 && m.isAnnotationPresent(ConfigItem.class))
+			.filter(m -> m.getParameterCount() == 0)
 			.map(m -> new ConfigItemDescriptor(
 				m.getDeclaredAnnotation(ConfigItem.class),
 				m.getReturnType(),
@@ -376,7 +360,35 @@ public class ConfigManager
 				.result())
 			.collect(Collectors.toList());
 
-		return new ConfigDescriptor(group, sections, titleSections, items);
+		Collection<ConfigItemsGroup> itemGroups = new ArrayList<>();
+
+		for (ConfigItemDescriptor item : items)
+		{
+			String groupName = item.getItem().group();
+			boolean found = false;
+			for (ConfigItemsGroup g : itemGroups)
+			{
+				if (g.getGroup().equals(groupName))
+				{
+					g.addItem(item);
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				ConfigItemsGroup newGroup = new ConfigItemsGroup(groupName);
+				newGroup.addItem(item);
+				itemGroups.add(newGroup);
+			}
+		}
+
+		itemGroups = itemGroups.stream().sorted((a, b) -> ComparisonChain.start()
+			.compare(a.getGroup(), b.getGroup())
+			.result())
+			.collect(Collectors.toList());
+
+		return new ConfigDescriptor(group, itemGroups);
 	}
 
 	/**
@@ -531,7 +543,7 @@ public class ConfigManager
 			{
 				return Arrays.stream(str.split(",")).mapToInt(Integer::valueOf).toArray();
 			}
-			return new int[]{Integer.parseInt(str)};
+			return new int[] {Integer.parseInt(str)};
 		}
 		if (type == EnumSet.class)
 		{

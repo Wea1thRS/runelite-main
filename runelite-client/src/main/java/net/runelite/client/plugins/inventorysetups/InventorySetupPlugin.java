@@ -366,12 +366,6 @@ public class InventorySetupPlugin extends Plugin
 			default:
 				return;
 		}
-
-		if (panel == null)
-		{
-			return;
-		}
-		
 		final String setupName = panel.getSelectedInventorySetup();
 		if (!setupName.isEmpty())
 		{

@@ -28,22 +28,21 @@ import java.awt.Color;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigTitleSection;
 import net.runelite.client.config.Range;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("pileindicators")
 public interface PileIndicatorsConfig extends Config
 {
-	@ConfigTitleSection(
-		keyName = "playerPilesTitle",
+	@ConfigItem(
+		keyName = "playerPilesStub",
 		name = "Player Piles",
 		description = "",
 		position = 0
 	)
-	default Title playerPilesTitle()
+	default Stub playerPilesStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -51,7 +50,7 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "enablePlayers",
 		name = "Enable Player Piling",
 		description = "Enable the option to highlight players when they pile.",
-		titleSection = "playerPilesTitle"
+		parent = "playerPilesStub"
 	)
 	default boolean enablePlayers()
 	{
@@ -63,7 +62,7 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "wildyOnlyPlayer",
 		name = "Wilderness Only",
 		description = "Show player piling only when in the Wilderness.",
-		titleSection = "playerPilesTitle"
+		parent = "playerPilesStub"
 	)
 	default boolean wildyOnlyPlayer()
 	{
@@ -75,22 +74,22 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "playerPileColor",
 		name = "Player Pile Color",
 		description = "Color used for player piles.",
-		titleSection = "playerPilesTitle"
+		parent = "playerPilesStub"
 	)
 	default Color playerPileColor()
 	{
 		return Color.RED;
 	}
 
-	@ConfigTitleSection(
-		keyName = "npcPilesTitle",
+	@ConfigItem(
+		keyName = "npcPilesStub",
 		name = "NPC Piles",
 		description = "",
 		position = 4
 	)
-	default Title npcPilesTitle()
+	default Stub npcPilesStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -98,7 +97,7 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "enableNPCS",
 		name = "Enable NPC Piling",
 		description = "Enable the option to highlight NPCs when they pile.",
-		titleSection = "npcPilesTitle"
+		parent = "npcPilesStub"
 	)
 	default boolean enableNPCS()
 	{
@@ -110,22 +109,22 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "npcPileColor",
 		name = "NPC Pile Color",
 		description = "Color used for NPC piles.",
-		titleSection = "npcPilesTitle"
+		parent = "npcPilesStub"
 	)
 	default Color npcPileColor()
 	{
 		return Color.BLUE;
 	}
 
-	@ConfigTitleSection(
-		keyName = "mixedPilesTitle",
+	@ConfigItem(
+		keyName = "mixedPilesStub",
 		name = "Mixed Piles",
 		description = "",
 		position = 7
 	)
-	default Title mixedPilesTitle()
+	default Stub mixedPilesStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -133,22 +132,22 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "mixedPileColor",
 		name = "Mixed Pile Color",
 		description = "Color used for mixed piles.",
-		titleSection = "mixedPilesTitle"
+		parent = "mixedPilesStub"
 	)
 	default Color mixedPileColor()
 	{
 		return new Color(255, 0, 255);
 	}
 
-	@ConfigTitleSection(
-		keyName = "pilesSizeTitle",
+	@ConfigItem(
+		keyName = "pilesSizeStub",
 		name = "Pile size",
 		description = "",
 		position = 9
 	)
-	default Title pilesSizeTitle()
+	default Stub pilesSizeStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@Range(
@@ -159,22 +158,22 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "minimumPileSize",
 		name = "Minimum Pile Size",
 		description = "Any pile under this size will not show up. (Minimum: 2)",
-		titleSection = "pilesSizeTitle"
+		parent = "pilesSizeStub"
 	)
 	default int minimumPileSize()
 	{
 		return 2;
 	}
 
-	@ConfigTitleSection(
-		keyName = "miscellaneousTitle",
+	@ConfigItem(
+		keyName = "miscellaneousStub",
 		name = "Miscellaneous",
 		description = "",
 		position = 11
 	)
-	default Title miscellaneousTitle()
+	default Stub miscellaneousStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -182,7 +181,7 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "numberOnly",
 		name = "Display Number Only",
 		description = "Shorten \"PILE SIZE: 1\" to \"1\"",
-		titleSection = "miscellaneousTitle"
+		parent = "miscellaneousStub"
 	)
 	default boolean numberOnly()
 	{
@@ -194,7 +193,7 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "drawPileTile",
 		name = "Draw Pile Tile",
 		description = "Draws the tile of the pile for best visibility.",
-		titleSection = "miscellaneousTitle"
+		parent = "miscellaneousStub"
 	)
 	default boolean drawPileTile()
 	{
@@ -206,7 +205,7 @@ public interface PileIndicatorsConfig extends Config
 		keyName = "drawPileHull",
 		name = "Draw Pile Convex Hull",
 		description = "Draws the hull of the pile for best visibility.",
-		titleSection = "miscellaneousTitle"
+		parent = "miscellaneousStub"
 	)
 	default boolean drawPileHull()
 	{

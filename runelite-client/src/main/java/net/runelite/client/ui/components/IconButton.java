@@ -27,7 +27,6 @@ package net.runelite.client.ui.components;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
@@ -51,29 +50,22 @@ public class IconButton extends JButton
 		setOpaque(false);
 		setRolloverEnabled(false);
 
-		setHoverIcon(hoverIcon);
-	}
-
-	public void setHoverIcon(ImageIcon hoverIcon)
-	{
-		if (hoverIcon == null)
+		if (hoverIcon != null)
 		{
-			return;
+			addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseEntered(MouseEvent e)
+				{
+					setIcon(hoverIcon);
+				}
+
+				@Override
+				public void mouseExited(MouseEvent e)
+				{
+					setIcon(icon);
+				}
+			});
 		}
-		final Icon icon = getIcon();
-		addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseEntered(MouseEvent e)
-			{
-				setIcon(hoverIcon);
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e)
-			{
-				setIcon(icon);
-			}
-		});
 	}
 }

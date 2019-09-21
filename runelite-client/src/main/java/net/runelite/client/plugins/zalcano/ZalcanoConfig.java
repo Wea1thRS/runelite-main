@@ -30,29 +30,28 @@ import java.awt.Color;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigTitleSection;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("zalcano")
 public interface ZalcanoConfig extends Config
 {
 
-	@ConfigTitleSection(
-		keyName = "zalcanoTitle",
+	@ConfigItem(
+		keyName = "zalcanoStub",
 		name = "Zalcano",
 		description = "",
 		position = 0
 	)
-	default Title zalcanoTitle()
+	default Stub zalcanoStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
 		keyName = "highlightZalcanoHull",
 		name = "Highlight Zalcano",
 		description = "Highlight Zalcano\'s convex hull.",
-		titleSection = "zalcanoTitle",
+		parent = "zalcanoStub",
 		position = 1
 	)
 	default boolean highlightZalcanoHull()
@@ -64,7 +63,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "zalcanoHullColor",
 		name = "Color for highlight",
 		description = "",
-		titleSection = "zalcanoTitle",
+		parent = "zalcanoStub",
 		position = 2
 	)
 	default Color zalcanoHullColor()
@@ -72,22 +71,22 @@ public interface ZalcanoConfig extends Config
 		return new Color(255, 25, 0);
 	}
 
-	@ConfigTitleSection(
-		keyName = "zalcanoAoesTitle",
+	@ConfigItem(
+		keyName = "zalcanoAoesStub",
 		name = "Area of Effect",
 		description = "",
 		position = 3
 	)
-	default Title zalcanoAoesTitle()
+	default Stub zalcanoAoesStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
 		keyName = "showAoeZalcanoWakeup",
 		name = "Zalcano Wakeup",
 		description = "Shows an AOE warning for Zalcano waking back up.",
-		titleSection = "zalcanoAoesTitle",
+		parent = "zalcanoAoesStub",
 		position = 4
 	)
 	default boolean showAoeZalcanoWakeup()
@@ -99,7 +98,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "showAoeForRockfall",
 		name = "Small Rocks",
 		description = "Shows an AOE warning for the rocks that fall occasionally.",
-		titleSection = "zalcanoAoesTitle",
+		parent = "zalcanoAoesStub",
 		position = 5
 	)
 	default boolean showAoeForRockfall()
@@ -111,7 +110,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "showAoeForRedSymbols",
 		name = "Red Symbols",
 		description = "Shows an AOE warning for the 3x3 red symbols that appear.",
-		titleSection = "zalcanoAoesTitle",
+		parent = "zalcanoAoesStub",
 		position = 6
 	)
 	default boolean showAoeForRedSymbols()
@@ -123,7 +122,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "highlightMiningSpot",
 		name = "Mining spot",
 		description = "Highlights the glowing rock and warns you if Zalcano attacks it.",
-		titleSection = "zalcanoAoesTitle",
+		parent = "zalcanoAoesStub",
 		position = 7
 	)
 	default boolean highlightMiningSpot()
@@ -131,15 +130,15 @@ public interface ZalcanoConfig extends Config
 		return true;
 	}
 
-	@ConfigTitleSection(
-		keyName = "helperTitle",
+	@ConfigItem(
+		keyName = "helperStub",
 		name = "Helpers",
 		description = "",
 		position = 8
 	)
-	default Title helperTitle()
+	default Stub helperStub()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	/**
@@ -149,7 +148,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "showSteps",
 		name = "Show Step",
 		description = "",
-		titleSection = "helperTitle",
+		parent = "helperStub",
 		position = 9,
 		hidden = true //hidden until fully functional
 	)
@@ -162,7 +161,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "showAoeZalcanoMineable",
 		name = "Zalcano Mineable",
 		description = "Highlights Zalcano if she is mineable.",
-		titleSection = "helperTitle",
+		parent = "helperStub",
 		position = 10
 	)
 	default boolean showAoeZalcanoMineable()
@@ -174,7 +173,7 @@ public interface ZalcanoConfig extends Config
 		keyName = "highlightGolem",
 		name = "Highlight Golem",
 		description = "Highlights the Golem that Zalcano spawns in.",
-		titleSection = "helperTitle",
+		parent = "helperStub",
 		position = 11
 	)
 	default boolean highlightGolem()

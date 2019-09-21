@@ -30,7 +30,6 @@ package net.runelite.client.plugins.hideprayers;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigSection;
 import net.runelite.client.plugins.hideprayers.util.Armadyl;
 import net.runelite.client.plugins.hideprayers.util.Bandos;
 import net.runelite.client.plugins.hideprayers.util.Barrows;
@@ -44,45 +43,12 @@ import net.runelite.client.plugins.hideprayers.util.Zulrah;
 @ConfigGroup("hideprayers")
 public interface HidePrayersConfig extends Config
 {
-	@ConfigSection(
-		name = "Individual Prayers",
-		description = "",
-		position = 0,
-		keyName = "individualPrayersSection"
-	)
-	default boolean individualPrayersSection()
-	{
-		return false;
-	}
-
-	@ConfigSection(
-		name = "PvM Prayers",
-		description = "",
-		position = 1,
-		keyName = "pvmSection"
-	)
-	default boolean pvmSection()
-	{
-		return false;
-	}
-
-	@ConfigSection(
-		name = "PvP Prayers",
-		description = "",
-		position = 2,
-		keyName = "pvpSection"
-	)
-	default boolean pvpSection()
-	{
-		return false;
-	}
-	
 	@ConfigItem(
 		position = 0,
 		keyName = "showindividualprayers",
 		name = "Hide Individual Prayers",
 		description = "Hide/Show Prayers.",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		disabledBy = "getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean showindividualprayers()
@@ -95,7 +61,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowTHICK_SKIN",
 		name = "Show Thick Skin",
 		description = "Hide/Show Thick Skin",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -109,7 +75,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowBURST_OF_STRENGTH",
 		name = "Show Burst of Strength",
 		description = "Hide/Show Burst of Strength",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -123,7 +89,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowCLARITY_OF_THOUGHT",
 		name = "Show Clarity of Thought",
 		description = "Hide/Show Clarity of Thought",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "Showindividualprayers"
 	)
@@ -137,7 +103,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowSHARP_EYE",
 		name = "Show Sharp Eye",
 		description = "Hide/Show Sharp Eye",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -151,7 +117,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowMYSTIC_WILL",
 		name = "Show Mystic Will",
 		description = "Hide/Show Mystic Will",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -165,7 +131,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowROCK_SKIN",
 		name = "Show Rock Skin",
 		description = "Hide/Show Rock Skin",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -179,7 +145,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowSUPERHUMAN_STRENGTH",
 		name = "Show Super Human Strength",
 		description = "Hide/Show Super Human Strength",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -193,7 +159,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowIMPROVED_REFLEXES",
 		name = "Show Improved_Reflexes",
 		description = "Hide/Show Improved_Reflexes",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -207,7 +173,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowRapidRestore",
 		name = "Show Rapid Restore",
 		description = "Hide/Show Rapid Restore",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -221,7 +187,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowRapidHeal",
 		name = "Show Rapid Heal",
 		description = "Hide/Show Rapid Heal",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -235,7 +201,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowProtectItem",
 		name = "Show Protect Item",
 		description = "Hide/Show Protect Item",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -249,7 +215,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowHAWK_EYE",
 		name = "Show Hawk Eye",
 		description = "Hide/Show Hawk Eye",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -263,7 +229,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowMYSTIC_LORE",
 		name = "Show Mystic Lore",
 		description = "Hide/Show Mystic Lore",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -278,7 +244,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowSteelSkin",
 		name = "Show Steel Skin",
 		description = "Hide/Show Steel skin",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -292,7 +258,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowUltimateStrength",
 		name = "Show Ultimate Strength",
 		description = "Hide/Show Ultimate strength",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -306,7 +272,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowIncredibleReflex",
 		name = "Show Incredible Reflex",
 		description = "Hide/Show Incredible Reflex",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -320,7 +286,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowPTFMagic",
 		name = "Show Protect From Magic",
 		description = "Hide/Show Protect From Magic",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -334,7 +300,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowPTFRange",
 		name = "Show Protect From Range",
 		description = "Hide/Show Protect from Range",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -348,7 +314,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowPTFMelee",
 		name = "Show Protect From Melee",
 		description = "Hide/Show Protect From Melee",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -362,7 +328,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowEagle",
 		name = "Show Eagle Eye",
 		description = "Hide/Show Eagle Eye",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -376,7 +342,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowMystic",
 		name = "Show Mystic Might",
 		description = "Hide/Show Mystic Might",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -390,7 +356,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowRETRIBUTION",
 		name = "Show Retribution",
 		description = "Hide/Show Retribution",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -404,7 +370,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowRedemption",
 		name = "Show Redemption",
 		description = "Hide/Show Redemption",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -418,7 +384,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowSmite",
 		name = "Show Smite",
 		description = "Hide/Show Smite",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -432,7 +398,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowPreserve",
 		name = "Show Preserve",
 		description = "Hide/Show Preserve",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -446,7 +412,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowChivalry",
 		name = "Show Chivalry",
 		description = "Hide/Show Chivalry",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -460,7 +426,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowPiety",
 		name = "Show Piety",
 		description = "Hide/Show Piety",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -474,7 +440,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowRigour",
 		name = "Show Rigour",
 		description = "Hide/Show Rigour",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -488,7 +454,7 @@ public interface HidePrayersConfig extends Config
 		keyName = "ShowAugury",
 		name = "Show Augury",
 		description = "Hide/Show Augury",
-		section = "individualPrayersSection",
+		group = "Individual Prayers",
 		hidden = true,
 		unhide = "showindividualprayers"
 	)
@@ -500,11 +466,11 @@ public interface HidePrayersConfig extends Config
 // ----------------------------------------------------------- //
 
 	@ConfigItem(
-		position = 0,
+		position = 29,
 		keyName = "getarmadylprayers",
 		name = "enable Armadyl Prayers",
 		description = "Shows prayers for Armadyl",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers"
 	)
 	default boolean getarmadylprayers()
@@ -513,11 +479,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 1,
+		position = 30,
 		keyName = "armadyl",
 		name = "Armadyl",
 		description = "Shows prayers for Armadyl",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getarmadylprayers"
 	)
@@ -527,11 +493,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 2,
+		position = 31,
 		keyName = "getbarrowsprayers",
 		name = "enable Barrows Prayers",
 		description = "Shows prayers for Barrows",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getarmadylprayers"
 	)
 	default boolean getbarrowsprayers()
@@ -540,11 +506,11 @@ public interface HidePrayersConfig extends Config
 	}
 	
 	@ConfigItem(
-		position = 3,
+		position = 32,
 		keyName = "barrows",
 		name = "Barrows",
 		description = "Shows prayers for Barrows",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getbarrowsprayers"
 	)
@@ -554,11 +520,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 4,
+		position = 33,
 		keyName = "getbandosprayers",
 		name = "enable Bandos Prayers",
 		description = "Shows prayers for Bandos",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getbandosprayers()
@@ -567,11 +533,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 5,
+		position = 34,
 		keyName = "bandos",
 		name = "Bandos",
 		description = "Shows prayers for Bandos",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getbandosprayers"
 	)
@@ -581,11 +547,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 6,
+		position = 35,
 		keyName = "getcerberusprayers",
 		name = "enable Cerberus Prayers",
 		description = "Shows prayers for Cerberus",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getvorkathprayers || getsaradominprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getcerberusprayers()
@@ -594,11 +560,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 7,
+		position = 36,
 		keyName = "cerberus",
 		name = "Cerberus",
 		description = "Shows prayers for Cerberus",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getcerberusprayers"
 	)
@@ -608,11 +574,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 8,
+		position = 37,
 		keyName = "getsaradominprayers",
 		name = "enable Saradomin Prayers",
 		description = "Shows prayers for Saradomin",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getvorkathprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getsaradominprayers()
@@ -621,11 +587,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 9,
+		position = 38,
 		keyName = "saradomin",
 		name = "Saradomin",
 		description = "Shows prayers for Saradomin",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getsaradominprayers"
 	)
@@ -635,11 +601,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 10,
+		position = 39,
 		keyName = "getvorkathprayers",
 		name = "enable Vorkath Prayers",
 		description = "Shows prayers for Vorkath",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getzamorakprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getvorkathprayers()
@@ -648,11 +614,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 11,
+		position = 40,
 		keyName = "vorkath",
 		name = "Vorkath",
 		description = "Shows prayers for Vorkath",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getvorkathprayers"
 	)
@@ -662,11 +628,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 12,
+		position = 41,
 		keyName = "getzamorakprayers",
 		name = "enable Zamorak Prayers",
 		description = "Shows prayers for Zamorak",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzulrahprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getzamorakprayers()
@@ -675,11 +641,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 13,
+		position = 42,
 		keyName = "zamorak",
 		name = "Zamorak",
 		description = "Shows prayers for Zamorak",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getzamorakprayers"
 	)
@@ -689,11 +655,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 14,
+		position = 43,
 		keyName = "getzulrahprayers",
 		name = "enable Zulrah Prayers",
 		description = "Shows prayers for Zulrah",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		disabledBy = "showindividualprayers || getpvpprayers || HideRapidHealRestore || getzamorakprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getzulrahprayers()
@@ -702,11 +668,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 15,
+		position = 44,
 		keyName = "zulrah",
 		name = "Zulrah",
 		description = "Shows prayers for Zulrah",
-		section = "pvmSection",
+		group = "PVM Prayers",
 		hidden = true,
 		unhide = "getzulrahprayers"
 	)
@@ -718,11 +684,11 @@ public interface HidePrayersConfig extends Config
 // ----------------------------------------------------------- //
 
 	@ConfigItem(
-		position = 0,
+		position = 45,
 		keyName = "getpvpprayers",
 		name = "enable PVP Prayers",
 		description = "Shows prayers based on prayer build",
-		section = "pvpSection",
+		group = "PVP Prayers",
 		disabledBy = "showindividualprayers || getzulrahprayers || getzamorakprayers || getvorkathprayers || getsaradominprayers || getcerberusprayers || getbandosprayers || getbarrowsprayers || getarmadylprayers"
 	)
 	default boolean getpvpprayers()
@@ -731,11 +697,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 1,
+		position = 46,
 		keyName = "pvpprayers",
 		name = "PVP Prayers",
 		description = "Shows prayers based on prayer build",
-		section = "pvpSection",
+		group = "PVP Prayers",
 		hidden = true,
 		unhide = "getpvpprayers"
 	)
@@ -745,11 +711,11 @@ public interface HidePrayersConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 2,
+		position = 47,
 		keyName = "HideRapidHealRestore",
 		name = "Hide Rapid Heal and Rapid Restore",
 		description = "Hides the Rapid Heal and Rapid Restore prayers",
-		section = "pvpSection",
+		group = "PVP Prayers",
 		hidden = true,
 		unhide = "getpvpprayers"
 	)

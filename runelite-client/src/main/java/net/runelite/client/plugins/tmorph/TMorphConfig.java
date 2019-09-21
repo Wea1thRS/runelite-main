@@ -26,22 +26,20 @@ package net.runelite.client.plugins.tmorph;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigSection;
-import net.runelite.client.config.ConfigTitleSection;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("TMorph")
 public interface TMorphConfig extends Config
 {
-	@ConfigTitleSection(
+	@ConfigItem(
 		keyName = "swaps",
 		name = "Morphers",
 		description = "",
 		position = 0
 	)
-	default Title swaps()
+	default Stub swaps()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -50,7 +48,7 @@ public interface TMorphConfig extends Config
 		description = "<html><center>Proper Format is id,id:Slot" +
 			"<br>For example: 6570,21295:Cape" +
 			"<br>Valid Slots: Helmet, Cape, Amulet, Weapon, Torso, Shield, Legs, Head, Hands, Boots, Jaw, Ring, Ammo</center></html>",
-		titleSection = "swaps",
+		parent = "swaps",
 		position = 1,
 		parse = true,
 		clazz = Parse.class,
@@ -67,7 +65,7 @@ public interface TMorphConfig extends Config
 		description = "<html><center>Proper Format is id,id:Slot" +
 			"<br>For example: 6570,21295:Cape" +
 			"<br>Valid Slots: Helmet, Cape, Amulet, Weapon, Torso, Shield, Legs, Head, Hands, Boots, Jaw, Ring, Ammo</center></html>",
-		titleSection = "swaps",
+		parent = "swaps",
 		position = 2,
 		parse = true,
 		clazz = Parse.class,
@@ -84,7 +82,7 @@ public interface TMorphConfig extends Config
 		description = "<html><center>Proper Format is id,id:Slot" +
 			"<br>For example: 6570,21295:Cape" +
 			"<br>Valid Slots: Helmet, Cape, Amulet, Weapon, Torso, Shield, Legs, Head, Hands, Boots, Jaw, Ring, Ammo</center></html>",
-		titleSection = "swaps",
+		parent = "swaps",
 		position = 3,
 		parse = true,
 		clazz = Parse.class,
@@ -95,39 +93,27 @@ public interface TMorphConfig extends Config
 		return "";
 	}
 
-	//////////////////Experimental Functions
-
-	@ConfigSection(
-		position = 4,
-		keyName = "experimentalSection",
-		name = "Experimental Functions",
-		description = ""
-	)
-	default boolean experimentalSection()
-	{
-		return false;
-	}
-
 	@ConfigItem(
 		keyName = "experimentalFunctions",
 		name = "Experimental Functions",
 		description = "May bug out in unintended ways.",
-		section = "experimentalSection",
-		position = 0
+		parent = "swaps",
+		position = 4
 	)
 	default boolean experimentalFunctions()
 	{
 		return false;
 	}
 
+	//////////////////Experimental Functions
+
 	@ConfigItem(
 		keyName = "globalAnimSwap",
 		name = "Global Animation Swap",
 		description = "DO NOT USE WITH ANIMATION SWAP BELOW",
-		section = "experimentalSection",
+		group = "Experimental Functions",
 		hidden = true,
-		unhide = "experimentalFunctions",
-		position = 1
+		unhide = "experimentalFunctions"
 	)
 	default int globalAnimSwap()
 	{
@@ -138,10 +124,9 @@ public interface TMorphConfig extends Config
 		keyName = "animationSwap",
 		name = "Animation Swap",
 		description = "ID",
-		section = "experimentalSection",
+		group = "Experimental Functions",
 		hidden = true,
-		unhide = "experimentalFunctions",
-		position = 2
+		unhide = "experimentalFunctions"
 	)
 	default int animationSwap()
 	{
@@ -152,10 +137,9 @@ public interface TMorphConfig extends Config
 		keyName = "animationTarget",
 		name = "Animation Target",
 		description = "ID",
-		section = "experimentalSection",
+		group = "Experimental Functions",
 		hidden = true,
-		unhide = "experimentalFunctions",
-		position = 3
+		unhide = "experimentalFunctions"
 	)
 	default int animationTarget()
 	{
@@ -166,10 +150,9 @@ public interface TMorphConfig extends Config
 		keyName = "globalGraphicSwap",
 		name = "Global Graphic Swap",
 		description = "DO NOT USE WITH GRAPHIC SWAP BELOW",
-		section = "experimentalSection",
+		group = "Experimental Functions",
 		hidden = true,
-		unhide = "experimentalFunctions",
-		position = 4
+		unhide = "experimentalFunctions"
 	)
 	default int globalGraphicSwap()
 	{
@@ -180,10 +163,9 @@ public interface TMorphConfig extends Config
 		keyName = "graphicSwap",
 		name = "Graphic Swap",
 		description = "ID",
-		section = "experimentalSection",
+		group = "Experimental Functions",
 		hidden = true,
-		unhide = "experimentalFunctions",
-		position = 5
+		unhide = "experimentalFunctions"
 	)
 	default int graphicSwap()
 	{
@@ -194,10 +176,9 @@ public interface TMorphConfig extends Config
 		keyName = "graphicTarget",
 		name = "Graphic Target",
 		description = "ID",
-		section = "experimentalSection",
+		group = "Experimental Functions",
 		hidden = true,
-		unhide = "experimentalFunctions",
-		position = 6
+		unhide = "experimentalFunctions"
 	)
 	default int graphicTarget()
 	{

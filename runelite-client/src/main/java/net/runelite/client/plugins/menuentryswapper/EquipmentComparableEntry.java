@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.menuentryswapper.comparables;
+package net.runelite.client.plugins.menuentryswapper;
 
 import lombok.EqualsAndHashCode;
 import net.runelite.api.MenuEntry;

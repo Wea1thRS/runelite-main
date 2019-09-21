@@ -30,22 +30,21 @@ import lombok.Getter;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigTitleSection;
 import net.runelite.client.config.Range;
-import net.runelite.client.config.Title;
+import net.runelite.client.config.Stub;
 
 @ConfigGroup("TickTimers")
 public interface TickTimersConfig extends Config
 {
-	@ConfigTitleSection(
-		keyName = "mainConfig",
+	@ConfigItem(
 		position = 0,
+		keyName = "mainConfig",
 		name = "Main Config",
 		description = ""
 	)
-	default Title mainConfig()
+	default Stub mainConfig()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -53,7 +52,7 @@ public interface TickTimersConfig extends Config
 		keyName = "prayerWidgetHelper",
 		name = "Prayer Widget Helper",
 		description = "Shows you which prayer to click and the time until click.",
-		titleSection = "mainConfig"
+		parent = "mainConfig"
 	)
 	default boolean showPrayerWidgetHelper()
 	{
@@ -65,7 +64,7 @@ public interface TickTimersConfig extends Config
 		keyName = "showHitSquares",
 		name = "Show Hit Squares",
 		description = "Shows you where the melee bosses can hit you from.",
-		titleSection = "mainConfig"
+		parent = "mainConfig"
 	)
 	default boolean showHitSquares()
 	{
@@ -78,22 +77,22 @@ public interface TickTimersConfig extends Config
 		name = "Change Tick Color",
 		description = "If this is enabled, it will change the tick color to white" +
 			"<br> at 1 tick remaining, signaling you to swap.",
-		titleSection = "mainConfig"
+		parent = "mainConfig"
 	)
 	default boolean changeTickColor()
 	{
 		return false;
 	}
 
-	@ConfigTitleSection(
-		keyName = "bosses",
+	@ConfigItem(
 		position = 4,
+		keyName = "bosses",
 		name = "Bosses",
 		description = ""
 	)
-	default Title bosses()
+	default Stub bosses()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -101,7 +100,7 @@ public interface TickTimersConfig extends Config
 		keyName = "gwd",
 		name = "God Wars Dungeon",
 		description = "Show tick timers for GWD Bosses. This must be enabled before you zone in.",
-		titleSection = "bosses"
+		parent = "bosses"
 	)
 	default boolean gwd()
 	{
@@ -113,22 +112,22 @@ public interface TickTimersConfig extends Config
 		keyName = "dks",
 		name = "Dagannoth Kings",
 		description = "Show tick timers for Dagannoth Kings. This must be enabled before you zone in.",
-		titleSection = "bosses"
+		parent = "bosses"
 	)
 	default boolean dks()
 	{
 		return true;
 	}
 
-	@ConfigTitleSection(
-		keyName = "text",
+	@ConfigItem(
 		position = 7,
+		keyName = "text",
 		name = "Text",
 		description = ""
 	)
-	default Title text()
+	default Stub text()
 	{
-		return new Title();
+		return new Stub();
 	}
 
 	@ConfigItem(
@@ -136,7 +135,7 @@ public interface TickTimersConfig extends Config
 		keyName = "fontStyle",
 		name = "Font Style",
 		description = "Plain | Bold | Italics",
-		titleSection = "text"
+		parent = "text"
 	)
 	default FontStyle fontStyle()
 	{
@@ -152,7 +151,7 @@ public interface TickTimersConfig extends Config
 		keyName = "textSize",
 		name = "Text Size",
 		description = "Text Size for Timers.",
-		titleSection = "text"
+		parent = "text"
 	)
 	default int textSize()
 	{
@@ -164,7 +163,7 @@ public interface TickTimersConfig extends Config
 		keyName = "shadows",
 		name = "Shadows",
 		description = "Adds Shadows to text.",
-		titleSection = "text"
+		parent = "text"
 	)
 	default boolean shadows()
 	{

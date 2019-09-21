@@ -460,7 +460,11 @@ public class MenuManager
 			}
 		}
 
-		String username = Text.removeTags(event.getTarget(), true);
+		String target = event.getTarget();
+
+		// removes tags and level from player names for example:
+		// <col=ffffff>username<col=40ff00>  (level-42) or <col=ffffff><img=2>username</col>
+		String username = Text.removeTags(target).split("[(]")[0].trim();
 
 		PlayerMenuOptionClicked playerMenuOptionClicked = new PlayerMenuOptionClicked();
 		playerMenuOptionClicked.setMenuOption(event.getOption());
@@ -505,7 +509,7 @@ public class MenuManager
 	 */
 	public AbstractComparableEntry addPriorityEntry(String option, String target)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, target);
@@ -517,7 +521,7 @@ public class MenuManager
 
 	public void removePriorityEntry(String option, String target)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, target);
@@ -532,7 +536,7 @@ public class MenuManager
 	 */
 	public AbstractComparableEntry addPriorityEntry(String option)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, "", false);
 
@@ -543,7 +547,7 @@ public class MenuManager
 
 	public AbstractComparableEntry addPriorityEntry(String option, boolean strictOption)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 
 		AbstractComparableEntry entry =
 			newBaseComparableEntry(option, "", -1, -1, false, strictOption);
@@ -567,7 +571,7 @@ public class MenuManager
 
 	public void removePriorityEntry(String option)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, "", false);
 
@@ -576,7 +580,7 @@ public class MenuManager
 
 	public void removePriorityEntry(String option, boolean strictOption)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 
 		AbstractComparableEntry entry =
 			newBaseComparableEntry(option, "", -1, -1, false, strictOption);
@@ -602,10 +606,10 @@ public class MenuManager
 	 */
 	public void addSwap(String option, String target, String option2, String target2, boolean strictOption, boolean strictTarget)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
-		option2 = option2.trim().toLowerCase();
+		option2 = Text.standardize(option2);
 		target2 = Text.standardize(target2);
 
 		AbstractComparableEntry swapFrom = newBaseComparableEntry(option, target, -1, -1, strictOption, strictTarget);
@@ -623,10 +627,10 @@ public class MenuManager
 
 	public void removeSwap(String option, String target, String option2, String target2, boolean strictOption, boolean strictTarget)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
-		option2 = option2.trim().toLowerCase();
+		option2 = Text.standardize(option2);
 		target2 = Text.standardize(target2);
 
 		AbstractComparableEntry swapFrom = newBaseComparableEntry(option, target, -1, -1, strictOption, strictTarget);
@@ -668,10 +672,10 @@ public class MenuManager
 	 */
 	public void addSwap(String option, String target, int id, int type, String option2, String target2, int id2, int type2)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
-		option2 = option2.trim().toLowerCase();
+		option2 = Text.standardize(option2);
 		target2 = Text.standardize(target2);
 
 		AbstractComparableEntry swapFrom = newBaseComparableEntry(option, target, id, type, false, false);
@@ -688,10 +692,10 @@ public class MenuManager
 
 	public void removeSwap(String option, String target, int id, int type, String option2, String target2, int id2, int type2)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
-		option2 = option2.trim().toLowerCase();
+		option2 = Text.standardize(option2);
 		target2 = Text.standardize(target2);
 
 		AbstractComparableEntry swapFrom = newBaseComparableEntry(option, target, id, type, false, false);
@@ -720,7 +724,7 @@ public class MenuManager
 	 */
 	public void addHiddenEntry(String option, String target)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, target);
@@ -730,7 +734,7 @@ public class MenuManager
 
 	public void removeHiddenEntry(String option, String target)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, target);
@@ -744,7 +748,7 @@ public class MenuManager
 	 */
 	public void addHiddenEntry(String option)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, "", false);
 
@@ -753,7 +757,7 @@ public class MenuManager
 
 	public void removeHiddenEntry(String option)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, "", false);
 
@@ -765,7 +769,7 @@ public class MenuManager
 	 */
 	public void addHiddenEntry(String option, String target, boolean strictOption, boolean strictTarget)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, target, -1, -1, strictOption, strictTarget);
@@ -775,7 +779,7 @@ public class MenuManager
 
 	public void removeHiddenEntry(String option, String target, boolean strictOption, boolean strictTarget)
 	{
-		option = option.trim().toLowerCase();
+		option = Text.standardize(option);
 		target = Text.standardize(target);
 
 		AbstractComparableEntry entry = newBaseComparableEntry(option, target, -1, -1, strictOption, strictTarget);
