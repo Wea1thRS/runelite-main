@@ -33,6 +33,17 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Provides;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Setter;
 import net.runelite.api.Client;
@@ -41,12 +52,13 @@ import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.MenuOpcode;
+import static net.runelite.api.MenuOpcode.MENU_ACTION_DEPRIORITIZE_OFFSET;
+import static net.runelite.api.MenuOpcode.WALK;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
 import static net.runelite.api.Varbits.BUILDING_MODE;
 import static net.runelite.api.Varbits.WITHDRAW_X_AMOUNT;
-import net.runelite.api.WorldType;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.ConfigChanged;
@@ -62,6 +74,8 @@ import net.runelite.client.config.Keybind;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.menus.AbstractComparableEntry;
+import static net.runelite.client.menus.ComparableEntries.newBankComparableEntry;
+import static net.runelite.client.menus.ComparableEntries.newBaseComparableEntry;
 import net.runelite.client.menus.MenuManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -95,35 +109,14 @@ import net.runelite.client.plugins.menuentryswapper.util.SkillsNecklaceMode;
 import net.runelite.client.plugins.menuentryswapper.util.SlayerRingMode;
 import net.runelite.client.plugins.menuentryswapper.util.XericsTalismanMode;
 import net.runelite.client.util.HotkeyListener;
-import net.runelite.client.util.MiscUtils;
-import org.apache.commons.lang3.StringUtils;
-import static net.runelite.client.util.MenuUtil.swap;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static net.runelite.api.MenuOpcode.MENU_ACTION_DEPRIORITIZE_OFFSET;
-import static net.runelite.api.MenuOpcode.WALK;
-import static net.runelite.api.Varbits.BUILDING_MODE;
-import static net.runelite.client.menus.ComparableEntries.newBankComparableEntry;
-import static net.runelite.client.menus.ComparableEntries.newBaseComparableEntry;
 import static net.runelite.client.util.MenuUtil.swap;
 
 @PluginDescriptor(
-		name = "Menu Entry Swapper",
-		description = "Change the default option that is displayed when hovering over objects",
-		tags = {"npcs", "inventory", "items", "objects"},
-		type = PluginType.UTILITY,
-		enabledByDefault = false
+	name = "Menu Entry Swapper",
+	description = "Change the default option that is displayed when hovering over objects",
+	tags = {"npcs", "inventory", "items", "objects"},
+	type = PluginType.UTILITY,
+	enabledByDefault = false
 )
 @Singleton
 public class MenuEntrySwapperPlugin extends Plugin
@@ -134,13 +127,13 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private static final String CONTROL_CHECK = "menuentryswapper control check";
 	private static final int PURO_PURO_REGION_ID = 10307;
 	private static final Set<MenuOpcode> NPC_MENU_TYPES = ImmutableSet.of(
-			MenuOpcode.NPC_FIRST_OPTION, MenuOpcode.NPC_SECOND_OPTION, MenuOpcode.NPC_THIRD_OPTION,
-			MenuOpcode.NPC_FOURTH_OPTION, MenuOpcode.NPC_FIFTH_OPTION, MenuOpcode.EXAMINE_NPC
+		MenuOpcode.NPC_FIRST_OPTION, MenuOpcode.NPC_SECOND_OPTION, MenuOpcode.NPC_THIRD_OPTION,
+		MenuOpcode.NPC_FOURTH_OPTION, MenuOpcode.NPC_FIFTH_OPTION, MenuOpcode.EXAMINE_NPC
 	);
 	private static final Splitter NEWLINE_SPLITTER = Splitter
-			.on("\n")
-			.omitEmptyStrings()
-			.trimResults();
+		.on("\n")
+		.omitEmptyStrings()
+		.trimResults();
 
 	@Inject
 	private Client client;
@@ -507,10 +500,10 @@ public class MenuEntrySwapperPlugin extends Plugin
 			if (option.contains("drop"))
 			{
 				if (this.hideDropRunecraftingPouch && (
-						entry.getTarget().contains("Small pouch")
-								|| entry.getTarget().contains("Medium pouch")
-								|| entry.getTarget().contains("Large pouch")
-								|| entry.getTarget().contains("Giant pouch")))
+					entry.getTarget().contains("Small pouch")
+						|| entry.getTarget().contains("Medium pouch")
+						|| entry.getTarget().contains("Large pouch")
+						|| entry.getTarget().contains("Giant pouch")))
 				{
 					continue;
 				}
@@ -572,8 +565,8 @@ public class MenuEntrySwapperPlugin extends Plugin
 		}
 
 		if (hintArrowNpc != null
-				&& hintArrowNpc.getIndex() == eventId
-				&& NPC_MENU_TYPES.contains(MenuOpcode.of(event.getType())))
+			&& hintArrowNpc.getIndex() == eventId
+			&& NPC_MENU_TYPES.contains(MenuOpcode.of(event.getType())))
 		{
 			return;
 		}
@@ -1945,20 +1938,20 @@ public class MenuEntrySwapperPlugin extends Plugin
 
 		// Ugly band-aid i'm sorry
 		configManager.setConfiguration("menuentryswapper", "customSwaps",
-				Arrays.stream(config.customSwaps()
-						.split("\n"))
-						.distinct()
-						.filter(swap -> !"walk here"
-								.equals(swap.
-										split(":")[0]
-										.trim()
-										.toLowerCase()))
-						.filter(swap -> !"cancel"
-								.equals(swap
-										.split(":")[0]
-										.trim()
-										.toLowerCase()))
-						.collect(Collectors.joining("\n"))
+			Arrays.stream(config.customSwaps()
+				.split("\n"))
+				.distinct()
+				.filter(swap -> !"walk here"
+					.equals(swap.
+						split(":")[0]
+						.trim()
+						.toLowerCase()))
+				.filter(swap -> !"cancel"
+					.equals(swap
+						.split(":")[0]
+						.trim()
+						.toLowerCase()))
+				.collect(Collectors.joining("\n"))
 		);
 	}
 

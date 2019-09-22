@@ -25,10 +25,6 @@
 package net.runelite.client.plugins.inferno;
 
 import java.awt.Color;
-import java.awt.Font;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -75,17 +71,6 @@ public interface InfernoConfig extends Config
 
 	@ConfigItem(
 		position = 3,
-		keyName = "ticksOnNpc",
-		name = "Ticks on NPC",
-		description = "Draws the amount of ticks before an NPC is going to attack on the NPC"
-	)
-	default boolean ticksOnNpc()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		position = 4,
 		keyName = "descendingBoxes",
 		name = "Descending Boxes",
 		description = "Draws timing boxes above the prayer icons, as if you were playing Piano Tiles",
@@ -97,7 +82,7 @@ public interface InfernoConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 5,
+		position = 4,
 		keyName = "indicateWhenPrayingCorrectly",
 		name = "Indicate When Praying Correctly",
 		description = "Indicate the correct prayer, even if you are already praying that prayer",
@@ -120,7 +105,7 @@ public interface InfernoConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 7,
+		position = 6,
 		keyName = "Nibbler Overlay",
 		name = "Nibbler Overlay",
 		description = "Shows if there are any Nibblers left",
@@ -132,7 +117,7 @@ public interface InfernoConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 8,
+		position = 7,
 		keyName = "indicateActiveHealers",
 		name = "Indicate Active Healers",
 		description = "Indicate healers that are still healing Jad",
@@ -155,7 +140,7 @@ public interface InfernoConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 10,
+		position = 9,
 		keyName = "waveDisplay",
 		name = "Wave display",
 		description = "Shows monsters that will spawn on the selected wave(s).",
@@ -167,7 +152,7 @@ public interface InfernoConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 11,
+		position = 10,
 		keyName = "getWaveOverlayHeaderColor",
 		name = "Wave Header",
 		description = "Color for Wave Header",
@@ -179,7 +164,7 @@ public interface InfernoConfig extends Config
 	}
 
 	@ConfigItem(
-		position = 12,
+		position = 11,
 		keyName = "getWaveTextColor",
 		name = "Wave Text Color",
 		description = "Color for Wave Texts",
@@ -188,167 +173,5 @@ public interface InfernoConfig extends Config
 	default Color getWaveTextColor()
 	{
 		return Color.WHITE;
-	}
-
-	@ConfigItem(
-		position = 13,
-		keyName = "debug",
-		name = "Debug",
-		description = ""
-	)
-	default Stub debug()
-	{
-		return new Stub();
-	}
-
-	@ConfigItem(
-		position = 14,
-		keyName = "indicateNonSafespotted",
-		name = "Non-safespotted NPC's",
-		description = "Indicate NPC's that can attack you"
-	)
-	default boolean indicateNonSafespotted()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 15,
-		keyName = "indicateTemporarySafespotted",
-		name = "Temporary safespotted NPC's",
-		description = "Indicate NPC's that have to move to attack you"
-	)
-	default boolean indicateTemporarySafespotted()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 16,
-		keyName = "indicateSafespotted",
-		name = "Safespotted NPC's",
-		description = "Indicate NPC's that are safespotted (can't attack you)"
-	)
-	default boolean indicateSafespotted()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 17,
-		keyName = "indicateObstacles",
-		name = "Obstacles",
-		description = "Indicate obstacles that NPC's cannot pass through"
-	)
-	default boolean indicateObstacles()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 18,
-		keyName = "indicateNpcPosition",
-		name = "NPC Position",
-		description = "Indicate the main tile for multi-tile NPC's. This tile is used for line-of-sight and pathfinding."
-	)
-	default boolean indicateNpcPosition()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		position = 19,
-		keyName = "indicateZukShieldSafespots",
-		name = "Zuk Shield Safespots",
-		description = "Indicate the zuk shield safespots."
-	)
-	default boolean indicateZukShieldSafespots()
-	{
-		return false;
-	}
-
-	@Alpha
-	@ConfigItem(
-		position = 20,
-		keyName = "zukShieldSafespotsColor",
-		name = "Zuk Shield Safespots Color",
-		description = "The color of the zuk shield safespots."
-	)
-	default Color zukShieldSafespotsColor()
-	{
-		return new Color(0, 255, 0, 100);
-	}
-
-	@ConfigItem(
-		position = 21,
-		keyName = "indicateNibblers",
-		name = "Indicate Nibblers",
-		description = "Indicate's nibblers that are alive"
-	)
-	default boolean indicateNibblers()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		position = 22,
-		keyName = "indicateNonPriorityDescendingBoxes",
-		name = "Indicate Non-Priority Boxes",
-		description = "Render descending boxes for prayers that are not the priority prayer for that tick"
-	)
-	default boolean indicateNonPriorityDescendingBoxes()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		position = 23,
-		keyName = "indicateBlobDetectionTick",
-		name = "Indicate Blob Dection Tick",
-		description = "Show a prayer indicator (default: magic) for the tick on which the blob will detect prayer"
-	)
-	default boolean indicateBlobDetectionTick()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-			position = 24,
-			keyName = "Indicate Safespots",
-			name = "indicateSafespots",
-			description = "Indicate safespots on the ground: safespot (white), pray melee (red), pray range (green), pray magic (blue) and combinations of those"
-	)
-	default SafespotDisplayMode indicateSafespots()
-	{
-		return SafespotDisplayMode.OFF;
-	}
-
-	@ConfigItem(
-			position = 25,
-			keyName = "safespotsCheckSize",
-			name = "Safespots Check Size",
-			description = "The size of the area around the player that should be checked for safespots (SIZE x SIZE area)"
-	)
-	default int safespotsCheckSize()
-	{
-		return 10;
-	}
-
-	@Getter
-	@AllArgsConstructor
-	enum FontStyle
-	{
-		BOLD("Bold", Font.BOLD),
-		ITALIC("Italic", Font.ITALIC),
-		PLAIN("Plain", Font.PLAIN);
-
-		private String name;
-		private int font;
-
-		@Override
-		public String toString()
-		{
-			return getName();
-		}
 	}
 }
