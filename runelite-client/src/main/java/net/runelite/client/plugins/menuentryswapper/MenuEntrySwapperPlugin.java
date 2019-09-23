@@ -51,6 +51,7 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.MenuOpcode;
@@ -132,6 +133,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private static final String HOTKEY_CHECK = "menuentryswapper hotkey check";
 	private static final String CONTROL_CHECK = "menuentryswapper control check";
 	private static final String LIGHT = "Light";
+	private static final String CHISEL = "Chisel";
 	private static final int PURO_PURO_REGION_ID = 10307;
 	private static final Set<MenuOpcode> NPC_MENU_TYPES = ImmutableSet.of(
 		MenuOpcode.NPC_FIRST_OPTION, MenuOpcode.NPC_SECOND_OPTION, MenuOpcode.NPC_THIRD_OPTION,
@@ -154,6 +156,10 @@ public class MenuEntrySwapperPlugin extends Plugin
 			ItemID.YEW_LOGS,
 			ItemID.MAGIC_LOGS,
 			ItemID.REDWOOD_LOGS
+		};
+	private static final int[] chiselableItems = new int[]
+		{
+			ItemID.DARK_ESSENCE_BLOCK
 		};
 
 	@Inject
@@ -182,6 +188,8 @@ public class MenuEntrySwapperPlugin extends Plugin
 
 	private int tinderboxIdx = -1;
 	private int tinderboxItem = -1;
+	private int chiselIdx = -1;
+	private int chiselItem = -1;
 
 	@Setter(AccessLevel.PRIVATE)
 	private boolean hotkeyActive;
@@ -337,6 +345,12 @@ public class MenuEntrySwapperPlugin extends Plugin
 			eventBus.subscribe(ItemContainerChanged.class, LIGHT, this::onItemContainerChanged);
 			eventBus.subscribe(MenuOptionClicked.class, LIGHT, this::onMenuOptionClicked);
 		}
+
+		if (config.enhancedEssenceBlocks())
+		{
+			eventBus.subscribe(ItemContainerChanged.class, CHISEL, this::onItemContainerChanged);
+			eventBus.subscribe(MenuOptionClicked.class, CHISEL, this::onMenuOptionClicked);
+		}
 	}
 
 	@Override
@@ -344,7 +358,9 @@ public class MenuEntrySwapperPlugin extends Plugin
 	{
 		eventBus.unregister(this);
 		eventBus.unregister(LIGHT);
+		eventBus.unregister(CHISEL);
 		tinderboxIdx = -1;
+		chiselIdx = -1;
 
 		loadCustomSwaps("", customSwaps); // Removes all custom swaps
 		removeSwaps();
@@ -435,6 +451,12 @@ public class MenuEntrySwapperPlugin extends Plugin
 					tinderboxIdx = -1;
 				}
 				return;
+			case "enhancedEssenceBlocks":
+				if (config.enhancedEssenceBlocks())
+				{
+					eventBus.subscribe(ItemContainerChanged.class, CHISEL, this::onItemContainerChanged);
+					eventBus.subscribe(MenuOptionClicked.class, CHISEL, this::onMenuOptionClicked);
+				}
 		}
 
 		if (event.getKey().startsWith("swapSell") || event.getKey().startsWith("swapBuy") ||
@@ -711,6 +733,12 @@ public class MenuEntrySwapperPlugin extends Plugin
 			event.getMenuEntry().setOption(LIGHT);
 			event.setWasModified(true);
 		}
+
+		if (event.getType() == MenuOpcode.ITEM_USE.getId() && chiselIdx != -1 && Ints.contains(chiselableItems, eventId))
+		{
+			event.getMenuEntry().setOption(CHISEL);
+			event.setWasModified(true);
+		}
 	}
 
 	private void onMenuOptionClicked(MenuOptionClicked event)
@@ -722,6 +750,15 @@ public class MenuEntrySwapperPlugin extends Plugin
 			client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
 			client.setSelectedItemSlot(tinderboxIdx);
 			client.setSelectedItemID(tinderboxItem);
+		}
+
+		else if (event.getOpcode() == MenuOpcode.ITEM_USE.getId() && event.getOption().equals(CHISEL))
+		{
+			MenuEntry entry = event.getMenuEntry();
+			entry.setOpcode(MenuOpcode.ITEM_USE_ON_WIDGET_ITEM.getId());
+			client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+			client.setSelectedItemSlot(chiselIdx);
+			client.setSelectedItemID(chiselItem);
 		}
 	}
 
@@ -740,6 +777,12 @@ public class MenuEntrySwapperPlugin extends Plugin
 			return;
 		}
 
+		else if (chiselIdx >= 0 && chiselIdx < items.length &&
+			(items[chiselIdx].getId() == chiselItem || items[chiselIdx].getId() == chiselItem))
+		{
+			return;
+		}
+
 		for (int i = 0, itemsLength = items.length; i < itemsLength; i++)
 		{
 			final Item item = items[i];
@@ -752,9 +795,17 @@ public class MenuEntrySwapperPlugin extends Plugin
 				tinderboxItem = itemID;
 				return;
 			}
+
+			else if (itemID == ItemID.CHISEL)
+			{
+				chiselIdx = i;
+				chiselItem = itemID;
+				return;
+			}
 		}
 
 		tinderboxIdx = -1;
+		chiselIdx = -1;
 	}
 
 	private void loadCustomSwaps(String config, Map<AbstractComparableEntry, Integer> map)

@@ -1942,4 +1942,15 @@ public interface MenuEntrySwapperConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+		keyName = "enhancedEssenceBlocks",
+		name = "Enhanced Essence Blocks",
+		description = "Ez Essence Blocks",
+		section = "enhancedSection"
+	)
+	default  boolean enhancedEssenceBlocks()
+	{
+		return false;
+	}
 }
