@@ -43,10 +43,21 @@ public interface MesEnhancedConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "leftClickEssenceBlock",
+		name = "1 Click Essence Blocks",
+		description = "This will allow you to left click essence blocks to chisel them.",
+		position = 2
+	)
+	default boolean leftClickEssenceBlock()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "quickBones",
 		name = "1 Click Bones",
 		description = "This will allow you to left click an altar to use your bones on them.",
-		position = 2
+		position = 3
 	)
 	default boolean quickBones()
 	{

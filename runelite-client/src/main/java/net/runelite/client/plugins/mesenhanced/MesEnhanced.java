@@ -61,8 +61,12 @@ public class MesEnhanced extends Plugin
 	private static final int GOBLIN_SALUTE = 2128;
 	private static final String LIGHT = "Light";
 	private static final String QUICK_BONE = "Quick Bone";
+	private static final String CHISEL = "Chisel";
 	private static final Set<Integer> TINDER = ImmutableSet.of(
 		ItemID.TINDERBOX, ItemID.GOLDEN_TINDERBOX
+	);
+	private static final Set<Integer> CHISELS = ImmutableSet.of(
+		ItemID.CHISEL
 	);
 	private static final Set<Integer> LIGHTABLE_LOGS = ImmutableSet.of(
 		ItemID.LOGS, ItemID.ACHEY_TREE_LOGS, ItemID.OAK_LOGS,
@@ -76,6 +80,9 @@ public class MesEnhanced extends Plugin
 		ItemID.FAYRG_BONES, ItemID.RAURG_BONES, ItemID.HYDRA_BONES,
 		ItemID.DAGANNOTH_BONES, ItemID.OURG_BONES, ItemID.SUPERIOR_DRAGON_BONES
 	);
+	private static final Set<Integer> CHISELABLE_ITEMS = ImmutableSet.of(
+		ItemID.DARK_ESSENCE_BLOCK
+	);
 
 	@Inject
 	private Client client;
@@ -86,12 +93,16 @@ public class MesEnhanced extends Plugin
 	private boolean bones;
 	private boolean leftClickLog;
 	private boolean quickBone;
+	private boolean leftClickEssenceBlock;
 	private boolean tick;
 	private boolean tinder;
+	private boolean chisel;
 	private int bonesId;
 	private int bonesIdx;
 	private int tinderId;
 	private int tinderIdx;
+	private int chiselId;
+	private int chiselIdx;
 
 	@Provides
 	MesEnhancedConfig getConfig(ConfigManager configManager)
@@ -125,6 +136,7 @@ public class MesEnhanced extends Plugin
 
 		this.quickBone = config.quickBones();
 		this.leftClickLog = config.leftClickLog();
+		this.leftClickEssenceBlock = config.leftClickEssenceBlock();
 	}
 
 	private void onGameTick(GameTick event)
@@ -148,7 +160,7 @@ public class MesEnhanced extends Plugin
 
 	private void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (!this.leftClickLog && !this.quickBone)
+		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock)
 		{
 			return;
 		}
@@ -161,6 +173,12 @@ public class MesEnhanced extends Plugin
 			event.getMenuEntry().setOption(LIGHT);
 			event.setWasModified(true);
 		}
+		else if (this.leftClickEssenceBlock && chisel && event.getType() == MenuOpcode.ITEM_USE.getId()
+			&& CHISELABLE_ITEMS.contains(id))
+		{
+			event.getMenuEntry().setOption(CHISEL);
+			event.setWasModified(true);
+		}
 		else if (this.quickBone && bones && event.getType() == MenuOpcode.GAME_OBJECT_FIRST_OPTION.getId()
 			&& event.getTarget().toLowerCase().contains("altar"))
 		{
@@ -171,7 +189,7 @@ public class MesEnhanced extends Plugin
 
 	private void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		if (!this.leftClickLog && !this.quickBone)
+		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock)
 		{
 			return;
 		}
@@ -185,6 +203,14 @@ public class MesEnhanced extends Plugin
 			client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
 			client.setSelectedItemSlot(tinderIdx);
 			client.setSelectedItemID(tinderId);
+		}
+		else if (this.leftClickEssenceBlock && chisel && event.getOpcode() == MenuOpcode.ITEM_USE.getId()
+			&& event.getOption().equals(CHISEL))
+		{
+			entry.setOpcode(MenuOpcode.ITEM_USE_ON_WIDGET_ITEM.getId());
+			client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+			client.setSelectedItemSlot(chiselIdx);
+			client.setSelectedItemID(chiselId);
 		}
 		else if (this.quickBone && bones && event.getOption().equals(QUICK_BONE) && tick)
 		{
@@ -203,7 +229,7 @@ public class MesEnhanced extends Plugin
 
 	private void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (!this.leftClickLog && !this.quickBone)
+		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock)
 		{
 			return;
 		}
@@ -212,16 +238,19 @@ public class MesEnhanced extends Plugin
 		final List<Item> items = Arrays.asList(itemContainer.getItems());
 
 		if (itemContainer != client.getItemContainer(InventoryID.INVENTORY) ||
-			(!Collections.disjoint(items, BONES) && !Collections.disjoint(items, LIGHTABLE_LOGS)))
+			(!Collections.disjoint(items, BONES) && !Collections.disjoint(items, LIGHTABLE_LOGS) && !Collections.disjoint(items, CHISELABLE_ITEMS)))
 		{
 			return;
 		}
 
 		tinderIdx = -1;
 		tinderId = -1;
+		chiselIdx = -1;
+		chiselId = -1;
 		bonesIdx = -1;
 		bonesId = -1;
 		tinder = false;
+		chisel = false;
 		bones = false;
 
 		for (int i = 0; i < items.size(); i++)
@@ -233,6 +262,12 @@ public class MesEnhanced extends Plugin
 				tinderIdx = i;
 				tinderId = itemId;
 				tinder = true;
+			}
+			else if (CHISELS.contains(itemId))
+			{
+				chiselIdx = i;
+				chiselId = itemId;
+				chisel = true;
 			}
 			else if (BONES.contains(itemId))
 			{
