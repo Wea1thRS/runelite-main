@@ -70,11 +70,22 @@ public interface MenuEntrySwapperConfig extends Config
 	{
 		return false;
 	}
+	
+		@ConfigSection(
+		name = "Enhanced",
+		description = "",
+		position = 1,
+		keyName = "enhancedSection"
+	)
+	default boolean enhancedSection()
+	{
+		return false;
+	}
 
 	@ConfigSection(
 		name = "Equipment Swapper",
 		description = "",
-		position = 1,
+		position = 2,
 		keyName = "equipmentSwapperSection"
 	)
 	default boolean equipmentSwapperSection()
@@ -85,10 +96,33 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigSection(
 		name = "Miscellaneous",
 		description = "",
-		position = 1,
+		position = 3,
 		keyName = "miscellaneousSection"
 	)
 	default boolean miscellaneousSection()
+	{
+		return false;
+	}
+	
+	@ConfigSection(
+		name = "PvM",
+		description = "",
+		position = 4,
+		keyName = "pvmSection"
+	)
+	default boolean pvmSection()
+	{
+		return false;
+	}
+
+	
+	@ConfigSection(
+		name = "Right Click Options",
+		description = "",
+		position = 5,
+		keyName = "rightClickOptionsSection"
+	)
+	default boolean rightClickOptionsSection()
 	{
 		return false;
 	}
@@ -96,7 +130,7 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigSection(
 		name = "Shop / Stores",
 		description = "",
-		position = 1,
+		position = 6,
 		keyName = "shopStoresSection"
 	)
 	default boolean shopStoresSection()
@@ -107,7 +141,7 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigSection(
 		name = "Skilling",
 		description = "",
-		position = 1,
+		position = 7,
 		keyName = "skillingSection"
 	)
 	default boolean skillingSection()
@@ -118,7 +152,7 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigSection(
 		name = "Talk-To",
 		description = "",
-		position = 1,
+		position = 8,
 		keyName = "talkSection"
 	)
 	default boolean talkSection()
@@ -129,7 +163,7 @@ public interface MenuEntrySwapperConfig extends Config
 	@ConfigSection(
 		name = "Teleportation",
 		description = "",
-		position = 1,
+		position = 9,
 		keyName = "teleportationSection"
 	)
 	default boolean teleportationSection()
@@ -137,21 +171,11 @@ public interface MenuEntrySwapperConfig extends Config
 		return false;
 	}
 
-	@ConfigSection(
-		name = "Right Click Options",
-		description = "",
-		position = 1,
-		keyName = "rightClickOptionsSection"
-	)
-	default boolean rightClickOptionsSection()
-	{
-		return false;
-	}
 
 	@ConfigSection(
 		name = "Untradeables",
 		description = "",
-		position = 1,
+		position = 10,
 		keyName = "untradeablesSection"
 	)
 	default boolean untradeablesSection()
@@ -159,16 +183,6 @@ public interface MenuEntrySwapperConfig extends Config
 		return false;
 	}
 
-	@ConfigSection(
-		name = "PvM",
-		description = "",
-		position = 1,
-		keyName = "pvmSection"
-	)
-	default boolean pvmSection()
-	{
-		return false;
-	}
 
 	//------------------------------------------------------------//
 	// Banking
@@ -1912,5 +1926,20 @@ public interface MenuEntrySwapperConfig extends Config
 	default String hideCastIgnoredCoX()
 	{
 		return "cure other, energy transfer, heal other, vengeance other";
+	}
+	
+	//------------------------------------------------------------//
+	// Enhanced
+	//------------------------------------------------------------//
+
+	@ConfigItem(
+		keyName = "enhancedFiremaking",
+		name = "Enhanced firemaking",
+		description = "Adds a 'Light' menu option to logs if you have a tinderbox in your inventory",
+		section = "enhancedSection"
+	)
+	default boolean enhancedFiremaking()
+	{
+		return false;
 	}
 }
