@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Ganom <https://github.com/ganom>
+ * Copyright (c) 2019, ganom <https://github.com/Ganom>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,45 +21,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.mesenhanced;
+package net.runelite.client.plugins.dynamicmaxhit;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
+import java.awt.Color;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import net.runelite.api.Prayer;
 
-@ConfigGroup("mesEnhanced")
-public interface MesEnhancedConfig extends Config
+@AllArgsConstructor
+@Getter
+public enum AttackStyle
 {
-	@ConfigItem(
-		keyName = "leftClickLog",
-		name = "1 Click Lighting",
-		description = "This will allow you to left click logs to light them.",
-		position = 1
-	)
-	default boolean leftClickLog()
-	{
-		return false;
-	}
+	MAGE("Mage", Color.CYAN, Prayer.PROTECT_FROM_MAGIC),
+	RANGE("Range", Color.GREEN, Prayer.PROTECT_FROM_MISSILES),
+	MELEE("Melee", Color.RED, Prayer.PROTECT_FROM_MELEE),
+	UNKNOWN("Unknown", Color.WHITE, null);
 
-	@ConfigItem(
-		keyName = "leftClickEssenceBlock",
-		name = "1 Click Essence Blocks",
-		description = "This will allow you to left click essence blocks to chisel them.",
-		position = 2
-	)
-	default boolean leftClickEssenceBlock()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "quickBones",
-		name = "1 Click Bones",
-		description = "This will allow you to left click an altar to use your bones on them.",
-		position = 3
-	)
-	default boolean quickBones()
-	{
-		return false;
-	}
+	private String name;
+	private Color color;
+	private Prayer prayer;
 }
