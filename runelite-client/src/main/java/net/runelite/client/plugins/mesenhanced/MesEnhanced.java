@@ -26,6 +26,7 @@ package net.runelite.client.plugins.mesenhanced;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
+import java.awt.Menu;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,12 +45,15 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOptionClicked;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
+import net.runelite.client.plugins.spellbook.Spellbook;
 
 @PluginDescriptor(
 	name = "Mes Enhanced",
@@ -62,6 +66,9 @@ public class MesEnhanced extends Plugin
 	private static final String LIGHT = "Light";
 	private static final String QUICK_BONE = "Quick Bone";
 	private static final String CHISEL = "Chisel";
+	private static final String COOK = "BURN";
+	private static final String LAVAIFY = "Lava-ify";
+	private static final String NPC_CONTACT = "NPC Contact";
 	private static final Set<Integer> TINDER = ImmutableSet.of(
 		ItemID.TINDERBOX, ItemID.GOLDEN_TINDERBOX
 	);
@@ -80,8 +87,19 @@ public class MesEnhanced extends Plugin
 		ItemID.FAYRG_BONES, ItemID.RAURG_BONES, ItemID.HYDRA_BONES,
 		ItemID.DAGANNOTH_BONES, ItemID.OURG_BONES, ItemID.SUPERIOR_DRAGON_BONES
 	);
+	private static final Set<Integer> FOOD = ImmutableSet.of(
+		ItemID.RAW_KARAMBWAN
+	);
 	private static final Set<Integer> CHISELABLE_ITEMS = ImmutableSet.of(
 		ItemID.DARK_ESSENCE_BLOCK
+	);
+	private static final Set<Integer> RUNES = ImmutableSet.of(
+		ItemID.EARTH_RUNE
+	);
+	private static final Set<Integer> DEPLETED_POUCHES = ImmutableSet.of(
+		ItemID.MEDIUM_POUCH_5511,
+		ItemID.LARGE_POUCH_5513,
+		ItemID.GIANT_POUCH_5515
 	);
 
 	@Inject
@@ -91,18 +109,28 @@ public class MesEnhanced extends Plugin
 	@Inject
 	private MesEnhancedConfig config;
 	private boolean bones;
+	private boolean food;
+	private boolean runes;
 	private boolean leftClickLog;
 	private boolean quickBone;
+	private boolean quickBurn;
+	private boolean lavaStuff;
 	private boolean leftClickEssenceBlock;
+	//private boolean npcContactPouch;
 	private boolean tick;
 	private boolean tinder;
 	private boolean chisel;
+	//private boolean npcPouch;
 	private int bonesId;
 	private int bonesIdx;
+	private int foodId;
+	private int foodIdx;
 	private int tinderId;
 	private int tinderIdx;
 	private int chiselId;
 	private int chiselIdx;
+	private int earthId;
+	private int earthIdx;
 
 	@Provides
 	MesEnhancedConfig getConfig(ConfigManager configManager)
@@ -137,6 +165,9 @@ public class MesEnhanced extends Plugin
 		this.quickBone = config.quickBones();
 		this.leftClickLog = config.leftClickLog();
 		this.leftClickEssenceBlock = config.leftClickEssenceBlock();
+		this.quickBurn = config.quickBurn();
+		this.lavaStuff = config.lavaStuff();
+		//this.npcContactPouch = config.npcContactPouch();
 	}
 
 	private void onGameTick(GameTick event)
@@ -149,7 +180,7 @@ public class MesEnhanced extends Plugin
 
 	private void onAnimationChanged(AnimationChanged event)
 	{
-		if (event.getActor() != client.getLocalPlayer() || event.getActor().getAnimation() != 3705 || !bones)
+		if (event.getActor() != client.getLocalPlayer() || event.getActor().getAnimation() != 3705 || !bones || !food)
 		{
 			return;
 		}
@@ -160,7 +191,7 @@ public class MesEnhanced extends Plugin
 
 	private void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock)
+		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock && !this.quickBurn && !this.lavaStuff)
 		{
 			return;
 		}
@@ -179,17 +210,35 @@ public class MesEnhanced extends Plugin
 			event.getMenuEntry().setOption(CHISEL);
 			event.setWasModified(true);
 		}
+		/*else if (this.npcContactPouch && npcPouch && event.getType() == MenuOpcode.ITEM_USE.getId()
+			&& DEPLETED_POUCHES.contains(id))
+		{
+			event.getMenuEntry().setOption(NPC_CONTACT);
+			event.setWasModified(true);
+		}*/
 		else if (this.quickBone && bones && event.getType() == MenuOpcode.GAME_OBJECT_FIRST_OPTION.getId()
 			&& event.getTarget().toLowerCase().contains("altar"))
 		{
 			event.getMenuEntry().setOption(QUICK_BONE);
 			event.setWasModified(true);
 		}
+		else if (this.quickBurn && food && event.getType() == MenuOpcode.GAME_OBJECT_FIRST_OPTION.getId()
+			&& (event.getTarget().toLowerCase().contains("range") || event.getTarget().toLowerCase().contains("fire")))
+		{
+			event.getMenuEntry().setOption(COOK);
+			event.setWasModified(true);
+		}
+		else if (this.lavaStuff && runes && event.getType() == MenuOpcode.GAME_OBJECT_FIRST_OPTION.getId()
+			&& event.getTarget().toLowerCase().contains("altar"))
+		{
+			event.getMenuEntry().setOption(LAVAIFY);
+			event.setWasModified(true);
+		}
 	}
 
 	private void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock)
+		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock && !this.quickBurn && !this.lavaStuff)
 		{
 			return;
 		}
@@ -212,6 +261,16 @@ public class MesEnhanced extends Plugin
 			client.setSelectedItemSlot(chiselIdx);
 			client.setSelectedItemID(chiselId);
 		}
+		/*else if (this.npcContactPouch && npcPouch && event.getOpcode() == MenuOpcode.ITEM_USE.getId()
+			&& event.getOption().equals(NPC_CONTACT))
+		{
+			this.setSelectSpell(WidgetInfo.SPELL_NPC_CONTACT);
+			entry.setIdentifier(1);
+			entry.setOpcode(MenuOpcode.WIDGET_DEFAULT.getId());
+			entry.setParam0(-1);
+			entry.setParam1(WidgetInfo.SPELL_NPC_CONTACT.getId());
+			entry.setOption("Dark Mage");
+		}*/
 		else if (this.quickBone && bones && event.getOption().equals(QUICK_BONE) && tick)
 		{
 			event.consume();
@@ -225,11 +284,32 @@ public class MesEnhanced extends Plugin
 			client.setSelectedItemID(bonesId);
 			tick = true;
 		}
+		else if (this.quickBurn && food && event.getOption().equals(COOK) && tick)
+		{
+			event.consume();
+		}
+		else if (this.quickBurn && food && event.getOpcode() == MenuOpcode.GAME_OBJECT_FIRST_OPTION.getId()
+			&& event.getOption().equals(COOK))
+		{
+			entry.setOpcode(MenuOpcode.ITEM_USE_ON_GAME_OBJECT.getId());
+			client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+			client.setSelectedItemSlot(foodIdx);
+			client.setSelectedItemID(foodId);
+			tick = true;
+		}
+		else if (this.lavaStuff && runes && event.getOpcode() == MenuOpcode.GAME_OBJECT_FIRST_OPTION.getId()
+			&& event.getOption().equals(LAVAIFY))
+		{
+			entry.setOpcode(MenuOpcode.ITEM_USE_ON_GAME_OBJECT.getId());
+			client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
+			client.setSelectedItemSlot(earthIdx);
+			client.setSelectedItemID(earthId);
+		}
 	}
 
 	private void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock)
+		if (!this.leftClickLog && !this.quickBone && !this.leftClickEssenceBlock && !this.quickBurn && !this.lavaStuff)
 		{
 			return;
 		}
@@ -249,9 +329,15 @@ public class MesEnhanced extends Plugin
 		chiselId = -1;
 		bonesIdx = -1;
 		bonesId = -1;
+		foodIdx = -1;
+		foodId = -1;
+		earthIdx = -1;
+		earthId = -1;
 		tinder = false;
 		chisel = false;
 		bones = false;
+		food = false;
+		runes = false;
 
 		for (int i = 0; i < items.size(); i++)
 		{
@@ -276,6 +362,28 @@ public class MesEnhanced extends Plugin
 				bones = true;
 				break;
 			}
+			else if (FOOD.contains(itemId))
+			{
+				foodIdx = i;
+				foodId = itemId;
+				food = true;
+				break;
+			}
+			else if (RUNES.contains(itemId))
+			{
+				earthIdx = i;
+				earthId = itemId;
+				runes = true;
+				break;
+			}
 		}
+	}
+
+	private void setSelectSpell(WidgetInfo info)
+	{
+		Widget widget = client.getWidget(info);
+		client.setSelectedSpellName(widget.getName());
+		client.setSelectedSpellWidget(widget.getId());
+		client.setSelectedSpellChildIndex(-1);
 	}
 }
