@@ -301,21 +301,21 @@ public class RunecraftPlugin extends Plugin
 
 		if (client.getLocalPlayer() == null || !this.lavas)
 		{
-			menuManager.removeHiddenEntry("craft", "altar", false, false);
+			//menuManager.removeHiddenEntry("craft", "altar", false, false);
 			menuManager.removeHiddenEntry("use", "pure essence", false, true);
 			return;
 		}
 
 		if (client.getLocalPlayer().getWorldLocation().getRegionID() != FIRE_ALTAR)
 		{
-			menuManager.removeHiddenEntry("craft", "altar", false, false);
+			//menuManager.removeHiddenEntry("craft", "altar", false, false);
 			menuManager.removeHiddenEntry("use", "Pure essence", false, true);
 			menuManager.addPriorityEntry(DUEL_ARENA).setPriority(100);
 			menuManager.removePriorityEntry(CASTLE_WARS);
 		}
 		else if (client.getLocalPlayer().getWorldLocation().getRegionID() == FIRE_ALTAR)
 		{
-			menuManager.addHiddenEntry("craft", "altar", false, false);
+			//menuManager.addHiddenEntry("craft", "altar", false, false);
 			menuManager.addHiddenEntry("use", "Pure essence", false, true);
 			menuManager.addPriorityEntry(CASTLE_WARS).setPriority(100);
 			menuManager.removePriorityEntry(DUEL_ARENA);
@@ -324,7 +324,7 @@ public class RunecraftPlugin extends Plugin
 
 	private void removeSwaps()
 	{
-		menuManager.removeHiddenEntry("craft", "altar", false, false);
+		//menuManager.removeHiddenEntry("craft", "altar", false, false);
 		menuManager.removeHiddenEntry("use", "Pure essence", false, true);
 		menuManager.removePriorityEntry(POUCH);
 		menuManager.removePriorityEntry(EMPTY_SMALL);
