@@ -334,6 +334,9 @@ public class RuneLite
 		RuneLiteSplashScreen.stage(.80, "Initialize UI");
 		clientUI.init(this);
 
+		// Initialize Discord service
+		discordService.init();
+
 		if (!isOutdated)
 		{
 			// Initialize chat colors
@@ -359,8 +362,6 @@ public class RuneLite
 
 		// Start plugins
 		pluginManager.startCorePlugins();
-
-		discordService.init();
 
 		// Register additional schedulers
 		if (this.client != null)
