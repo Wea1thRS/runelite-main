@@ -28,12 +28,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * An enumeration of local player variables.
+ * Server controlled "content-developer" integers.
+ *
+ * VarPlayers are stored per RuneScape player save, and synchronized
+ * from the server to the client. The client can change them preemptively
+ * if it thinks they will change the next tick as a lag-hiding measure.
+ * The client CANNOT directly make the server change a varbit.
  */
 @AllArgsConstructor
 @Getter
 public enum VarPlayer
 {
+	POUCH_STATUS(261),
 	DUEL_PENDING(286),
 	ATTACK_STYLE(43),
 	QUEST_POINTS(101),
@@ -53,7 +59,13 @@ public enum VarPlayer
 	IN_RAID_PARTY(1427),
 
 	NMZ_REWARD_POINTS(1060),
-	
+
+	/**
+	 * The 11 least significant bits of this var correspond to the player
+	 * you're currently fighting. Value is -1 when not fighting any player.
+	 *
+	 * Client.getVar(ATTACKING_PLAYER) & 2047 == Client.getLocalInteractingIndex();
+	 */
 	ATTACKING_PLAYER(1075),
 
 	/**

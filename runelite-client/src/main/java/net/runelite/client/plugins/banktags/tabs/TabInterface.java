@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -55,8 +56,8 @@ import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemDefinition;
-import net.runelite.api.MenuOpcode;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.MenuOpcode;
 import net.runelite.api.Point;
 import net.runelite.api.ScriptEvent;
 import net.runelite.api.ScriptID;
@@ -67,6 +68,7 @@ import net.runelite.api.VarClientStr;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOptionClicked;
+import net.runelite.api.util.Text;
 import net.runelite.api.vars.InputType;
 import net.runelite.api.widgets.ItemQuantityMode;
 import net.runelite.api.widgets.JavaScriptCallback;
@@ -89,11 +91,12 @@ import static net.runelite.client.plugins.banktags.tabs.MenuIndexes.NewTab;
 import static net.runelite.client.plugins.banktags.tabs.MenuIndexes.Tab;
 import net.runelite.client.ui.JagexColors;
 import net.runelite.client.util.ColorUtil;
-import net.runelite.api.util.Text;
 
 @Singleton
 public class TabInterface
 {
+	public static final IntPredicate FILTERED_CHARS = c -> "</>".indexOf(c) == -1;
+
 	private static final Color HILIGHT_COLOR = JagexColors.MENU_TARGET;
 	private static final String SCROLL_UP = "Scroll up";
 	private static final String SCROLL_DOWN = "Scroll down";
@@ -128,7 +131,7 @@ public class TabInterface
 	private final Rectangle bounds = new Rectangle();
 	private final Rectangle canvasBounds = new Rectangle();
 
-	private ChatboxItemSearch searchProvider;
+	private final ChatboxItemSearch searchProvider;
 	private TagTab activeTab;
 	private int maxTabs;
 	private int currentTabIndex;
@@ -253,6 +256,7 @@ public class TabInterface
 		}
 
 		chatboxPanelManager.openTextInput((inventory ? "Inventory " : "Equipment ") + " tags:")
+			.addCharValidator(FILTERED_CHARS)
 			.onDone((newTags) ->
 				clientThread.invoke(() ->
 				{
@@ -274,6 +278,7 @@ public class TabInterface
 		{
 			case NewTab.NEW_TAB:
 				chatboxPanelManager.openTextInput("Tag name")
+					.addCharValidator(FILTERED_CHARS)
 					.onDone((tagName) -> clientThread.invoke(() ->
 					{
 						if (!Strings.isNullOrEmpty(tagName))
@@ -286,7 +291,6 @@ public class TabInterface
 					.build();
 				break;
 			case NewTab.IMPORT_TAB:
-
 				try
 				{
 					final String dataString = Toolkit
@@ -297,13 +301,30 @@ public class TabInterface
 						.trim();
 
 					final Iterator<String> dataIter = Text.fromCSV(dataString).iterator();
-					final String name = dataIter.next();
+					String name = dataIter.next();
+					StringBuilder sb = new StringBuilder();
+					for (char c : name.toCharArray())
+					{
+						if (FILTERED_CHARS.test(c))
+						{
+							sb.append(c);
+						}
+					}
+
+					if (sb.length() == 0)
+					{
+						notifier.notify("Failed to import tag tab from clipboard, invalid format.");
+						return;
+					}
+
+					name = sb.toString();
+
 					final String icon = dataIter.next();
 					tabManager.setIcon(name, icon);
 
 					while (dataIter.hasNext())
 					{
-						final int itemId = Integer.valueOf(dataIter.next());
+						final int itemId = Integer.parseInt(dataIter.next());
 						tagManager.addTag(itemId, name, itemId < 0);
 					}
 
@@ -536,12 +557,12 @@ public class TabInterface
 		}
 
 		if (activeTab != null
-			&& event.getActionParam1() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
+			&& event.getParam1() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
 			&& event.getOption().equals("Examine"))
 		{
 			insertMenuEntry(event, REMOVE_TAG + " (" + activeTab.getTag() + ")", event.getTarget());
 		}
-		else if (event.getActionParam1() == WidgetInfo.BANK_DEPOSIT_INVENTORY.getId()
+		else if (event.getParam1() == WidgetInfo.BANK_DEPOSIT_INVENTORY.getId()
 			&& event.getOption().equals("Deposit inventory"))
 		{
 			insertMenuEntry(event, TAG_INVENTORY, event.getTarget());
@@ -551,7 +572,7 @@ public class TabInterface
 				insertMenuEntry(event, TAG_INVENTORY, ColorUtil.wrapWithColorTag(activeTab.getTag(), HILIGHT_COLOR));
 			}
 		}
-		else if (event.getActionParam1() == WidgetInfo.BANK_DEPOSIT_EQUIPMENT.getId()
+		else if (event.getParam1() == WidgetInfo.BANK_DEPOSIT_EQUIPMENT.getId()
 			&& event.getOption().equals("Deposit worn items"))
 		{
 			insertMenuEntry(event, TAG_GEAR, event.getTarget());
@@ -578,9 +599,11 @@ public class TabInterface
 			chatboxPanelManager.close();
 		}
 
-		if (event.getIdentifier() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
+		if ((event.getIdentifier() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
+			|| event.getIdentifier() == WidgetInfo.BANK_INVENTORY_ITEMS_CONTAINER.getId())
 			&& event.getMenuOpcode() == MenuOpcode.EXAMINE_ITEM_BANK_EQ
-			&& event.getOption().equalsIgnoreCase("withdraw-x"))
+			&& (event.getOption().equalsIgnoreCase("withdraw-x")
+			|| event.getOption().equalsIgnoreCase("deposit-x")))
 		{
 			waitSearchTick = true;
 			rememberedSearch = client.getVar(VarClientStr.INPUT_TEXT);
@@ -591,7 +614,7 @@ public class TabInterface
 		{
 			if (event.getOption().startsWith(CHANGE_ICON + " ("))
 			{
-				ItemDefinition item = getItem(event.getActionParam0());
+				ItemDefinition item = getItem(event.getParam0());
 				if (item != null)
 				{
 					int itemId = itemManager.canonicalize(item.getId());
@@ -622,13 +645,13 @@ public class TabInterface
 			activateTab(null);
 		}
 		else if (activeTab != null
-			&& event.getActionParam1() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
+			&& event.getParam1() == WidgetInfo.BANK_ITEM_CONTAINER.getId()
 			&& event.getMenuOpcode() == MenuOpcode.RUNELITE
 			&& event.getOption().startsWith(REMOVE_TAG))
 		{
 			// Add "remove" menu entry to all items in bank while tab is selected
 			event.consume();
-			final ItemDefinition item = getItem(event.getActionParam0());
+			final ItemDefinition item = getItem(event.getParam0());
 			final int itemId;
 			if (item != null)
 			{
@@ -638,10 +661,10 @@ public class TabInterface
 			}
 		}
 		else if (event.getMenuOpcode() == MenuOpcode.RUNELITE
-			&& ((event.getActionParam1() == WidgetInfo.BANK_DEPOSIT_INVENTORY.getId() && event.getOption().equals(TAG_INVENTORY))
-			|| (event.getActionParam1() == WidgetInfo.BANK_DEPOSIT_EQUIPMENT.getId() && event.getOption().equals(TAG_GEAR))))
+			&& ((event.getParam1() == WidgetInfo.BANK_DEPOSIT_INVENTORY.getId() && event.getOption().equals(TAG_INVENTORY))
+			|| (event.getParam1() == WidgetInfo.BANK_DEPOSIT_EQUIPMENT.getId() && event.getOption().equals(TAG_GEAR))))
 		{
-			handleDeposit(event, event.getActionParam1() == WidgetInfo.BANK_DEPOSIT_INVENTORY.getId());
+			handleDeposit(event, event.getParam1() == WidgetInfo.BANK_DEPOSIT_INVENTORY.getId());
 		}
 	}
 
@@ -785,6 +808,7 @@ public class TabInterface
 	private void renameTab(String oldTag)
 	{
 		chatboxPanelManager.openTextInput("Enter new tag name for tag \"" + oldTag + "\":")
+			.addCharValidator(FILTERED_CHARS)
 			.onDone((newTag) -> clientThread.invoke(() ->
 			{
 				if (!Strings.isNullOrEmpty(newTag) && !newTag.equalsIgnoreCase(oldTag))
@@ -1057,8 +1081,8 @@ public class TabInterface
 			target,
 			MenuOpcode.RUNELITE.getId(),
 			event.getIdentifier(),
-			event.getActionParam0(),
-			event.getActionParam1(),
+			event.getParam0(),
+			event.getParam1(),
 			false
 		);
 	}

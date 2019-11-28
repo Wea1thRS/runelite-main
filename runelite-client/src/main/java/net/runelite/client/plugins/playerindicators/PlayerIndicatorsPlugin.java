@@ -50,13 +50,14 @@ import static net.runelite.api.MenuOpcode.*;
 import net.runelite.api.Player;
 import net.runelite.api.events.ClanMemberJoined;
 import net.runelite.api.events.ClanMemberLeft;
-import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.InteractingChanged;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.PlayerSpawned;
 import net.runelite.api.util.Text;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ClanManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -86,27 +87,35 @@ public class PlayerIndicatorsPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	private final Map<String, HiscoreResult> resultCache = new HashMap<>();
 	private final ExecutorService executorService = Executors.newFixedThreadPool(100);
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private OverlayManager overlayManager;
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private PlayerIndicatorsConfig config;
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private PlayerIndicatorsOverlay playerIndicatorsOverlay;
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private PlayerIndicatorsMinimapOverlay playerIndicatorsMinimapOverlay;
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private Client client;
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private ClanManager clanManager;
+
 	@Inject
 	@Getter(AccessLevel.NONE)
 	private EventBus eventBus;
+
 	private ClanMemberRank callerRank;
 	private PlayerIndicatorsPlugin.AgilityFormats agilityFormat;
 	private PlayerIndicatorsPlugin.MinimapSkullLocations skullLocation;
@@ -136,10 +145,9 @@ public class PlayerIndicatorsPlugin extends Plugin
 	}
 
 	@Override
-	protected void startUp() throws Exception
+	protected void startUp()
 	{
 		updateConfig();
-		addSubscriptions();
 		resultCache.clear();
 		overlayManager.add(playerIndicatorsOverlay);
 		overlayManager.add(playerIndicatorsMinimapOverlay);
@@ -147,24 +155,14 @@ public class PlayerIndicatorsPlugin extends Plugin
 	}
 
 	@Override
-	protected void shutDown() throws Exception
+	protected void shutDown()
 	{
-		eventBus.unregister(this);
 		overlayManager.remove(playerIndicatorsOverlay);
 		overlayManager.remove(playerIndicatorsMinimapOverlay);
 		resultCache.clear();
 	}
 
-	private void addSubscriptions()
-	{
-		eventBus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
-		eventBus.subscribe(ClanMemberJoined.class, this, this::onClanMemberJoined);
-		eventBus.subscribe(ClanMemberLeft.class, this, this::onClanMemberLeft);
-		eventBus.subscribe(MenuEntryAdded.class, this, this::onMenuEntryAdded);
-		eventBus.subscribe(InteractingChanged.class, this, this::onInteractingChanged);
-		eventBus.subscribe(PlayerSpawned.class, this, this::onPlayerSpawned);
-	}
-
+	@Subscribe
 	private void onInteractingChanged(InteractingChanged event)
 	{
 		if (!this.highlightCallerTargets || event.getSource() == null || callers.isEmpty() || !isCaller(event.getSource()))
@@ -186,9 +184,15 @@ public class PlayerIndicatorsPlugin extends Plugin
 			return;
 		}
 
+		if (event.getTarget() == null)
+		{
+			return;
+		}
+
 		callerPiles.put(caller.getName(), event.getTarget());
 	}
 
+	@Subscribe
 	private void onConfigChanged(ConfigChanged event)
 	{
 		if (!event.getGroup().equals("playerindicators"))
@@ -199,16 +203,19 @@ public class PlayerIndicatorsPlugin extends Plugin
 		updateConfig();
 	}
 
+	@Subscribe
 	private void onClanMemberJoined(ClanMemberJoined event)
 	{
 		getCallerList();
 	}
 
+	@Subscribe
 	private void onClanMemberLeft(ClanMemberLeft event)
 	{
 		getCallerList();
 	}
 
+	@Subscribe
 	private void onPlayerSpawned(PlayerSpawned event)
 	{
 		final Player player = event.getPlayer();
@@ -246,9 +253,10 @@ public class PlayerIndicatorsPlugin extends Plugin
 		});
 	}
 
+	@Subscribe
 	private void onMenuEntryAdded(MenuEntryAdded menuEntryAdded)
 	{
-		int type = menuEntryAdded.getType();
+		int type = menuEntryAdded.getOpcode();
 
 		if (type >= 2000)
 		{
@@ -286,7 +294,21 @@ public class PlayerIndicatorsPlugin extends Plugin
 			int image2 = -1;
 			Color color = null;
 
-			if (this.highlightFriends && client.isFriended(player.getName(), false))
+			if (this.highlightCallers && isCaller(player))
+			{
+				if (Arrays.asList(this.locationHashMap.get(PlayerRelation.CALLER)).contains(PlayerIndicationLocation.MENU))
+				{
+					color = relationColorHashMap.get(PlayerRelation.CALLER);
+				}
+			}
+			else if (this.highlightCallerTargets && isPile(player))
+			{
+				if (Arrays.asList(this.locationHashMap.get(PlayerRelation.CALLER_TARGET)).contains(PlayerIndicationLocation.MENU))
+				{
+					color = relationColorHashMap.get(PlayerRelation.CALLER_TARGET);
+				}
+			}
+			else if (this.highlightFriends && client.isFriended(player.getName(), false))
 			{
 				if (Arrays.asList(this.locationHashMap.get(PlayerRelation.FRIEND)).contains(PlayerIndicationLocation.MENU))
 				{
@@ -328,20 +350,7 @@ public class PlayerIndicatorsPlugin extends Plugin
 					color = relationColorHashMap.get(PlayerRelation.TARGET);
 				}
 			}
-			else if (this.highlightCallers && isCaller(player))
-			{
-				if (Arrays.asList(this.locationHashMap.get(PlayerRelation.CALLER)).contains(PlayerIndicationLocation.MENU))
-				{
-					color = relationColorHashMap.get(PlayerRelation.CALLER);
-				}
-			}
-			else if (this.highlightCallerTargets && isPile(player))
-			{
-				if (Arrays.asList(this.locationHashMap.get(PlayerRelation.CALLER_TARGET)).contains(PlayerIndicationLocation.MENU))
-				{
-					color = relationColorHashMap.get(PlayerRelation.CALLER_TARGET);
-				}
-			}
+
 
 			if (this.playerSkull && !player.isClanMember() && player.getSkullIcon() != null)
 			{
@@ -450,7 +459,13 @@ public class PlayerIndicatorsPlugin extends Plugin
 	 */
 	public boolean isPile(Actor actor)
 	{
-		if (!(actor instanceof Player))
+		/**
+		 if (!(actor instanceof Player))
+		 {
+		 return false;
+		 }
+		 **/
+		if (actor == null)
 		{
 			return false;
 		}

@@ -28,14 +28,13 @@ import com.google.common.base.MoreObjects;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -47,11 +46,10 @@ import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.MenuOpcode;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.MenuOpcode;
 import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ClientTick;
-import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
@@ -97,10 +95,6 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 	private boolean isResizeable;
 	private OverlayBounds snapCorners;
 
-	private Font standardFont;
-	private Font tooltipFont;
-	private Font interfaceFont;
-
 	@Inject
 	private OverlayRenderer(
 		final Client client,
@@ -113,30 +107,12 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		this.client = client;
 		this.overlayManager = overlayManager;
 		this.runeLiteConfig = runeLiteConfig;
-		this.updateConfig();
 		keyManager.registerKeyListener(this);
 		mouseManager.registerMouseListener(this);
 
-		eventbus.subscribe(ConfigChanged.class, this, this::onConfigChanged);
 		eventbus.subscribe(FocusChanged.class, this, this::onFocusChanged);
 		eventbus.subscribe(ClientTick.class, this, this::onClientTick);
 		eventbus.subscribe(BeforeRender.class, this, this::onBeforeRender);
-	}
-
-	private void updateConfig()
-	{
-		// Overlay Fonts
-		this.standardFont = runeLiteConfig.fontType().getFont();
-		this.tooltipFont = runeLiteConfig.tooltipFontType().getFont();
-		this.interfaceFont = runeLiteConfig.interfaceFontType().getFont();
-	}
-
-	private void onConfigChanged(ConfigChanged event)
-	{
-		if (event.getGroup().equals("runelite"))
-		{
-			updateConfig();
-		}
 	}
 
 	private void onFocusChanged(FocusChanged event)
@@ -202,7 +178,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 
 		// Set font rendering properties like the OS's font rendering
 		Toolkit tk = Toolkit.getDefaultToolkit();
-		Map desktopHints = (Map)(tk.getDesktopProperty("awt.font.desktophints"));
+		Map desktopHints = (Map) (tk.getDesktopProperty("awt.font.desktophints"));
 		if (desktopHints != null)
 		{
 			graphics.addRenderingHints(desktopHints);
@@ -340,7 +316,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 						graphics.setColor(previous);
 					}
 
-					if (menuEntries == null && !client.isMenuOpen() && bounds.contains(mouse))
+					if (menuEntries == null && !client.isMenuOpen() && !client.isSpellSelected() && bounds.contains(mouse))
 					{
 						menuEntries = createRightClickMenuEntries(overlay);
 					}
@@ -514,19 +490,19 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		// Set font based on configuration
 		if (position == OverlayPosition.DYNAMIC || position == OverlayPosition.DETACHED)
 		{
-			graphics.setFont(this.standardFont); // TODO MAKE USE CONFIG SYSTEM
-
+			graphics.setFont(runeLiteConfig.fontType().getFont());
 		}
 		else if (position == OverlayPosition.TOOLTIP)
 		{
-			graphics.setFont(this.tooltipFont);
+			graphics.setFont(runeLiteConfig.tooltipFontType().getFont());
 		}
 		else
 		{
-			graphics.setFont(this.interfaceFont);
+			graphics.setFont(runeLiteConfig.interfaceFontType().getFont());
 		}
 
 		graphics.translate(point.x, point.y);
+		overlay.getBounds().setLocation(point);
 
 		final Dimension overlayDimension;
 		try
@@ -540,7 +516,7 @@ public class OverlayRenderer extends MouseAdapter implements KeyListener
 		}
 
 		final Dimension dimension = MoreObjects.firstNonNull(overlayDimension, new Dimension());
-		overlay.setBounds(new Rectangle(point, dimension));
+		overlay.getBounds().setSize(dimension);
 	}
 
 	private boolean shouldInvalidateBounds()

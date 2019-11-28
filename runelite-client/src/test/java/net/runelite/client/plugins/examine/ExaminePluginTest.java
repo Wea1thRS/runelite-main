@@ -33,11 +33,11 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.MenuOpcode;
-import net.runelite.api.MenuEntry;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.config.OpenOSRSConfig;
 import net.runelite.client.game.ItemManager;
 import net.runelite.http.api.examine.ExamineClient;
 import org.junit.Before;
@@ -78,6 +78,10 @@ public class ExaminePluginTest
 	@Bind
 	ScheduledExecutorService scheduledExecutorService;
 
+	@Mock
+	@Bind
+	private OpenOSRSConfig openOSRSConfig;
+
 	@Before
 	public void before()
 	{
@@ -89,7 +93,7 @@ public class ExaminePluginTest
 	{
 		when(client.getWidget(anyInt(), anyInt())).thenReturn(mock(Widget.class));
 
-		MenuOptionClicked menuOptionClicked = new MenuOptionClicked(new MenuEntry(
+		MenuOptionClicked menuOptionClicked = new MenuOptionClicked(
 			"Examine",
 			"Something",
 			ItemID.ABYSSAL_WHIP,
@@ -97,7 +101,7 @@ public class ExaminePluginTest
 			123,
 			456,
 			false
-		));
+		);
 		examinePlugin.onMenuOptionClicked(menuOptionClicked);
 
 		ChatMessage chatMessage = new ChatMessage(null, ChatMessageType.ITEM_EXAMINE, "", "A weapon from the abyss.", "", 0);
@@ -112,7 +116,7 @@ public class ExaminePluginTest
 	{
 		when(client.getWidget(anyInt(), anyInt())).thenReturn(mock(Widget.class));
 
-		MenuOptionClicked menuOptionClicked = new MenuOptionClicked(new MenuEntry(
+		MenuOptionClicked menuOptionClicked = new MenuOptionClicked(
 			"Examine",
 			"Something",
 			ItemID.ABYSSAL_WHIP,
@@ -120,8 +124,7 @@ public class ExaminePluginTest
 			123,
 			456,
 			false
-		));
-
+		);
 
 		examinePlugin.onMenuOptionClicked(menuOptionClicked);
 
