@@ -45,26 +45,6 @@ public interface LootTrackerConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "lootPrice",
-		name = "Discord message price cut-off:",
-		description = "Decides what price of drops to send to discord."
-	)
-	default int lootPrice()
-	{
-		return 25000;
-	}
-
-	@ConfigItem(
-		keyName = "loadDataInClient",
-		name = "Load data on client load",
-		description = "Configures whether persistent loot tracker data should load inside the client on load.<br/> Must be Logged in."
-	)
-	default boolean loadDataInClient()
-	{
-		return true;
-	}
-
-	@ConfigItem(
 		keyName = "ignoredItems",
 		name = "Ignored items",
 		description = "Configures which items should be ignored when calculating loot prices.",
@@ -108,26 +88,6 @@ public interface LootTrackerConfig extends Config
 		description = "Submit loot tracker data (requires being logged in)"
 	)
 	default boolean saveLoot()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "saveLocalLoot",
-		name = "Save loot locally",
-		description = "Outputs loot as json to log files on your local machine (only saves data)"
-	)
-	default boolean saveLocalLoot()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			keyName = "saveDBLoot",
-			name = "Save loot to database",
-			description = "Outputs loot as objects to database."
-	)
-	default boolean saveDBLoot()
 	{
 		return true;
 	}

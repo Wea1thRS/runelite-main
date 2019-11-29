@@ -26,10 +26,6 @@ package net.runelite.client.plugins.runecraft;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
-import java.util.HashSet;
-import java.util.Set;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +35,6 @@ import net.runelite.api.DecorativeObject;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.NPC;
 import net.runelite.api.NpcID;
@@ -50,6 +45,7 @@ import net.runelite.api.events.DecorativeObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.client.Notifier;
@@ -64,16 +60,13 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
 import net.runelite.client.plugins.menuentryswapper.comparables.BankComparableEntry;
 import net.runelite.client.plugins.menuentryswapper.comparables.EquipmentComparableEntry;
-import static net.runelite.client.plugins.runecraft.AbyssRifts.*;
 import net.runelite.client.ui.overlay.OverlayManager;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
-
 import static net.runelite.client.menus.ComparableEntries.newBaseComparableEntry;
+import static net.runelite.client.plugins.runecraft.AbyssRifts.*;
 
 
 @PluginDescriptor(

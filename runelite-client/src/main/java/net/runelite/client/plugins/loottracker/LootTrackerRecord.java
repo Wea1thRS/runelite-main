@@ -29,7 +29,6 @@ import java.time.Instant;
 import lombok.Value;
 
 @Value
-public
 class LootTrackerRecord
 {
 	private final String title;

@@ -33,7 +33,6 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-
 import javax.inject.Inject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -44,7 +43,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
 import static net.runelite.client.RuneLite.CHATLOG_DIR;
 
 @PluginDescriptor

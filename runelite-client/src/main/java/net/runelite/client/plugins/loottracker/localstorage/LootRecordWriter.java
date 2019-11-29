@@ -24,16 +24,6 @@
  */
 package net.runelite.client.plugins.loottracker.localstorage;
 
-import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.eventbus.EventBus;
-import net.runelite.client.plugins.loottracker.LootTrackerItem;
-import net.runelite.client.plugins.loottracker.LootTrackerRecord;
-import net.runelite.client.plugins.loottracker.localstorage.events.LTNameChange;
-import net.runelite.client.plugins.loottracker.localstorage.events.LTRecordStored;
-import net.runelite.http.api.RuneLiteAPI;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -41,17 +31,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 import static net.runelite.client.RuneLite.RUNELITE_DIR;
+import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.plugins.loottracker.localstorage.events.LTNameChange;
+import net.runelite.client.plugins.loottracker.localstorage.events.LTRecordStored;
+import net.runelite.http.api.RuneLiteAPI;
 
 @Slf4j
 @Singleton
@@ -59,7 +51,6 @@ public class LootRecordWriter
 {
 	private static final String FILE_EXTENSION = ".log";
 	private static final File LOOT_RECORD_DIR = new File(RUNELITE_DIR, "loots");
-	final String url = "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=" + System.getenv("DB_PASSWORD") + "sslmode=disable";
 
 	private final EventBus bus;
 
@@ -233,44 +224,5 @@ public class LootRecordWriter
 		}
 
 		return recs;
-	}
-
-	public void addLootTrackerRecordToDB(LootTrackerRecord rec) throws SQLException
-	{
-		Connection conn = DriverManager.getConnection(url);
-		String mob = "\"" + rec.getTitle() + "\"";
-		String sql1 = "CREATE TABLE IF NOT EXISTS $tablename (index SERIAL, item_id INTEGER NOT NULL PRIMARY KEY,item_name TEXT NOT NULL, item_quantity INTEGER NOT NULL, item_price INTEGER NOT NULL, total_price BIGINT NOT NULL)".replace("$tablename", mob);
-		String sql2 = "INSERT INTO $tablename as tn (item_id, item_name, item_quantity, item_price, total_price) VALUES (?, ?, ?, ?, ?) ON CONFLICT (item_id) DO UPDATE SET item_quantity = tn.item_quantity + (?), item_price = (?), total_price = (tn.item_quantity +(?)) * (?)".replace("$tablename", mob);
-		PreparedStatement st = conn.prepareStatement(sql1);
-		PreparedStatement st2 = conn.prepareStatement(sql2);
-		st.executeUpdate();
-		for (LootTrackerItem drop : rec.getItems())
-		{
-			setStatement(st2, drop);
-		}
-		st.close();
-		st2.close();
-		conn.close();
-	}
-
-	private void setStatement(PreparedStatement st2, LootTrackerItem drop) throws SQLException
-	{
-		int item_id = drop.getId();
-		long total_price = drop.getPrice();
-		int item_quantity = drop.getQuantity();
-		int item_price = (int) (total_price / item_quantity);
-		String name = drop.getName();
-		System.out.println("Id: " + drop.getId() + "\tName: " + name + "\tQuantity: " + drop.getQuantity() + "\tIPrice: " + drop.getPrice() / drop.getQuantity() + "\tTPrice: " + drop.getPrice());
-
-		st2.setInt(1, item_id);
-		st2.setString(2, "\"" + name + "\"");
-		st2.setInt(3, item_quantity);
-		st2.setInt(4, item_price);
-		st2.setLong(5, total_price);
-		st2.setInt(6, item_quantity);
-		st2.setInt(7, item_price);
-		st2.setInt(8, item_quantity);
-		st2.setInt(9, item_price);
-		st2.executeUpdate();
 	}
 }
