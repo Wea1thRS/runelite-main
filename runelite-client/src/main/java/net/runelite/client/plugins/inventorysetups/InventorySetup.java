@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
  * Copyright (c) 2018, https://openosrs.com
+ * Copyright (c) 2019, Dillon <https://github.com/dillydill123>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,16 +26,38 @@
  */
 package net.runelite.client.plugins.inventorysetups;
 
-import java.util.List;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
+import java.awt.Color;
+import java.util.List;
 
 @AllArgsConstructor
 public class InventorySetup
 {
 	@Getter(AccessLevel.PUBLIC)
 	private List<InventorySetupItem> inventory;
-	@Getter(AccessLevel.PUBLIC)
+
+	@Getter
 	private List<InventorySetupItem> equipment;
+
+	@Getter
+	@Setter
+	private String name;
+
+	@Getter
+	@Setter
+	private Color highlightColor;
+
+	@Getter
+	@Setter
+	private boolean stackDifference;
+
+	@Getter
+	@Setter
+	private boolean variationDifference;
+
+	@Getter
+	@Setter
+	private boolean highlightDifference;
 }

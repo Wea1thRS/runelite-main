@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
  * Copyright (c) 2018, https://openosrs.com
+ * Copyright (c) 2019, Dillon <https://github.com/dillydill123>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,20 +26,22 @@
  */
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Singleton;
-import javax.swing.JPanel;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
 
+import javax.swing.JPanel;
+import javax.inject.Singleton;
+import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.List;
+
 @Singleton
 public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 {
+
 	private static final int ITEMS_PER_ROW = 4;
 	private static final int NUM_INVENTORY_ITEMS = 28;
 
@@ -67,7 +70,8 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 		}
 	}
 
-	void setInventorySetupSlots(final InventorySetup setup)
+	@Override
+	public void setSlots(final InventorySetup setup)
 	{
 		List<InventorySetupItem> inventory = setup.getInventory();
 
@@ -81,7 +85,8 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 	}
 
-	void highlightDifferentSlots(final List<InventorySetupItem> currInventory, final InventorySetup inventorySetup)
+	@Override
+	public void highlightDifferences(final List<InventorySetupItem> currInventory, final InventorySetup inventorySetup)
 	{
 
 		final List<InventorySetupItem> inventoryToCheck = inventorySetup.getInventory();
@@ -90,11 +95,12 @@ public class InventorySetupInventoryPanel extends InventorySetupContainerPanel
 
 		for (int i = 0; i < NUM_INVENTORY_ITEMS; i++)
 		{
-			super.highlightDifferentSlotColor(inventoryToCheck.get(i), currInventory.get(i), inventorySlots.get(i));
+			super.highlightDifferentSlotColor(inventorySetup, inventoryToCheck.get(i), currInventory.get(i), inventorySlots.get(i));
 		}
 	}
 
-	void resetInventorySlotsColor()
+	@Override
+	public void resetSlotColors()
 	{
 		for (InventorySetupSlot inventorySlot : inventorySlots)
 		{

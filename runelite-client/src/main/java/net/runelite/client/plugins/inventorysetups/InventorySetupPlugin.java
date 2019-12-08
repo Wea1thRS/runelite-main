@@ -24,47 +24,39 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package net.runelite.client.plugins.inventorysetups;
-
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import com.google.inject.Provides;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.ItemDefinition;
-import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
-import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
 import net.runelite.client.plugins.inventorysetups.ui.InventorySetupPluginPanel;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
-import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.util.ImageUtil;
+import joptsimple.internal.Strings;
+import java.util.List;
 
 @PluginDescriptor(
 	name = "Inventory Setups",
@@ -78,10 +70,11 @@ import net.runelite.client.util.ImageUtil;
 @Singleton
 public class InventorySetupPlugin extends Plugin
 {
-	private static final String CONFIG_GROUP = "inventorysetups";
-	private static final String CONFIG_KEY = "setups";
+	private static final String CONFIG_GROUP = "inventorysetups_new";
+	private static final String CONFIG_KEY = "setups_new";
 	private static final int NUM_INVENTORY_ITEMS = 28;
 	private static final int NUM_EQUIPMENT_ITEMS = 14;
+	private static final Color DEFAULT_HIGHLIGHT_COLOR = Color.RED;
 
 	@Inject
 	private Client client;
@@ -90,16 +83,7 @@ public class InventorySetupPlugin extends Plugin
 	private ItemManager itemManager;
 
 	@Inject
-	private InventorySetupBankOverlay overlay;
-
-	@Inject
 	private ClientToolbar clientToolbar;
-
-	@Inject
-	private InventorySetupConfig config;
-
-	@Inject
-	private OverlayManager overlayManager;
 
 	@Inject
 	private ClientThread clientThread;
@@ -107,67 +91,48 @@ public class InventorySetupPlugin extends Plugin
 	@Inject
 	private ConfigManager configManager;
 
+	@Getter
+	@Inject
+	private ColorPickerManager colorPickerManager;
+
 	private InventorySetupPluginPanel panel;
 
-	private final Map<String, InventorySetup> inventorySetups = new HashMap<>();
+	@Getter
+	private List<InventorySetup> inventorySetups;
 
 	private NavigationButton navButton;
 
-	private boolean highlightDifference;
-
-	private boolean getHighlightDifferences;
-	@Getter(AccessLevel.PUBLIC)
-	private Color getHighlightColor;
-	@Getter(AccessLevel.PUBLIC)
-	private boolean getStackDifference;
-	@Getter(AccessLevel.PUBLIC)
-	private boolean getVariationDifference;
-	@Getter(AccessLevel.PACKAGE)
-	private boolean getBankHighlight;
-	@Getter(AccessLevel.PACKAGE)
-	private Color getBankHighlightColor;
 
 	@Override
 	public void startUp()
 	{
-		updateConfigOptions();
-
-		overlayManager.add(overlay);
+		addSubscriptions();
 
 		panel = new InventorySetupPluginPanel(this, itemManager);
 
 		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "inventorysetups_icon.png");
 
 		navButton = NavigationButton.builder()
-			.tooltip("Inventory Setups")
-			.icon(icon)
-			.priority(9)
-			.panel(panel)
-			.build();
+				.tooltip("Inventory Setups")
+				.icon(icon)
+				.priority(9)
+				.panel(panel)
+				.build();
 
 		clientToolbar.addNavigation(navButton);
 
-		// load all the inventory setups from the config file
-		clientThread.invokeLater(() ->
-		{
-			if (client.getGameState() != GameState.LOGIN_SCREEN)
-			{
-				return false;
-			}
 
-			loadConfig();
-			panel.showNoSetupsPanel();
-			return true;
-		});
-
+		loadConfig();
+		panel.rebuild();
 	}
+
 
 	public void addInventorySetup()
 	{
 		final String name = JOptionPane.showInputDialog(panel,
-			"Enter the name of this setup.",
-			"Add New Setup",
-			JOptionPane.PLAIN_MESSAGE);
+				"Enter the name of this setup.",
+				"Add New Setup",
+				JOptionPane.PLAIN_MESSAGE);
 
 		// cancel button was clicked
 		if (name == null)
@@ -178,30 +143,10 @@ public class InventorySetupPlugin extends Plugin
 		if (name.isEmpty())
 		{
 			JOptionPane.showMessageDialog(panel,
-				"Invalid Setup Name",
-				"Names must not be empty.",
-				JOptionPane.PLAIN_MESSAGE);
+					"Invalid Setup Name",
+					"Names must not be empty.",
+					JOptionPane.PLAIN_MESSAGE);
 			return;
-		}
-
-		if (inventorySetups.containsKey(name))
-		{
-			String builder = "The setup " + name + " already exists. " +
-				"Would you like to replace it with the current setup?";
-			int confirm = JOptionPane.showConfirmDialog(panel,
-				builder,
-				"Warning",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE);
-
-			if (confirm == JOptionPane.CANCEL_OPTION)
-			{
-				return;
-			}
-
-			// delete the old setup, no need to ask for confirmation
-			// because the user confirmed above
-			removeInventorySetup(name, false);
 		}
 
 		clientThread.invoke(() ->
@@ -209,71 +154,25 @@ public class InventorySetupPlugin extends Plugin
 			List<InventorySetupItem> inv = getNormalizedContainer(InventoryID.INVENTORY);
 			List<InventorySetupItem> eqp = getNormalizedContainer(InventoryID.EQUIPMENT);
 
-			final InventorySetup invSetup = new InventorySetup(inv, eqp);
+			final InventorySetup invSetup = new InventorySetup(inv, eqp, name, DEFAULT_HIGHLIGHT_COLOR, false, false, false);
 			SwingUtilities.invokeLater(() ->
 			{
-				inventorySetups.put(name, invSetup);
-				panel.addInventorySetup(name);
-				panel.setCurrentInventorySetup(name);
+				inventorySetups.add(invSetup);
+				panel.rebuild();
 
 				updateConfig();
 			});
 		});
 	}
 
-	public void removeInventorySetup(final String name, boolean askForConfirmation)
+	public void removeInventorySetup(final InventorySetup setup)
 	{
-		if (inventorySetups.containsKey(name))
-		{
-			int confirm = JOptionPane.YES_OPTION;
-
-			if (askForConfirmation)
-			{
-				confirm = JOptionPane.showConfirmDialog(panel,
-					"Are you sure you want to remove this setup?",
-					"Warning",
-					JOptionPane.YES_NO_OPTION,
-					JOptionPane.PLAIN_MESSAGE);
-			}
-
-			if (confirm == JOptionPane.YES_OPTION)
-			{
-				inventorySetups.remove(name);
-				panel.removeInventorySetup(name);
-			}
-
-			updateConfig();
-		}
+		inventorySetups.remove(setup);
+		panel.rebuild();
+		updateConfig();
 	}
 
-	public final InventorySetup getInventorySetup(final String name)
-	{
-		return inventorySetups.get(name);
-	}
-
-	@Provides
-	InventorySetupConfig provideConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(InventorySetupConfig.class);
-	}
-
-	@Subscribe
-	private void onConfigChanged(ConfigChanged event)
-	{
-		if (event.getGroup().equals(CONFIG_GROUP))
-		{
-			updateConfigOptions();
-			// only allow highlighting if the config is enabled and the player is logged in
-			highlightDifference = this.getHighlightDifferences && client.getGameState() == GameState.LOGGED_IN;
-			final String setupName = panel.getSelectedInventorySetup();
-			if (highlightDifference && !setupName.isEmpty())
-			{
-				panel.setCurrentInventorySetup(setupName);
-			}
-		}
-	}
-
-	private void updateConfig()
+	public void updateConfig()
 	{
 		if (inventorySetups.isEmpty())
 		{
@@ -285,96 +184,50 @@ public class InventorySetupPlugin extends Plugin
 		final String json = gson.toJson(inventorySetups);
 		configManager.setConfiguration(CONFIG_GROUP, CONFIG_KEY, json);
 	}
-
 	private void loadConfig()
 	{
 		// serialize the internal data structure from the json in the configuration
 		final String json = configManager.getConfiguration(CONFIG_GROUP, CONFIG_KEY);
-		if (json == null || json.isEmpty())
+		if (Strings.isNullOrEmpty(json))
 		{
-			inventorySetups.clear();
+			inventorySetups = new ArrayList<>();
 		}
 		else
 		{
-			// TODO add last resort?, serialize exception just make empty map
-			final Gson gson = new Gson();
-			Type type = new TypeToken<HashMap<String, InventorySetup>>()
+			try
 			{
-			}.getType();
-			inventorySetups.clear();
-			inventorySetups.putAll(gson.fromJson(json, type));
-		}
+				final Gson gson = new Gson();
+				Type type = new TypeToken<ArrayList<InventorySetup>>()
+				{
 
-		for (final String key : inventorySetups.keySet())
-		{
-			panel.addInventorySetup(key);
-		}
+				}.getType();
+				inventorySetups = gson.fromJson(json, type);
+			}
+			catch (JsonSyntaxException e)
+			{
+				inventorySetups = new ArrayList<>();
+			}
 
+		}
 	}
 
-	@Subscribe
-	private void onItemContainerChanged(ItemContainerChanged event)
+
+
+	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-
-		if (!highlightDifference || client.getGameState() != GameState.LOGGED_IN)
-		{
-			return;
-		}
-
-		// empty entry, no need to compare anything
-		final String selectedInventorySetup = panel.getSelectedInventorySetup();
-		if (selectedInventorySetup.isEmpty())
-		{
-			return;
-		}
 
 		// check to see that the container is the equipment or inventory
 		ItemContainer container = event.getItemContainer();
 
 		if (container == client.getItemContainer(InventoryID.INVENTORY))
 		{
-			List<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.INVENTORY);
-			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
-			panel.highlightDifferences(normContainer, setup, InventoryID.INVENTORY);
+			panel.highlightDifferences(InventoryID.INVENTORY);
 		}
 		else if (container == client.getItemContainer(InventoryID.EQUIPMENT))
 		{
-			List<InventorySetupItem> normContainer = getNormalizedContainer(InventoryID.EQUIPMENT);
-			final InventorySetup setup = inventorySetups.get(selectedInventorySetup);
-			panel.highlightDifferences(normContainer, setup, InventoryID.EQUIPMENT);
+			panel.highlightDifferences(InventoryID.EQUIPMENT);
 		}
 
-	}
-
-	@Subscribe
-	private void onGameStateChanged(GameStateChanged event)
-	{
-		switch (event.getGameState())
-		{
-			// set the highlighting off if login screen shows up
-			case LOGIN_SCREEN:
-				highlightDifference = false;
-				break;
-
-			// set highlighting
-			case LOGGED_IN:
-				highlightDifference = this.getHighlightDifferences;
-				break;
-
-			default:
-				return;
-		}
-
-		if (panel == null)
-		{
-			return;
-		}
-
-		final String setupName = panel.getSelectedInventorySetup();
-		if (!setupName.isEmpty())
-		{
-			panel.setCurrentInventorySetup(setupName);
-		}
 	}
 
 	public List<InventorySetupItem> getNormalizedContainer(final InventoryID id)
@@ -397,6 +250,8 @@ public class InventorySetupPlugin extends Plugin
 		{
 			if (items == null || i >= items.length)
 			{
+				// add a "dummy" item to fill the normalized container to the right size
+				// this will be useful to compare when no item is in a slot
 				newContainer.add(new InventorySetupItem(-1, "", 0));
 			}
 			else
@@ -414,54 +269,18 @@ public class InventorySetupPlugin extends Plugin
 		return newContainer;
 	}
 
-	public boolean getHighlightDifference()
-	{
-		return highlightDifference;
-	}
-
 	@Override
 	public void shutDown()
 	{
-		overlayManager.remove(overlay);
+		eventBus.unregister(this);
 		clientToolbar.removeNavigation(navButton);
 	}
 
-	final int[] getCurrentInventorySetupIds()
+	private void addSubscriptions()
 	{
-		InventorySetup setup = inventorySetups.get(panel.getSelectedInventorySetup());
-		if (setup == null)
-		{
-			return null;
-		}
-		ArrayList<InventorySetupItem> items = new ArrayList<>();
-		items.addAll(setup.getEquipment());
-		items.addAll(setup.getInventory());
-		ArrayList<Integer> itemIds = new ArrayList<>();
-		for (InventorySetupItem item : items)
-		{
-			int id = item.getId();
-			ItemDefinition itemComposition = itemManager.getItemDefinition(id);
-			if (id > 0)
-			{
-				itemIds.add(ItemVariationMapping.map(id));
-				itemIds.add(itemComposition.getPlaceholderId());
-			}
+		eventBus.subscribe(ItemContainerChanged.class, this, this::onItemContainerChanged);
 
-		}
-		return itemIds.stream()
-			.mapToInt(i -> i)
-			.filter(Objects::nonNull)
-			.filter(id -> id != -1)
-			.toArray();
 	}
 
-	private void updateConfigOptions()
-	{
-		this.getHighlightDifferences = config.getHighlightDifferences();
-		this.getHighlightColor = config.getHighlightColor();
-		this.getStackDifference = config.getHighlightDifferences();
-		this.getVariationDifference = config.getVariationDifference();
-		this.getBankHighlight = config.getBankHighlight();
-		this.getBankHighlightColor = config.getBankHighlightColor();
-	}
+
 }

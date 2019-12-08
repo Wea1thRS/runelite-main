@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
  * Copyright (c) 2018, https://openosrs.com
+ * Copyright (c) 2019, Dillon <https://github.com/dillydill123>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,18 +26,18 @@
  */
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import java.awt.GridLayout;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.inject.Singleton;
-import javax.swing.JPanel;
 import net.runelite.api.EquipmentInventorySlot;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
+import javax.inject.Singleton;
+import javax.swing.JPanel;
+import java.awt.GridLayout;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Singleton
 public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
@@ -79,7 +80,8 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 	}
 
-	void setEquipmentSetupSlots(final InventorySetup setup)
+	@Override
+	public void setSlots(final InventorySetup setup)
 	{
 		final List<InventorySetupItem> equipment = setup.getEquipment();
 
@@ -91,10 +93,10 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 		validate();
 		repaint();
-
 	}
 
-	void highlightDifferences(final List<InventorySetupItem> currEquipment, final InventorySetup inventorySetup)
+	@Override
+	public void highlightDifferences(final List<InventorySetupItem> currEquipment, final InventorySetup inventorySetup)
 	{
 		final List<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
@@ -105,13 +107,13 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
-
 			int slotIdx = slot.getSlotIdx();
-			super.highlightDifferentSlotColor(equipToCheck.get(slotIdx), currEquipment.get(slotIdx), equipmentSlots.get(slot));
+			super.highlightDifferentSlotColor(inventorySetup, equipToCheck.get(slotIdx), currEquipment.get(slotIdx), equipmentSlots.get(slot));
 		}
 	}
 
-	void resetEquipmentSlotsColor()
+	@Override
+	public void resetSlotColors()
 	{
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{

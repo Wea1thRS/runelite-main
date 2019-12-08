@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018-2019, Ethan <https://github.com/Wea1thRS/>
  * Copyright (c) 2018, https://openosrs.com
+ * Copyright (c) 2019, Dillon <https://github.com/dillydill123>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,20 +26,21 @@
  */
 package net.runelite.client.plugins.inventorysetups.ui;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import javax.inject.Singleton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import java.awt.Color;
+import java.awt.Dimension;
 import net.runelite.client.util.AsyncBufferedImage;
 
 @Singleton
-class InventorySetupSlot extends JPanel
+public class InventorySetupSlot extends JPanel
 {
+
 	private final JLabel imageLabel;
 
-	InventorySetupSlot(Color color)
+	public InventorySetupSlot(Color color)
 	{
 		imageLabel = new JLabel();
 		imageLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -48,7 +50,7 @@ class InventorySetupSlot extends JPanel
 
 	}
 
-	void setImageLabel(String toolTip, AsyncBufferedImage itemImage)
+	public void setImageLabel(String toolTip, AsyncBufferedImage itemImage)
 	{
 		if (itemImage == null || toolTip == null)
 		{
