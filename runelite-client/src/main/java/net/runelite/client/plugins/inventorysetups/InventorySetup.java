@@ -35,7 +35,7 @@ import java.util.List;
 @AllArgsConstructor
 public class InventorySetup
 {
-	@Getter(AccessLevel.PUBLIC)
+	@Getter
 	private List<InventorySetupItem> inventory;
 
 	@Getter

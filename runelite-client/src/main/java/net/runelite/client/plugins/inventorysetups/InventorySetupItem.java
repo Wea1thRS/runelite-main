@@ -26,17 +26,16 @@
  */
 package net.runelite.client.plugins.inventorysetups;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 public class InventorySetupItem
 {
-	@Getter(AccessLevel.PUBLIC)
+	@Getter
 	private final int id;
-	@Getter(AccessLevel.PUBLIC)
+	@Getter
 	private final String name;
-	@Getter(AccessLevel.PUBLIC)
+	@Getter
 	private final int quantity;
 }

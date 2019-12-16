@@ -100,10 +100,7 @@ public class InventorySetupEquipmentPanel extends InventorySetupContainerPanel
 	{
 		final List<InventorySetupItem> equipToCheck = inventorySetup.getEquipment();
 
-		if (currEquipment.size() == equipToCheck.size())
-		{
-			return;
-		}
+		assert currEquipment.size() == equipToCheck.size() : "size mismatch";
 
 		for (final EquipmentInventorySlot slot : EquipmentInventorySlot.values())
 		{
