@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Provides;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -131,29 +132,38 @@ public class MenuEntrySwapperPlugin extends Plugin
 		MenuOpcode.NPC_FIRST_OPTION, MenuOpcode.NPC_SECOND_OPTION, MenuOpcode.NPC_THIRD_OPTION,
 		MenuOpcode.NPC_FOURTH_OPTION, MenuOpcode.NPC_FIFTH_OPTION, MenuOpcode.EXAMINE_NPC
 	);
+	private static final List<String> jewelleryBox = Arrays.asList(
+		"duel arena", "castle wars", "clan wars", "burthorpe", "barbarian outpost", "corporeal beast",
+		"tears of guthix", "wintertodt camp", "warriors' guild", "champions' guild", "monastery", "ranging guild",
+		"fishing guild", "mining guild", "crafting guild", "cooking guild", "woodcutting guild", "farming guild",
+		"miscellania", "grand exchange", "falador park", "dondakan's rock", "edgeville", "karamja",
+		"draynor village", "al kharid"
+	);
+
 	private static final Splitter NEWLINE_SPLITTER = Splitter
 		.on("\n")
 		.omitEmptyStrings()
 		.trimResults();
-
+	private final Map<AbstractComparableEntry, Integer> customSwaps = new HashMap<>();
+	private final Map<AbstractComparableEntry, Integer> customShiftSwaps = new HashMap<>();
+	private final Map<AbstractComparableEntry, AbstractComparableEntry> dePrioSwaps = new HashMap<>();
+	// 1, 5, 10, 50
+	private final AbstractComparableEntry[][] buyEntries = new AbstractComparableEntry[4][];
+	private final AbstractComparableEntry[][] sellEntries = new AbstractComparableEntry[4][];
+	// 1, 5, 10, X, All
+	private final AbstractComparableEntry[][] withdrawEntries = new AbstractComparableEntry[5][];
 	@Inject
 	private Client client;
-
 	@Inject
 	private ClientThread clientThread;
-
 	@Inject
 	private MenuEntrySwapperConfig config;
-
 	@Inject
 	private PluginManager pluginManager;
-
 	@Inject
 	private MenuManager menuManager;
-
 	@Inject
 	private KeyManager keyManager;
-
 	@Inject
 	private EventBus eventBus;
 	/**
@@ -169,16 +179,6 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private boolean hotkeyActive;
 	@Setter(AccessLevel.PRIVATE)
 	private boolean controlActive;
-	private final Map<AbstractComparableEntry, Integer> customSwaps = new HashMap<>();
-	private final Map<AbstractComparableEntry, Integer> customShiftSwaps = new HashMap<>();
-	private final Map<AbstractComparableEntry, AbstractComparableEntry> dePrioSwaps = new HashMap<>();
-
-	// 1, 5, 10, 50
-	private final AbstractComparableEntry[][] buyEntries = new AbstractComparableEntry[4][];
-	private final AbstractComparableEntry[][] sellEntries = new AbstractComparableEntry[4][];
-	// 1, 5, 10, X, All
-	private final AbstractComparableEntry[][] withdrawEntries = new AbstractComparableEntry[5][];
-
 	private String[] removedObjects;
 
 	private List<String> bankItemNames = new ArrayList<>();
@@ -257,6 +257,38 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private boolean swapBoxTrap;
 	private boolean swapChase;
 	private boolean swapClimbUpDown;
+	private final HotkeyListener hotkey = new HotkeyListener(() -> this.hotkeyMod)
+	{
+		@Override
+		public void hotkeyPressed()
+		{
+			startHotkey();
+			setHotkeyActive(true);
+		}
+
+		@Override
+		public void hotkeyReleased()
+		{
+			stopHotkey();
+			setHotkeyActive(false);
+		}
+	};
+	private final HotkeyListener ctrlHotkey = new HotkeyListener(() -> Keybind.CTRL)
+	{
+		@Override
+		public void hotkeyPressed()
+		{
+			startControl();
+			setControlActive(true);
+		}
+
+		@Override
+		public void hotkeyReleased()
+		{
+			stopControl();
+			setControlActive(false);
+		}
+	};
 	private boolean swapCoalBag;
 	private boolean swapContract;
 	private boolean swapEnchant;
@@ -283,6 +315,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 	private boolean swapTrade;
 	private boolean swapTravel;
 	private boolean swapWildernessLever;
+	private boolean swapJewelleryBox;
 
 	@Provides
 	MenuEntrySwapperConfig provideConfig(ConfigManager configManager)
@@ -1173,6 +1206,14 @@ public class MenuEntrySwapperPlugin extends Plugin
 		{
 			menuManager.addPriorityEntry(new GrimyHerbComparableEntry(this.swapGrimyHerbMode, client));
 		}
+
+		if (this.swapJewelleryBox)
+		{
+			for (String jewellerybox : jewelleryBox)
+			{
+				menuManager.addPriorityEntry(jewellerybox);
+			}
+		}
 	}
 
 	private void removeSwaps()
@@ -1295,6 +1336,10 @@ public class MenuEntrySwapperPlugin extends Plugin
 		menuManager.removePriorityEntry(this.questCapeMode.toString(), "quest point cape");
 		menuManager.removePriorityEntry(this.swapHouseAdMode.getEntry());
 		menuManager.removeSwap("Bury", "bone", "Use");
+		for (String jewellerybox : jewelleryBox)
+		{
+			menuManager.removePriorityEntry(jewellerybox);
+		}
 
 		switch (this.swapFairyRingMode)
 		{
@@ -1363,6 +1408,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 				menuManager.removePriorityEntry("Friend's house");
 				break;
 		}
+
 	}
 
 	private boolean isPuroPuro()
@@ -1650,6 +1696,7 @@ public class MenuEntrySwapperPlugin extends Plugin
 		this.swapWildernessLever = config.swapWildernessLever();
 		this.swapHouseAd = config.swapHouseAd();
 		this.swapHouseAdMode = config.swapHouseAdMode();
+		this.swapJewelleryBox = config.swapJewelleryBox();
 	}
 
 	private void addBuySellEntries()
@@ -1904,38 +1951,4 @@ public class MenuEntrySwapperPlugin extends Plugin
 			removedObjects = null;
 		}
 	}
-
-	private final HotkeyListener hotkey = new HotkeyListener(() -> this.hotkeyMod)
-	{
-		@Override
-		public void hotkeyPressed()
-		{
-			startHotkey();
-			setHotkeyActive(true);
-		}
-
-		@Override
-		public void hotkeyReleased()
-		{
-			stopHotkey();
-			setHotkeyActive(false);
-		}
-	};
-
-	private final HotkeyListener ctrlHotkey = new HotkeyListener(() -> Keybind.CTRL)
-	{
-		@Override
-		public void hotkeyPressed()
-		{
-			startControl();
-			setControlActive(true);
-		}
-
-		@Override
-		public void hotkeyReleased()
-		{
-			stopControl();
-			setControlActive(false);
-		}
-	};
 }
