@@ -35,7 +35,6 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.util.ImageUtil;
-
 import javax.inject.Singleton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;

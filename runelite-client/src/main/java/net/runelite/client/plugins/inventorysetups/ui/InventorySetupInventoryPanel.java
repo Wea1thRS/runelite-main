@@ -31,7 +31,6 @@ import net.runelite.client.plugins.inventorysetups.InventorySetup;
 import net.runelite.client.plugins.inventorysetups.InventorySetupItem;
 import net.runelite.client.plugins.inventorysetups.InventorySetupPlugin;
 import net.runelite.client.ui.ColorScheme;
-
 import javax.swing.JPanel;
 import javax.inject.Singleton;
 import java.awt.GridLayout;
